@@ -1,69 +1,122 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from "next/link";
+import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
+import { getPublicProgram } from "@/lib/program-data";
 
-export default function Home() {
+export default async function Home() {
+  const program = await getPublicProgram();
+
+  if (!program.event) {
+    return (
+      <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 5 } }}>
+        <Typography variant="h1" gutterBottom>
+          No event published yet
+        </Typography>
+        <Typography color="text.secondary">
+          Check back later for event details and the running order.
+        </Typography>
+      </Paper>
+    );
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
+    <Stack spacing={4}>
+      <Paper
+        component="section"
+        sx={{
+          background:
+            "linear-gradient(125deg, #182629 0%, #254d4d 58%, #ad6542 145%)",
+          color: "common.white",
+          overflow: "hidden",
+          p: { xs: 3, sm: 5, md: 7 },
+        }}
+      >
+        <Stack spacing={3} maxWidth={720}>
+          <Chip
+            label="Sample content — event details and performer consent are not configured"
+            sx={{
+              alignSelf: "flex-start",
+              bgcolor: "rgba(255,255,255,0.14)",
+              color: "common.white",
+            }}
+          />
+          <Box>
+            <Typography variant="overline" sx={{ color: "#f5cba7" }}>
+              A night for music, comedy, and everything in between
+            </Typography>
+            <Typography variant="h1" sx={{ mt: 1, mb: 2 }}>
+              {program.event.title}
+            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.88 }}>
+              A welcoming stage for colleagues to share what they love making.
+            </Typography>
+          </Box>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Button
+              component={Link}
+              href="/schedule"
+              variant="contained"
+              color="secondary"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
+              View the schedule
+            </Button>
+            <Button
+              component={Link}
+              href="/acts"
+              variant="outlined"
+              sx={{ borderColor: "rgba(255,255,255,0.65)", color: "white" }}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              Meet the acts
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+
+      <Box
+        component="section"
+        aria-label="Event details"
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+        }}
+      >
+        {[
+          {
+            label: "When",
+            value: new Intl.DateTimeFormat("en", {
+              dateStyle: "full",
+              timeZone: program.event.timeZone,
+            }).format(new Date(program.event.startsAt)),
+          },
+          { label: "Doors open", value: program.event.venue },
+          {
+            label: "On stage",
+            value: `${program.schedule.length} acts · about ${program.schedule.reduce((total, slot) => total + slot.durationMinutes, 0)} minutes`,
+          },
+        ].map(({ label, value }) => (
+          <Paper key={label} variant="outlined" sx={{ p: 3 }}>
+            <Typography color="text.secondary" variant="overline">
+              {label}
+            </Typography>
+            <Typography variant="h6" sx={{ mt: 1 }}>
+              {value}
+            </Typography>
+          </Paper>
+        ))}
+      </Box>
+
+      <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 4 } }}>
+        <Typography variant="h2" gutterBottom>
+          The evening
+        </Typography>
+        <Stack spacing={1}>
+          {program.event.guidelines.map((guideline) => (
+            <Typography key={guideline} color="text.secondary">
+              {guideline}
+            </Typography>
+          ))}
+        </Stack>
+      </Paper>
+    </Stack>
   );
 }
