@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { Box, Container } from "@mui/material";
 import SiteNavigation from "@/components/site-navigation";
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   description: "An evening of music, comedy, and creative performances.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
       <body>

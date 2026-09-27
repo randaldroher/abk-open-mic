@@ -33,9 +33,8 @@ export default async function ActsPage() {
                 <Stack spacing={2}>
                   <Stack
                     direction="row"
-                    alignItems="flex-start"
-                    justifyContent="space-between"
                     spacing={1}
+                    sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
                   >
                     <Typography variant="h3">{act.displayName}</Typography>
                     <Chip label={`${act.durationMinutes} min`} size="small" />

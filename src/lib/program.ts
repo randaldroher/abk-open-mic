@@ -176,7 +176,13 @@ export function buildPublicProgram(rows: SheetRows): PublicProgram {
 
   return {
     event,
-    acts: acts.map(({ eventId: _eventId, ...act }) => act),
+    acts: acts.map((act) => ({
+      actId: act.actId,
+      displayName: act.displayName,
+      description: act.description,
+      instruments: act.instruments,
+      durationMinutes: act.durationMinutes,
+    })),
     schedule,
   };
 }

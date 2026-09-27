@@ -30,7 +30,7 @@ export default async function Home() {
           p: { xs: 3, sm: 5, md: 7 },
         }}
       >
-        <Stack spacing={3} maxWidth={720}>
+        <Stack spacing={3} sx={{ maxWidth: 720 }}>
           <Chip
             label="Sample content — event details and performer consent are not configured"
             sx={{
@@ -88,7 +88,7 @@ export default async function Home() {
               timeZone: program.event.timeZone,
             }).format(new Date(program.event.startsAt)),
           },
-          { label: "Doors open", value: program.event.venue },
+          { label: "Where", value: program.event.venue },
           {
             label: "On stage",
             value: `${program.schedule.length} acts · about ${program.schedule.reduce((total, slot) => total + slot.durationMinutes, 0)} minutes`,

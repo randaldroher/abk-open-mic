@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildPublicProgram, type SheetRows } from "./program";
-import { syntheticSheet } from "./synthetic-sheet";
+import { buildPublicProgram, type SheetRows } from "./program.ts";
+import { syntheticSheet } from "./synthetic-sheet.ts";
 
 test("returns only published rows and projects public fields", () => {
   const program = buildPublicProgram(syntheticSheet);
