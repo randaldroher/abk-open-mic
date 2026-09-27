@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { AppBar, Box, Container, Link as MuiLink, Toolbar, Typography } from "@mui/material";
 
 const navigation = [
@@ -19,7 +18,7 @@ export default function SiteNavigation() {
       <Container maxWidth="lg">
         <Toolbar disableGutters sx={{ justifyContent: "space-between", minHeight: 72 }}>
           <Typography
-            component={Link}
+            component="a"
             href="/"
             variant="h6"
             sx={{ color: "primary.main", fontWeight: 750, textDecoration: "none" }}
@@ -29,7 +28,6 @@ export default function SiteNavigation() {
           <Box component="nav" aria-label="Main navigation" sx={{ display: "flex", gap: { xs: 2, sm: 3 } }}>
             {navigation.map(({ label, href }) => (
               <MuiLink
-                component={Link}
                 href={href}
                 key={href}
                 underline="hover"

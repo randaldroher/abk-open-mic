@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/lib/program.test.ts"
+    "test": "node --experimental-default-type=module --experimental-strip-types --test src/lib/program.test.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

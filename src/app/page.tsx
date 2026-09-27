@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import { getPublicProgram } from "@/lib/program-data";
 
@@ -52,7 +51,6 @@ export default async function Home() {
           </Box>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <Button
-              component={Link}
               href="/schedule"
               variant="contained"
               color="secondary"
@@ -60,7 +58,6 @@ export default async function Home() {
               View the schedule
             </Button>
             <Button
-              component={Link}
               href="/acts"
               variant="outlined"
               sx={{ borderColor: "rgba(255,255,255,0.65)", color: "white" }}
