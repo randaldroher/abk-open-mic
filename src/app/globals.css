@@ -3,8 +3,13 @@ body {
   min-height: 100%;
 }
 
+html {
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
+  background: #070b14;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
