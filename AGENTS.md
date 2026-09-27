@@ -5,3 +5,13 @@
 - Follow the App Router with TypeScript, Cache Components, and MUI's App Router integration. Check the installed Next.js and MUI versions before choosing providers or cache directives.
 - The site is public and read-only: no website authentication, authorization, database, write endpoints, or sign-up forms. Read a private organizer-managed Google Sheet only on the server with a viewer service account and read-only scope; render only validated, published fields and never expose credentials or drafts. Resolve the architecture's consent and publication decisions before launching with real performer data.
 - After scaffold, verify affected behavior with focused tests and run lint, typecheck, and build for release changes. Keep documentation aligned with material architecture decisions.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
