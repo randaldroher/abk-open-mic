@@ -23,7 +23,7 @@ export default async function Home() {
         component="section"
         sx={{
           background:
-            "linear-gradient(125deg, #182629 0%, #254d4d 58%, #ad6542 145%)",
+            "linear-gradient(125deg, #082f49 0%, #0f766e 52%, #ff3dbb 112%)",
           color: "common.white",
           overflow: "hidden",
           p: { xs: 3, sm: 5, md: 7 },
@@ -39,14 +39,14 @@ export default async function Home() {
             }}
           />
           <Box>
-            <Typography variant="overline" sx={{ color: "#f5cba7" }}>
-              A night for music, comedy, and everything in between
+            <Typography variant="overline" sx={{ color: "info.light" }}>
+              A night of live music from ABK colleagues
             </Typography>
             <Typography variant="h1" sx={{ mt: 1, mb: 2 }}>
               {program.event.title}
             </Typography>
             <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.88 }}>
-              A welcoming stage for colleagues to share what they love making.
+              A welcoming stage for colleagues to share the music they love making.
             </Typography>
           </Box>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: "ABK Open Mic Night",
     template: "%s | ABK Open Mic Night",
   },
-  description: "An evening of music, comedy, and creative performances.",
+  description: "An evening of live music performed by ABK colleagues.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

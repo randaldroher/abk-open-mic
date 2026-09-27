@@ -5,9 +5,11 @@ import { createTheme, ThemeProvider as MuiThemeProvider } from "@mui/material/st
 
 const theme = createTheme({
   palette: {
-    background: { default: "#f7f6f2", paper: "#ffffff" },
-    primary: { main: "#284e4b" },
-    secondary: { main: "#ad6542" },
+    mode: "dark",
+    background: { default: "#070b14", paper: "#111827" },
+    primary: { main: "#2dd4bf", contrastText: "#04110f" },
+    secondary: { main: "#ff3dbb", contrastText: "#18000f" },
+    info: { main: "#38bdf8" },
   },
   shape: { borderRadius: 14 },
   typography: {

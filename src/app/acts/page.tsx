@@ -12,7 +12,7 @@ export default async function ActsPage() {
         </Typography>
         <Typography variant="h1">Meet the acts</Typography>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
-          A little bit of everything, brought to you live.
+          Original songs, favorite covers, and live music from across ABK.
         </Typography>
       </Box>
       {acts.length === 0 ? (
