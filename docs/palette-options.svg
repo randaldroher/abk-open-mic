@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780">
+  <rect width="1200" height="780" fill="#070b14"/>
+  <style>
+    .title { font: 700 42px Arial, sans-serif; }
+    .subtitle { font: 23px Arial, sans-serif; }
+    .heading { font: 700 28px Arial, sans-serif; }
+    .label { font: 20px Arial, sans-serif; }
+    .hex { font: 23px Arial, sans-serif; }
+  </style>
+  <text x="50" y="72" class="title" fill="#f8fafc">ABK Open Mic — Accent Palette Options</text>
+  <text x="50" y="112" class="subtitle" fill="#94a3b8">Shown together on the site’s dark background</text>
+
+  <g transform="translate(50 155)">
+    <rect width="1100" height="120" rx="18" fill="#111827" stroke="#334155" stroke-width="2"/>
+    <text x="25" y="52" class="heading" fill="#f8fafc">A — Vivid</text>
+    <rect x="260" y="18" width="90" height="84" rx="12" fill="#f725e9"/>
+    <text x="365" y="45" class="label" fill="#cbd5e1">MAGENTA</text>
+    <text x="365" y="78" class="hex" fill="#f8fafc">#F725E9</text>
+    <rect x="530" y="18" width="90" height="84" rx="12" fill="#2dd4bf"/>
+    <text x="635" y="45" class="label" fill="#cbd5e1">TEAL</text>
+    <text x="635" y="78" class="hex" fill="#f8fafc">#2DD4BF</text>
+    <rect x="800" y="18" width="90" height="84" rx="12" fill="#38bdf8"/>
+    <text x="905" y="45" class="label" fill="#cbd5e1">BLUE</text>
+    <text x="905" y="78" class="hex" fill="#f8fafc">#38BDF8</text>
+  </g>
+
+  <g transform="translate(50 300)">
+    <rect width="1100" height="120" rx="18" fill="#111827" stroke="#334155" stroke-width="2"/>
+    <text x="25" y="52" class="heading" fill="#f8fafc">B — Neon</text>
+    <rect x="260" y="18" width="90" height="84" rx="12" fill="#ed3cff"/>
+    <text x="365" y="45" class="label" fill="#cbd5e1">MAGENTA</text>
+    <text x="365" y="78" class="hex" fill="#f8fafc">#ED3CFF</text>
+    <rect x="530" y="18" width="90" height="84" rx="12" fill="#22d3c5"/>
+    <text x="635" y="45" class="label" fill="#cbd5e1">TEAL</text>
+    <text x="635" y="78" class="hex" fill="#f8fafc">#22D3C5</text>
+    <rect x="800" y="18" width="90" height="84" rx="12" fill="#32b8ff"/>
+    <text x="905" y="45" class="label" fill="#cbd5e1">BLUE</text>
+    <text x="905" y="78" class="hex" fill="#f8fafc">#32B8FF</text>
+  </g>
+
+  <g transform="translate(50 445)">
+    <rect width="1100" height="120" rx="18" fill="#111827" stroke="#334155" stroke-width="2"/>
+    <text x="25" y="52" class="heading" fill="#f8fafc">C — Softer</text>
+    <rect x="260" y="18" width="90" height="84" rx="12" fill="#e879f9"/>
+    <text x="365" y="45" class="label" fill="#cbd5e1">MAGENTA</text>
+    <text x="365" y="78" class="hex" fill="#f8fafc">#E879F9</text>
+    <rect x="530" y="18" width="90" height="84" rx="12" fill="#5eead4"/>
+    <text x="635" y="45" class="label" fill="#cbd5e1">TEAL</text>
+    <text x="635" y="78" class="hex" fill="#f8fafc">#5EEAD4</text>
+    <rect x="800" y="18" width="90" height="84" rx="12" fill="#60a5fa"/>
+    <text x="905" y="45" class="label" fill="#cbd5e1">BLUE</text>
+    <text x="905" y="78" class="hex" fill="#f8fafc">#60A5FA</text>
+  </g>
+
+  <g transform="translate(50 590)">
+    <rect width="1100" height="120" rx="18" fill="#111827" stroke="#334155" stroke-width="2"/>
+    <text x="25" y="52" class="heading" fill="#f8fafc">D — Pinker</text>
+    <rect x="260" y="18" width="90" height="84" rx="12" fill="#ff3dbb"/>
+    <text x="365" y="45" class="label" fill="#cbd5e1">MAGENTA</text>
+    <text x="365" y="78" class="hex" fill="#f8fafc">#FF3DBB</text>
+    <rect x="530" y="18" width="90" height="84" rx="12" fill="#2dd4bf"/>
+    <text x="635" y="45" class="label" fill="#cbd5e1">TEAL</text>
+    <text x="635" y="78" class="hex" fill="#f8fafc">#2DD4BF</text>
+    <rect x="800" y="18" width="90" height="84" rx="12" fill="#38bdf8"/>
+    <text x="905" y="45" class="label" fill="#cbd5e1">BLUE</text>
+    <text x="905" y="78" class="hex" fill="#f8fafc">#38BDF8</text>
+  </g>
+</svg>
