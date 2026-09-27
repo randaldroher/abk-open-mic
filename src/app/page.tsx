@@ -23,7 +23,7 @@ export default async function Home() {
         component="section"
         sx={{
           background:
-            "linear-gradient(125deg, #082f49 0%, #0f766e 52%, #6b21a8 112%)",
+            "linear-gradient(125deg, #082f49 0%, #0f766e 52%, #ff00ff 112%)",
           color: "common.white",
           overflow: "hidden",
           p: { xs: 3, sm: 5, md: 7 },

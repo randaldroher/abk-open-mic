@@ -8,7 +8,7 @@ const theme = createTheme({
     mode: "dark",
     background: { default: "#070b14", paper: "#111827" },
     primary: { main: "#2dd4bf", contrastText: "#04110f" },
-    secondary: { main: "#a855f7", contrastText: "#0f0617" },
+    secondary: { main: "#ff00ff", contrastText: "#180018" },
     info: { main: "#38bdf8" },
   },
   shape: { borderRadius: 14 },
