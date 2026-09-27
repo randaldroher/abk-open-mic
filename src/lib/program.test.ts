@@ -41,6 +41,17 @@ test("rejects malformed published timestamps", () => {
   assert.throws(() => buildPublicProgram(rows), /Invalid published event data/);
 });
 
+test("rejects impossible published calendar dates", () => {
+  const rows: SheetRows = {
+    ...syntheticSheet,
+    events: [
+      { ...syntheticSheet.events[0] as object, starts_at: "2026-02-30T19:00:00-07:00" },
+    ],
+  };
+
+  assert.throws(() => buildPublicProgram(rows), /Invalid published event data/);
+});
+
 test("rejects published schedule slots that reference unpublished or missing acts", () => {
   const rows: SheetRows = {
     ...syntheticSheet,
@@ -50,6 +61,26 @@ test("rejects published schedule slots that reference unpublished or missing act
         act_id: "unpublished-sample",
         starts_at: "2026-10-10T19:15:00-07:00",
         order: 1,
+        published: true,
+      },
+    ],
+  };
+
+  assert.throws(() => buildPublicProgram(rows), /Invalid published event data/);
+});
+
+test("rejects duplicate published act ids", () => {
+  const rows: SheetRows = {
+    ...syntheticSheet,
+    acts: [
+      ...syntheticSheet.acts,
+      {
+        event_id: "sample-night",
+        act_id: "sample-band",
+        display_name: "Duplicate",
+        description: "Duplicate row",
+        instruments: "Vocals",
+        duration_minutes: 10,
         published: true,
       },
     ],

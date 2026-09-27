@@ -74,7 +74,7 @@ export default async function Home() {
         sx={{
           display: "grid",
           gap: 2,
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
         }}
       >
         {[
@@ -86,6 +86,14 @@ export default async function Home() {
             }).format(new Date(program.event.startsAt)),
           },
           { label: "Where", value: program.event.venue },
+          {
+            label: "Updated",
+            value: new Intl.DateTimeFormat("en", {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: program.event.timeZone,
+            }).format(new Date(program.event.updatedAt)),
+          },
           {
             label: "On stage",
             value: `${program.schedule.length} acts · about ${program.schedule.reduce((total, slot) => total + slot.durationMinutes, 0)} minutes`,

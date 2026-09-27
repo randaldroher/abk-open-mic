@@ -59,10 +59,19 @@ function validId(value: string): string {
 }
 
 function validDate(value: string): string {
-  if (
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) ||
-    !Number.isFinite(Date.parse(value))
-  ) {
+  const match = value.match(
+    /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)(?:\.\d+)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/,
+  );
+  if (!match) {
+    throw new Error("Invalid published event data");
+  }
+
+  const year = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const day = Number.parseInt(match[3], 10);
+  const maxDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+  if (day > maxDay || !Number.isFinite(Date.parse(value))) {
     throw new Error("Invalid published event data");
   }
   return value;
@@ -151,6 +160,13 @@ export function buildPublicProgram(rows: SheetRows): PublicProgram {
   const acts = publishedRows(rows.acts)
     .map(parseAct)
     .filter((act) => act.eventId === event.eventId);
+  const seenActIds = new Set<string>();
+  for (const act of acts) {
+    if (seenActIds.has(act.actId)) {
+      throw new Error("Invalid published event data");
+    }
+    seenActIds.add(act.actId);
+  }
   const actById = new Map(acts.map((act) => [act.actId, act]));
   const slots = publishedRows(rows.schedule)
     .map(parseScheduleSlot)
