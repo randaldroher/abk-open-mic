@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: "ABK Open Mic Night",
     template: "%s | ABK Open Mic Night",
   },
-  description: "An evening of live music performed by ABK colleagues.",
+  description: "A historical overview of the ABK Open Mic May 2026 performance.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -40,7 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                 }}
               >
                 <Container maxWidth="lg">
-                  ABK Open Mic Night · Sample website content
+                  ABK Open Mic Night · May 2026 historical preview
                 </Container>
               </Box>
             </Box>

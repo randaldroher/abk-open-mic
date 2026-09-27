@@ -1,0 +1,45 @@
+import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
+import { getHistoricalProgram } from "@/lib/historical-program-data";
+
+export default async function GearPage() {
+  const { gear } = await getHistoricalProgram();
+  const categories = Map.groupBy(gear, ({ category }) => category);
+
+  return (
+    <Stack spacing={4}>
+      <Box>
+        <Typography variant="overline" color="secondary">
+          May 2026 historical preview
+        </Typography>
+        <Typography variant="h1">Gear</Typography>
+        <Typography color="text.secondary" sx={{ mt: 1 }}>
+          Equipment recorded for the performance. Open items were still being planned.
+        </Typography>
+      </Box>
+      {[...categories].map(([category, items]) => (
+        <Box component="section" key={category}>
+          <Typography variant="h2" sx={{ mb: 2 }}>{category}</Typography>
+          <Stack spacing={1.5}>
+            {items.map((item) => (
+              <Paper component="article" key={`${category}-${item.name}-${item.owner}`} variant="outlined" sx={{ p: 2.5 }}>
+                <Stack spacing={1}>
+                  <Stack direction="row" sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+                    <Typography variant="h3">{item.name}</Typography>
+                    {item.isTentative && <Chip color="warning" label="Open / tentative" size="small" />}
+                    {item.isShareable === true && <Chip label="Shareable" size="small" />}
+                  </Stack>
+                  {item.details && <Typography color="text.secondary">{item.details}</Typography>}
+                  {(item.owner || item.notes) && (
+                    <Typography color="text.secondary" variant="body2">
+                      {[item.owner ? `Provided by ${item.owner}` : null, item.notes].filter(Boolean).join(" · ")}
+                    </Typography>
+                  )}
+                </Stack>
+              </Paper>
+            ))}
+          </Stack>
+        </Box>
+      ))}
+    </Stack>
+  );
+}
