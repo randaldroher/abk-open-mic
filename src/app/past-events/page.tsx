@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Box, Button, Card, CardActions, CardContent, Stack, Typography } from "@mui/material";
+import SiteFrame from "@/components/site-frame";
 import { PAST_EVENTS } from "@/lib/past-events";
 
 export const metadata: Metadata = {
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
 
 export default function PastEventsPage() {
   return (
+    <SiteFrame>
     <Stack spacing={3}>
       <Box>
         <Typography variant="overline" color="secondary">ABK Open Mic archive</Typography>
@@ -33,5 +35,6 @@ export default function PastEventsPage() {
         ))}
       </Box>
     </Stack>
+    </SiteFrame>
   );
 }

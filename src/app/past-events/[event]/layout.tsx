@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
-import { Box, Typography } from "@mui/material";
 import { notFound } from "next/navigation";
-import LastUpdated from "@/components/last-updated";
 import PastEventNavigation from "@/components/past-event-navigation";
+import SiteFrame from "@/components/site-frame";
 import { getMay2026Program } from "@/lib/may-2026-program-data";
 import { getDecember2025Songs, getJuly2025Songs } from "@/lib/past-event-song-data";
 import { getPastEvent } from "@/lib/past-events";
@@ -26,14 +25,9 @@ export default async function PastEventLayout({ children, params }: Props) {
       : await getDecember2025Songs();
 
   return (
-    <>
+    <SiteFrame fetchedAt={data ? data.fetchedAt : null}>
       <PastEventNavigation eventSlug={event} />
       {children}
-      <Box component="div" aria-label="Event data freshness" sx={{ mt: 4, textAlign: "center" }}>
-        <Typography variant="body2" color="text.secondary">
-          {pastEvent.label} archive · {data ? <LastUpdated fetchedAt={data.fetchedAt} /> : "Last updated: unavailable"}
-        </Typography>
-      </Box>
-    </>
+    </SiteFrame>
   );
 }

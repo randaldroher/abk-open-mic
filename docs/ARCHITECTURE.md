@@ -139,7 +139,9 @@ can render the unavailable state. Verify rendered content as well.
 | `/past-events/may-2026/gear` | Equipment grouped by category, ownership, sharing, and open needs |
 | `/songs`, `/schedule`, `/gear` | Redirects to the corresponding May 2026 archive pages |
 
-The ABK Open Mic brand links home; global navigation includes Past events.
+The ABK Open Mic brand links home; the footer says “ABK Open Mic” and places an
+event's successful-fetch metadata directly below the site name. Global
+navigation includes Past events.
 Songs, Schedule, and Gear are within the May 2026 event navigation. Event video
 sections show a placeholder until approved URLs are supplied. No next-event
 date or venue is invented. MUI handles responsive layout and presentation.

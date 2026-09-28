@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Box, Button, Card, CardActions, CardContent, Paper, Stack, Typography } from "@mui/material";
+import SiteFrame from "@/components/site-frame";
 import { PAST_EVENTS } from "@/lib/past-events";
 
 const SIGNUP_URL = "https://docs.google.com/spreadsheets/d/17jHvnjnWp5x6lne5SrOMFQBtISrYMeo7o0jethdRKHA/edit#gid=1747009845";
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
+    <SiteFrame>
     <Stack spacing={5}>
       <Paper
         component="section"
@@ -107,5 +109,6 @@ export default function Home() {
         </Stack>
       </Box>
     </Stack>
+    </SiteFrame>
   );
 }

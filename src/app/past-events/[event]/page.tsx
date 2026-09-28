@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
+import type { ReactNode } from "react";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { notFound } from "next/navigation";
 import ProgramUnavailable from "@/components/program-unavailable";
 import { getMay2026Program } from "@/lib/may-2026-program-data";
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : { title: "Event not found" };
 }
 
-function RecordingPlaceholder() {
+function EventVideos() {
   return (
     <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 4 }, backgroundImage: "var(--abk-section-gradient)" }}>
       <Typography variant="h2" gutterBottom>Event videos</Typography>
@@ -50,6 +51,36 @@ function EventSongs({ songs }: { songs: Array<{ title: string; originalArtist: s
   );
 }
 
+function EventArchive({
+  title,
+  description,
+  songs,
+  details,
+  note,
+}: {
+  title: string;
+  description: string;
+  songs: Array<{ title: string; originalArtist: string | null }>;
+  details?: ReactNode;
+  note?: ReactNode;
+}) {
+  return (
+    <Stack spacing={4}>
+      <Box>
+        <Typography variant="overline" color="secondary">ABK Open Mic archive</Typography>
+        <Typography variant="h1">{title}</Typography>
+        <Typography color="text.secondary" sx={{ mt: 1 }}>
+          {description}
+        </Typography>
+      </Box>
+      {details}
+      <EventVideos />
+      <EventSongs songs={songs} />
+      {note}
+    </Stack>
+  );
+}
+
 export default async function PastEventPage({ params }: Props) {
   const { event } = await params;
   const pastEvent = getPastEvent(event);
@@ -67,36 +98,36 @@ export default async function PastEventPage({ params }: Props) {
     ).size;
 
     return (
-      <Stack spacing={4}>
-        <Paper
-          component="section"
-          sx={{
-            backgroundImage: "var(--abk-hero-gradient)",
-            border: 1,
-            borderColor: "divider",
-            position: "relative",
-            boxShadow: "var(--abk-neon-glow)",
-            overflow: "hidden",
-            p: { xs: 3, sm: 5, md: 7 },
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              inset: "0 0 auto",
-              height: 4,
-              backgroundImage: "var(--abk-accent-gradient)",
-            },
-          }}
-        >
-          <Stack spacing={3} sx={{ maxWidth: 720, position: "relative", zIndex: 1 }}>
-            <Chip label="May 2026 archive" sx={{ alignSelf: "flex-start", color: "primary.main" }} />
-            <Box>
-              <Typography variant="overline" sx={{ color: "primary.main" }}>
-                A night of live music from ABK colleagues
-              </Typography>
-              <Typography variant="h1" sx={{ mt: 1, mb: 2 }}>{program.title}</Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, color: "text.secondary", maxWidth: 600 }}>
-                Songs, running order, and equipment from the May 2026 performance.
-              </Typography>
+      <EventArchive
+        title={program.title}
+        description="Songs, running order, and equipment from the May 2026 performance."
+        songs={program.songs}
+        details={(
+          <>
+            <Box
+              component="section"
+              aria-label="Event details"
+              sx={{
+                display: "grid",
+                gap: 2,
+                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
+              }}
+            >
+              {[
+                {
+                  label: "Performance window",
+                  value: `${program.schedule[0].startsAt}–${program.schedule.at(-1)?.endsAt} ${program.timeZone}`,
+                  color: "primary.main",
+                },
+                { label: "Songs", value: `${program.songs.length} performed songs`, color: "secondary.main" },
+                { label: "Performers", value: `${performerCount} participants`, color: "info.main" },
+                { label: "Equipment", value: `${program.gear.length} recorded items`, color: "primary.main" },
+              ].map(({ label, value, color }) => (
+                <Paper key={label} variant="outlined" sx={{ p: 3, borderTop: 2, borderTopColor: color }}>
+                  <Typography color={color} variant="overline">{label}</Typography>
+                  <Typography variant="h6" sx={{ mt: 1 }}>{value}</Typography>
+                </Paper>
+              ))}
             </Box>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <Button href="/past-events/may-2026/schedule" variant="contained" color="secondary">
@@ -109,43 +140,18 @@ export default async function PastEventPage({ params }: Props) {
                 View gear
               </Button>
             </Stack>
-          </Stack>
-        </Paper>
-        <Box
-          component="section"
-          aria-label="Event details"
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
-          }}
-        >
-          {[
-            {
-              label: "Performance window",
-              value: `${program.schedule[0].startsAt}–${program.schedule.at(-1)?.endsAt} ${program.timeZone}`,
-              color: "primary.main",
-            },
-            { label: "Songs", value: `${program.songs.length} performed songs`, color: "secondary.main" },
-            { label: "Performers", value: `${performerCount} participants`, color: "info.main" },
-            { label: "Equipment", value: `${program.gear.length} recorded items`, color: "primary.main" },
-          ].map(({ label, value, color }) => (
-            <Paper key={label} variant="outlined" sx={{ p: 3, borderTop: 2, borderTopColor: color }}>
-              <Typography color={color} variant="overline">{label}</Typography>
-              <Typography variant="h6" sx={{ mt: 1 }}>{value}</Typography>
-            </Paper>
-          ))}
-        </Box>
-        <EventSongs songs={program.songs} />
-        <RecordingPlaceholder />
-        <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 4 }, backgroundImage: "var(--abk-section-gradient)" }}>
-          <Typography variant="h2" gutterBottom>Historical archive</Typography>
-          <Typography color="text.secondary">
-            This public, read-only view is based on the May 2026 timetable and gear records.
-            It omits contact details, spreadsheet calculations, and private planning notes.
-          </Typography>
-        </Paper>
-      </Stack>
+          </>
+        )}
+        note={(
+          <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 4 }, backgroundImage: "var(--abk-section-gradient)" }}>
+            <Typography variant="h2" gutterBottom>Historical archive</Typography>
+            <Typography color="text.secondary">
+              This public, read-only view is based on the May 2026 timetable and gear records.
+              It omits contact details, spreadsheet calculations, and private planning notes.
+            </Typography>
+          </Paper>
+        )}
+      />
     );
   }
 
@@ -157,16 +163,10 @@ export default async function PastEventPage({ params }: Props) {
   }
 
   return (
-    <Stack spacing={4}>
-      <Box>
-        <Typography variant="overline" color="secondary">ABK Open Mic archive</Typography>
-        <Typography variant="h1">{eventData.eventTitle}</Typography>
-        <Typography color="text.secondary" sx={{ mt: 1 }}>
-          Explore the songs and musicians from this past event.
-        </Typography>
-      </Box>
-      <EventSongs songs={eventData.songs} />
-      <RecordingPlaceholder />
-    </Stack>
+    <EventArchive
+      title={eventData.eventTitle}
+      description="Explore the songs and musicians from this past event."
+      songs={eventData.songs}
+    />
   );
 }
