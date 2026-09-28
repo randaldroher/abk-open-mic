@@ -1,21 +1,11 @@
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
-import { getPublicProgram } from "@/lib/program-data";
+import { getHistoricalProgram } from "@/lib/historical-program-data";
 
 export default async function Home() {
-  const program = await getPublicProgram();
-
-  if (!program.event) {
-    return (
-      <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 5 } }}>
-        <Typography variant="h1" gutterBottom>
-          No event published yet
-        </Typography>
-        <Typography color="text.secondary">
-          Check back later for event details and the running order.
-        </Typography>
-      </Paper>
-    );
-  }
+  const program = await getHistoricalProgram();
+  const performerCount = new Set(
+    program.schedule.flatMap((entry) => entry.performers.flatMap(({ performers }) => performers)),
+  ).size;
 
   return (
     <Stack spacing={4}>
@@ -31,7 +21,7 @@ export default async function Home() {
       >
         <Stack spacing={3} sx={{ maxWidth: 720 }}>
           <Chip
-            label="Sample content — event details and performer consent are not configured"
+            label="May 2026 historical preview"
             sx={{
               alignSelf: "flex-start",
               bgcolor: "rgba(255,255,255,0.14)",
@@ -43,10 +33,10 @@ export default async function Home() {
               A night of live music from ABK colleagues
             </Typography>
             <Typography variant="h1" sx={{ mt: 1, mb: 2 }}>
-              {program.event.title}
+              {program.title}
             </Typography>
             <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.88 }}>
-              A welcoming stage for colleagues to share the music they love making.
+              A look back at songs, running order, and equipment from the May 2026 performance.
             </Typography>
           </Box>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
@@ -58,11 +48,11 @@ export default async function Home() {
               View the schedule
             </Button>
             <Button
-              href="/acts"
+              href="/songs"
               variant="outlined"
               sx={{ borderColor: "rgba(255,255,255,0.65)", color: "white" }}
             >
-              Meet the acts
+              Browse songs
             </Button>
           </Stack>
         </Stack>
@@ -79,25 +69,15 @@ export default async function Home() {
       >
         {[
           {
-            label: "When",
-            value: new Intl.DateTimeFormat("en", {
-              dateStyle: "full",
-              timeZone: program.event.timeZone,
-            }).format(new Date(program.event.startsAt)),
+            label: "Performance window",
+            value: `${program.schedule[0].startsAt}–${program.schedule.at(-1)?.endsAt} ${program.timeZone}`,
           },
-          { label: "Where", value: program.event.venue },
+          { label: "Songs", value: `${program.songs.length} performed songs` },
           {
-            label: "Updated",
-            value: new Intl.DateTimeFormat("en", {
-              dateStyle: "medium",
-              timeStyle: "short",
-              timeZone: program.event.timeZone,
-            }).format(new Date(program.event.updatedAt)),
+            label: "Performers",
+            value: `${performerCount} participants`,
           },
-          {
-            label: "On stage",
-            value: `${program.schedule.length} acts · about ${program.schedule.reduce((total, slot) => total + slot.durationMinutes, 0)} minutes`,
-          },
+          { label: "Equipment", value: `${program.gear.length} recorded items` },
         ].map(({ label, value }) => (
           <Paper key={label} variant="outlined" sx={{ p: 3 }}>
             <Typography color="text.secondary" variant="overline">
@@ -112,15 +92,12 @@ export default async function Home() {
 
       <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 4 } }}>
         <Typography variant="h2" gutterBottom>
-          The evening
+          Historical preview
         </Typography>
-        <Stack spacing={1}>
-          {program.event.guidelines.map((guideline) => (
-            <Typography key={guideline} color="text.secondary">
-              {guideline}
-            </Typography>
-          ))}
-        </Stack>
+        <Typography color="text.secondary">
+          This public, read-only view is based on the May 2026 timetable and gear records.
+          It omits contact details, spreadsheet calculations, and private planning notes.
+        </Typography>
       </Paper>
     </Stack>
   );

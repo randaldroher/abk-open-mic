@@ -8,13 +8,14 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/lib/program.test.ts"
+    "test": "tsx --test src/lib/*.test.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^9.4.0",
     "@mui/material-nextjs": "^9.4.0",
+    "googleapis": "^182.0.0",
     "next": "16.3.6",
     "react": "19.2.8",
     "react-dom": "19.2.8"

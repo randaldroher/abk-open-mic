@@ -1,8 +1,7 @@
 # ABK Open Mic Night
 
-A public, read-only Next.js site for an open mic night. The current application
-uses clearly marked synthetic content; it does not connect to a spreadsheet or
-contain real performer information.
+A public, read-only Next.js site for an open mic night. It presents a sanitized
+historical preview of the May 2026 performance using a private Google Sheet.
 
 ## Run locally
 
@@ -15,10 +14,18 @@ The site is built with Next.js App Router, TypeScript, Cache Components, and
 MUI. Run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`
 to verify changes.
 
-## Before publishing real event data
+## Configure Google Sheets access
 
-Review the [architecture](docs/ARCHITECTURE.md) and
-[scaffold plan](docs/SCAFFOLD_PLAN.md). Organizers must agree on public fields,
-performer consent, the event time zone, spreadsheet access, preview data, and
-acceptable cache freshness first. Replace the synthetic server-side adapter
-with a read-only Google Sheets adapter only after those decisions are resolved.
+Create a service account, enable the Google Sheets API, and grant its
+`client_email` **Viewer** access to the private spreadsheet. Add the complete
+service-account JSON to `.env.local` as `SHEETS_SERVICE_ACCOUNT`; do not put
+this value in a committed file.
+
+For Vercel, open the project’s **Settings → Environment Variables**, add
+`SHEETS_SERVICE_ACCOUNT` with the complete JSON value, select the required
+environments, and redeploy. The spreadsheet ID is intentionally stored in the
+server-only adapter; the secret is not.
+
+The adapter only reads the May 2026 timetable and gear tabs, caches the
+validated public projection, and excludes email addresses, contact details,
+spreadsheet-only calculations, and private planning notes.

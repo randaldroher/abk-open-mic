@@ -1,30 +1,30 @@
 import { Box, Paper, Stack, Typography } from "@mui/material";
-import { getPublicProgram } from "@/lib/program-data";
+import { getHistoricalProgram } from "@/lib/historical-program-data";
 
 export default async function SchedulePage() {
-  const { event, schedule } = await getPublicProgram();
+  const { schedule, timeZone } = await getHistoricalProgram();
 
   return (
     <Stack spacing={3}>
       <Box>
         <Typography variant="overline" color="secondary">
-          The running order
+          May 2026 historical preview
         </Typography>
         <Typography variant="h1">Schedule</Typography>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
-          All times are shown in {event?.timeZone ?? "the event's local time"}.
+          All times are shown in {timeZone}. Operational entries are included alongside songs.
         </Typography>
       </Box>
       {schedule.length === 0 ? (
         <Typography color="text.secondary">
-          No schedule has been published yet.
+          No historical schedule is available.
         </Typography>
       ) : (
         <Stack component="ol" spacing={1.5} sx={{ listStyle: "none", p: 0, m: 0 }}>
           {schedule.map((slot) => (
             <Paper
               component="li"
-              key={slot.order}
+              key={`${slot.startsAt}-${slot.title}`}
               variant="outlined"
               sx={{
                 alignItems: "center",
@@ -35,18 +35,12 @@ export default async function SchedulePage() {
               }}
             >
               <Typography color="secondary" variant="h6">
-                {event
-                  ? new Intl.DateTimeFormat("en", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      timeZone: event.timeZone,
-                    }).format(new Date(slot.startsAt))
-                  : ""}
+                {slot.startsAt}
               </Typography>
               <Box>
-                <Typography variant="h3">{slot.displayName}</Typography>
+                <Typography variant="h3">{slot.title}</Typography>
                 <Typography color="text.secondary">
-                  {slot.durationMinutes} minutes · {slot.description}
+                  {slot.originalArtist ? `Originally by ${slot.originalArtist} · ` : ""}{slot.durationMinutes} minutes
                 </Typography>
               </Box>
             </Paper>
