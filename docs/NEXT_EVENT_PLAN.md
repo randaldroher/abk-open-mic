@@ -64,7 +64,8 @@ while making the homepage an invitation to participate in the next event.
   positions. Record the approved song fields and source order for each event.
 - Add an overview and song-lineup page under `/past-events/<event-slug>` for
   each confirmed event, using the May 2026 presentation where appropriate.
-  Add both events to the archive index once their public content is approved.
+  Add both events to the archive index and homepage cards once their public
+  content is approved and their pages are available.
 - Give each event its own explicitly named server-only song-list fetcher and
   source mapping. Keep caches, fallback data, and freshness timestamps isolated
   by event so one event's failure cannot display another event's songs.
@@ -88,12 +89,17 @@ while making the homepage an invitation to participate in the next event.
 - Keep the workbook private with organizer-managed participant access. A link
   does not grant access; confirm the intended participants can sign up without
   changing the website service account's Viewer permissions.
-- Add **Join ABK Open Mic on Slack** as the secondary CTA, using the supplied
-  destination: <https://app.slack.com/huddle/T04EMK809EV/C091Y02RLJC>.
-  This is a huddle URL, not a verified channel-join invitation; confirm its
-  behavior and any workspace-membership requirement before release. Do not
-  silently substitute a guessed channel URL.
-- Include a less prominent link to Past events.
+- Add **Join ABK Open Mic on Slack** as the secondary CTA, using the confirmed
+  channel destination: <https://abk.slack.com/archives/C091Y02RLJC>.
+  Verify access for intended participants; the channel link does not grant
+  workspace membership.
+- Place a responsive Past events card section directly beneath the homepage
+  signup and Slack CTAs. Start with May 2026, then include the two earlier
+  events as their approved pages become available. Each card should show the
+  confirmed event title/date label and link to its overview, without invented
+  details or links to unpublished pages.
+- Keep these cards available without a live Sheets read, and include a less
+  prominent link to the full Past events archive.
 - Keep signup entirely in Google Sheets and discussion in Slack. Add no
   website forms, authentication, database, write endpoints, or Sheets writes.
 - Keep the homepage usable during historical Sheets outages. Linking to the
@@ -104,7 +110,7 @@ while making the homepage an invitation to participate in the next event.
 Before implementation is released, confirm:
 
 - The next-event signup destination, participant access, and approved homepage
-  copy; the intended Slack destination and CTA wording.
+  copy; access to the confirmed Slack channel and CTA wording.
 - May 2026 recording URLs and publication permissions.
 - The two earlier events' identities, source contracts, and public fields.
 - Existing May 2026 ranges remain suitable for public display. The archive
@@ -125,7 +131,9 @@ Implementation verification:
 - Use the test-and-build skill to run the existing lint, typecheck, tests,
   and credentialed production build; confirm actual content renders rather
   than relying on build success alone.
-- Browser-check the homepage CTAs, archive index, event pages, old-route
+- Browser-check the homepage CTAs and past-event cards beneath them, including
+  card destinations and availability during Sheets outages, plus the archive
+  index, event pages, old-route
   redirects, recording availability, event-specific navigation and freshness,
   mobile layout, keyboard access, and unavailable states.
 - Confirm that historical data failures do not block either homepage CTA and
