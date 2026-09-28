@@ -69,24 +69,32 @@ const theme = createTheme({
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           borderRadius: 12,
           minHeight: 44,
           padding: "10px 22px",
-        },
-        containedPrimary: ({ theme }) => ({
-          backgroundImage: `linear-gradient(110deg, ${theme.palette.primary.main}, #a5f3e5)`,
-          "&:hover": {
-            backgroundImage: "none",
-            backgroundColor: theme.palette.primary.light,
-          },
-        }),
-        containedSecondary: ({ theme }) => ({
-          backgroundImage: `linear-gradient(110deg, ${theme.palette.secondary.main}, ${theme.palette.info.main})`,
-          "&:hover": {
-            backgroundImage: "none",
-            backgroundColor: theme.palette.secondary.light,
-          },
+          variants: [
+            {
+              props: { variant: "contained", color: "primary", disabled: false },
+              style: {
+                backgroundImage: `linear-gradient(110deg, ${theme.palette.primary.main}, #a5f3e5)`,
+                "&:hover": {
+                  backgroundImage: "none",
+                  backgroundColor: theme.palette.primary.light,
+                },
+              },
+            },
+            {
+              props: { variant: "contained", color: "secondary", disabled: false },
+              style: {
+                backgroundImage: `linear-gradient(110deg, ${theme.palette.secondary.main}, ${theme.palette.info.main})`,
+                "&:hover": {
+                  backgroundImage: "none",
+                  backgroundColor: theme.palette.secondary.light,
+                },
+              },
+            },
+          ],
         }),
         outlined: ({ theme }) => ({
           borderColor: alpha(theme.palette.primary.main, 0.5),
