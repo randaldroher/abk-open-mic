@@ -16,7 +16,7 @@ export default async function Home() {
           border: 1,
           borderColor: "divider",
           position: "relative",
-          boxShadow: "0 24px 80px rgba(0, 0, 0, 0.25)",
+          boxShadow: "var(--abk-neon-glow)",
           overflow: "hidden",
           p: { xs: 3, sm: 5, md: 7 },
           "&::before": {
@@ -26,14 +26,24 @@ export default async function Home() {
             height: 4,
             backgroundImage: "var(--abk-accent-gradient)",
           },
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            pointerEvents: "none",
+            inset: "35% -20% -45% 25%",
+            backgroundImage: "var(--abk-grid)",
+            backgroundSize: "48px 48px",
+            transform: "perspective(400px) rotateX(55deg) rotateZ(-12deg)",
+            maskImage: "linear-gradient(110deg, transparent 20%, black)",
+          },
         }}
       >
-        <Stack spacing={3} sx={{ maxWidth: 720 }}>
+        <Stack spacing={3} sx={{ maxWidth: 720, position: "relative", zIndex: 1 }}>
           <Chip
             label="May 2026 historical preview"
             sx={{
               alignSelf: "flex-start",
-              color: "primary.light",
+              color: "primary.main",
             }}
           />
           <Box>
