@@ -19,8 +19,9 @@ is an earlier design reference, not the source of the active theme.
 
 ## Run locally
 
-Use Node.js 20.9 or later and npm. Configure the credentials below before
-starting the site.
+Use Node.js 22 or later and npm; the gear page uses `Map.groupBy`, which is
+not available in Node.js 20. Configure the credentials below before starting
+the site.
 
 ```bash
 npm ci

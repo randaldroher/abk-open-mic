@@ -10,8 +10,9 @@ description: Test, typecheck, lint, build, and browser-check the ABK Open Mic si
 1. Work from the repository root; read `AGENTS.md`, `package.json`, and the
    affected architecture before changing behavior. Use absolute repository
    paths when referring to files.
-2. Use Node.js 20.9 or later and `npm ci` to install the lockfile. Do not
-   upgrade dependencies or introduce a new test runner just to run checks.
+2. Use Node.js 22 or later and `npm ci` to install the lockfile. The gear page
+   uses `Map.groupBy`, which Node.js 20 lacks. Do not upgrade dependencies or
+   introduce a new test runner just to run checks.
 3. Before editing Next.js code, read the relevant installed docs under
    `node_modules/next/dist/docs/`. Check installed Next.js/MUI versions before
    changing providers or cache APIs.
