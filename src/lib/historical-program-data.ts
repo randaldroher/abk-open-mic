@@ -1,5 +1,6 @@
 import "server-only";
-import { cacheLife, io } from "next/cache";
+import { cacheLife } from "next/cache";
+import { connection } from "next/server";
 import { google } from "googleapis";
 import { buildHistoricalProgram } from "./historical-program";
 import { withLastKnownGood } from "./last-known-good";
@@ -78,6 +79,6 @@ async function readHistoricalProgram() {
 const loadHistoricalProgram = withLastKnownGood(readHistoricalProgram);
 
 export async function getHistoricalProgram() {
-  await io();
+  await connection();
   return loadHistoricalProgram();
 }
