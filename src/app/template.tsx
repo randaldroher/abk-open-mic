@@ -1,11 +1,7 @@
 import type { ReactNode } from "react";
-import { Box, Container, Typography } from "@mui/material";
-import LastUpdated from "@/components/last-updated";
-import { getHistoricalProgram } from "@/lib/historical-program-data";
+import { Box, Container } from "@mui/material";
 
-export default async function Template({ children }: { children: ReactNode }) {
-  const program = await getHistoricalProgram();
-
+export default function Template({ children }: { children: ReactNode }) {
   return (
     <>
       <Container component="main" maxWidth="lg" sx={{ flex: 1, py: { xs: 4, md: 7 } }}>
@@ -23,14 +19,7 @@ export default async function Template({ children }: { children: ReactNode }) {
         }}
       >
         <Container maxWidth="lg">
-          ABK Open Mic Night · May 2026 historical preview
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            {program ? (
-              <LastUpdated fetchedAt={program.fetchedAt} />
-            ) : (
-              "Last updated: unavailable"
-            )}
-          </Typography>
+          ABK Open Mic Night
         </Container>
       </Box>
     </>

@@ -50,10 +50,8 @@ function publicCell(value: string | undefined): string | null {
 }
 
 export function projectPastEventSongs(headers: string[], rows: string[][]): PastEventSong[] {
-  pastEventSongColumns(headers);
-  const songColumn = headers.findIndex((header) =>
-    ["song", "song title", "title"].includes(normalizeSheetHeader(header)),
-  );
+  const publicColumns = pastEventSongColumns(headers);
+  const songColumn = publicColumns[0];
   const artistColumn = headers.findIndex((header) =>
     ["artist", "original artist"].includes(normalizeSheetHeader(header)),
   );

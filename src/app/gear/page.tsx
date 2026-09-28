@@ -1,50 +1,5 @@
-import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
-import { getHistoricalProgram } from "@/lib/historical-program-data";
-import ProgramUnavailable from "@/components/program-unavailable";
+import { redirect } from "next/navigation";
 
-export default async function GearPage() {
-  const program = await getHistoricalProgram();
-  if (!program) {
-    return <ProgramUnavailable />;
-  }
-  const { gear } = program;
-  const categories = Map.groupBy(gear, ({ category }) => category);
-
-  return (
-    <Stack spacing={4}>
-      <Box sx={{ p: { xs: 3, sm: 4 }, borderRadius: 1, backgroundImage: "var(--abk-section-gradient)" }}>
-        <Typography variant="overline" color="secondary">
-          May 2026 historical preview
-        </Typography>
-        <Typography variant="h1">Gear</Typography>
-        <Typography color="text.secondary" sx={{ mt: 1 }}>
-          Equipment recorded for the performance. Open items were still being planned.
-        </Typography>
-      </Box>
-      {[...categories].map(([category, items]) => (
-        <Box component="section" key={category}>
-          <Typography variant="h2" sx={{ mb: 2, color: "info.main" }}>{category}</Typography>
-          <Stack spacing={1.5}>
-            {items.map((item) => (
-              <Paper component="article" key={`${category}-${item.name}-${item.owner}`} variant="outlined" sx={{ p: 2.5 }}>
-                <Stack spacing={1}>
-                  <Stack direction="row" sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
-                    <Typography variant="h3">{item.name}</Typography>
-                    {item.isTentative && <Chip color="warning" label="Open / tentative" size="small" />}
-                    {item.isShareable === true && <Chip color="primary" variant="outlined" label="Shareable" size="small" />}
-                  </Stack>
-                  {item.details && <Typography color="text.secondary">{item.details}</Typography>}
-                  {(item.owner || item.notes) && (
-                    <Typography color="text.secondary" variant="body2">
-                      {[item.owner ? `Provided by ${item.owner}` : null, item.notes].filter(Boolean).join(" · ")}
-                    </Typography>
-                  )}
-                </Stack>
-              </Paper>
-            ))}
-          </Stack>
-        </Box>
-      ))}
-    </Stack>
-  );
+export default function GearRedirect() {
+  redirect("/past-events/may-2026/gear");
 }

@@ -7,10 +7,11 @@ description: Fetch Google Sheets metadata and selected ranges read-only to inspe
 
 ## Boundaries
 
-- Read `AGENTS.md`, `docs/ARCHITECTURE.md`, and
-  `src/lib/historical-program-data.ts` first. The adapter owns the current
-  spreadsheet ID and ranges; `src/lib/historical-program.ts` owns the
-  positional mappings and validation for historical data only. These are not
+- Read `AGENTS.md`, `docs/ARCHITECTURE.md`, `src/lib/google-sheets.ts`, and
+  the relevant event adapter first. `google-sheets.ts` owns the current
+  spreadsheet ID; `src/lib/may-2026-program-data.ts` owns the May ranges and
+  `src/lib/historical-program.ts` owns its positional mappings and validation.
+  These are not
   a contract for signup data: new and existing planning tabs may change shape
   frequently as organizers iterate. Never assume any column will stay put.
 - Inspection is read-only and does not authorize publishing new data. Never
@@ -117,8 +118,8 @@ private planning findings without reproducing personal/contact details.
 Historical implementation reference only (rediscover headers before using any
 of these positions for planning data):
 
-- Compare the exact ranges in the adapter with the positional mappings in
-  `historical-program.ts`. The production agenda's open-ended `M95:W` range
+- Compare the exact May ranges in `may-2026-program-data.ts` with the positional
+  mappings in `historical-program.ts`. The production agenda's open-ended `M95:W` range
   includes a heading row; do not reintroduce a fixed production end row.
 - `values.get` does not expose the rich-link chip URI used for video references.
   If needed, use `spreadsheets.get` on only the reviewed J-column cells with

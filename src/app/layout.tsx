@@ -8,10 +8,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "ABK Open Mic Night",
-    template: "%s | ABK Open Mic Night",
+    default: "ABK Open Mic",
+    template: "%s | ABK Open Mic",
   },
-  description: "A historical overview of the ABK Open Mic May 2026 performance.",
+  description: "Sign up for the next ABK Open Mic or explore past event archives.",
 };
 
 export const viewport: Viewport = {

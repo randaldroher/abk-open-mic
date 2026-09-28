@@ -4,7 +4,6 @@ import { cacheLife } from "next/cache";
 import { getSheetsClient, SPREADSHEET_ID } from "./google-sheets";
 import { withLastKnownGood } from "./last-known-good";
 import {
-  normalizeSheetHeader,
   pastEventSongColumns,
   projectPastEventSongs,
   type PastEventSong,
