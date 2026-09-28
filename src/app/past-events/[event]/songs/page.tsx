@@ -79,7 +79,7 @@ async function SongCards({ event }: { event: string }) {
             <Stack spacing={2}>
               <Box>
                 <Typography variant="h3">
-                  <Box component="span" sx={{ color: 'primary.main', mr: 1 }}>
+                  <Box component="span" sx={{ color: 'secondary.main', mr: 1 }}>
                     {index + 1}.
                   </Box>
                   {song.title}
