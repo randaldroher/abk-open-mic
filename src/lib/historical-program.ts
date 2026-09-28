@@ -153,7 +153,7 @@ function songsInPerformanceOrder(songs: Song[], schedule: ScheduleEntry[]): Song
     const match = matches.find(
       (song) => entry.originalArtist !== null &&
         normalizedText(song.originalArtist) === normalizedText(entry.originalArtist),
-    ) ?? matches[0];
+    ) ?? (matches.length === 1 ? matches[0] : undefined);
 
     if (match) {
       ordered.push(match);

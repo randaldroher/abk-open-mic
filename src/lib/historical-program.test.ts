@@ -121,6 +121,19 @@ test("disambiguates duplicate song titles using normalized original artists", ()
   ]);
 });
 
+test("keeps signup order for duplicate titles when schedule artist matches none", () => {
+  const program = buildHistoricalProgram({
+    ...rows,
+    songsRows: [
+      ["Same Song", "First Artist"],
+      ["Same Song", "Second Artist"],
+    ],
+    scheduleRows: [["6:00", "Same Song", "Third Artist", "3", "6:03"]],
+  });
+
+  assert.deepEqual(program.songs.map((song) => song.originalArtist), ["First Artist", "Second Artist"]);
+});
+
 test("preserves signup order when no schedule entries match songs", () => {
   const program = buildHistoricalProgram({
     ...rows,
