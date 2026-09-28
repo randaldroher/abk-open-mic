@@ -65,7 +65,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: "#0d091b",
-          backgroundImage: "var(--abk-section-gradient)",
+          backgroundImage: "none",
         },
       },
     },
