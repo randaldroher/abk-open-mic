@@ -12,11 +12,20 @@ export default async function Home() {
       <Paper
         component="section"
         sx={{
-          background:
-            "linear-gradient(125deg, #082f49 0%, #0f766e 52%, #ff3dbb 112%)",
-          color: "common.white",
+          backgroundImage: "var(--abk-hero-gradient)",
+          border: 1,
+          borderColor: "divider",
+          position: "relative",
+          boxShadow: "0 24px 80px rgba(0, 0, 0, 0.25)",
           overflow: "hidden",
           p: { xs: 3, sm: 5, md: 7 },
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: "0 0 auto",
+            height: 4,
+            backgroundImage: "var(--abk-accent-gradient)",
+          },
         }}
       >
         <Stack spacing={3} sx={{ maxWidth: 720 }}>
@@ -24,18 +33,17 @@ export default async function Home() {
             label="May 2026 historical preview"
             sx={{
               alignSelf: "flex-start",
-              bgcolor: "rgba(255,255,255,0.14)",
-              color: "common.white",
+              color: "primary.light",
             }}
           />
           <Box>
-            <Typography variant="overline" sx={{ color: "info.light" }}>
+            <Typography variant="overline" sx={{ color: "primary.main" }}>
               A night of live music from ABK colleagues
             </Typography>
             <Typography variant="h1" sx={{ mt: 1, mb: 2 }}>
               {program.title}
             </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.88 }}>
+            <Typography variant="h6" sx={{ fontWeight: 400, color: "text.secondary", maxWidth: 600 }}>
               A look back at songs, running order, and equipment from the May 2026 performance.
             </Typography>
           </Box>
@@ -50,7 +58,6 @@ export default async function Home() {
             <Button
               href="/songs"
               variant="outlined"
-              sx={{ borderColor: "rgba(255,255,255,0.65)", color: "white" }}
             >
               Browse songs
             </Button>
@@ -71,16 +78,18 @@ export default async function Home() {
           {
             label: "Performance window",
             value: `${program.schedule[0].startsAt}–${program.schedule.at(-1)?.endsAt} ${program.timeZone}`,
+            color: "primary.main",
           },
-          { label: "Songs", value: `${program.songs.length} performed songs` },
+          { label: "Songs", value: `${program.songs.length} performed songs`, color: "secondary.main" },
           {
             label: "Performers",
             value: `${performerCount} participants`,
+            color: "info.main",
           },
-          { label: "Equipment", value: `${program.gear.length} recorded items` },
-        ].map(({ label, value }) => (
-          <Paper key={label} variant="outlined" sx={{ p: 3 }}>
-            <Typography color="text.secondary" variant="overline">
+          { label: "Equipment", value: `${program.gear.length} recorded items`, color: "primary.main" },
+        ].map(({ label, value, color }) => (
+          <Paper key={label} variant="outlined" sx={{ p: 3, borderTop: 2, borderTopColor: color }}>
+            <Typography color={color} variant="overline">
               {label}
             </Typography>
             <Typography variant="h6" sx={{ mt: 1 }}>
@@ -90,7 +99,7 @@ export default async function Home() {
         ))}
       </Box>
 
-      <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 4 } }}>
+      <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 4 }, backgroundImage: "var(--abk-section-gradient)" }}>
         <Typography variant="h2" gutterBottom>
           Historical preview
         </Typography>
