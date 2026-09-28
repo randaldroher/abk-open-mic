@@ -3,9 +3,11 @@ import test from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import PastEventCards from "../components/past-event-cards";
+import SiteNavigation from "../components/site-navigation";
 import SongCardsSkeleton from "../components/song-cards-skeleton";
 import SiteFrame from "../components/site-frame";
 import { PAST_EVENTS } from "./past-events";
+import { SIGNUP_URL } from "./site-links";
 
 test("event cards render every archive with decorative Material SVG arrows", () => {
   const html = renderToStaticMarkup(createElement(PastEventCards));
@@ -44,4 +46,11 @@ test("site frame renders content independently of optional freshness metadata", 
 
   const home = renderToStaticMarkup(SiteFrame({ children: content }));
   assert.ok(!home.includes("Last updated"));
+});
+
+test("site navigation includes the spreadsheet signup action", () => {
+  const html = renderToStaticMarkup(createElement(SiteNavigation));
+
+  assert.ok(html.includes(`href="${SIGNUP_URL.replaceAll("&", "&amp;")}"`));
+  assert.ok(html.includes(">Sign up</a>"));
 });

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import PastEventCards from "@/components/past-event-cards";
 import SiteFrame from "@/components/site-frame";
-
-const SIGNUP_URL = "https://docs.google.com/spreadsheets/d/17jHvnjnWp5x6lne5SrOMFQBtISrYMeo7o0jethdRKHA/edit#gid=1747009845";
-const SLACK_URL = "https://abk.slack.com/archives/C091Y02RLJC";
+import { SIGNUP_URL, SLACK_URL } from "@/lib/site-links";
 
 export const metadata: Metadata = {
   title: "Join the next ABK Open Mic",
@@ -60,9 +59,19 @@ export default function Home() {
               href={SIGNUP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              variant="contained"
+              variant="outlined"
               color="secondary"
               size="large"
+              sx={(theme) => ({
+                borderWidth: 2,
+                backgroundImage: `linear-gradient(110deg, ${alpha(theme.palette.secondary.main, 0.12)}, ${alpha(theme.palette.info.main, 0.08)})`,
+                boxShadow: `0 0 22px ${alpha(theme.palette.secondary.main, 0.12)}`,
+                "&:hover": {
+                  borderWidth: 2,
+                  backgroundImage: `linear-gradient(110deg, ${alpha(theme.palette.secondary.main, 0.18)}, ${alpha(theme.palette.info.main, 0.12)})`,
+                  boxShadow: `0 0 28px ${alpha(theme.palette.secondary.main, 0.2)}`,
+                },
+              })}
             >
               Sign up in the spreadsheet
             </Button>

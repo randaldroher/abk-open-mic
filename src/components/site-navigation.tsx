@@ -1,4 +1,5 @@
-import { AppBar, Box, Container, Link as MuiLink, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Container, Link as MuiLink, Toolbar, Typography } from "@mui/material";
+import { SIGNUP_URL } from "@/lib/site-links";
 
 const navigation = [
   { label: "Past events", href: "/past-events" },
@@ -45,6 +46,18 @@ export default function SiteNavigation() {
                 {label}
               </MuiLink>
             ))}
+            <Button
+              component="a"
+              href={SIGNUP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="outlined"
+              color="secondary"
+              size="small"
+              sx={{ px: { xs: 1.5, sm: 2 }, whiteSpace: "nowrap" }}
+            >
+              Sign up
+            </Button>
           </Box>
         </Toolbar>
       </Container>
