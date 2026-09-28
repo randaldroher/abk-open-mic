@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import PastEventCards from "@/components/past-event-cards";
 import SiteFrame from "@/components/site-frame";
 import { SIGNUP_URL, SLACK_URL } from "@/lib/site-links";
@@ -62,16 +61,16 @@ export default function Home() {
               variant="outlined"
               color="secondary"
               size="large"
-              sx={(theme) => ({
+              sx={{
                 borderWidth: 2,
-                backgroundImage: `linear-gradient(110deg, ${alpha(theme.palette.secondary.main, 0.12)}, ${alpha(theme.palette.info.main, 0.08)})`,
-                boxShadow: `0 0 22px ${alpha(theme.palette.secondary.main, 0.12)}`,
+                backgroundImage: "linear-gradient(110deg, rgba(255, 77, 202, 0.12), rgba(172, 128, 255, 0.08))",
+                boxShadow: "0 0 22px rgba(255, 77, 202, 0.12)",
                 "&:hover": {
                   borderWidth: 2,
-                  backgroundImage: `linear-gradient(110deg, ${alpha(theme.palette.secondary.main, 0.18)}, ${alpha(theme.palette.info.main, 0.12)})`,
-                  boxShadow: `0 0 28px ${alpha(theme.palette.secondary.main, 0.2)}`,
+                  backgroundImage: "linear-gradient(110deg, rgba(255, 77, 202, 0.18), rgba(172, 128, 255, 0.12))",
+                  boxShadow: "0 0 28px rgba(255, 77, 202, 0.2)",
                 },
-              })}
+              }}
             >
               Sign up in the spreadsheet
             </Button>
