@@ -1,10 +1,10 @@
-# Historical website status and next-event planning
+# ABK Open Mic website status
 
-## Historical milestone — implemented
+## May 2026 archive — implemented
 
-The site now presents the May 2026 performance on Overview, Schedule, Songs,
+The site presents the May 2026 performance on event overview, Schedule, Songs,
 and Gear pages. It reads selected ranges from the private Google Sheet live,
-not a curated snapshot waiting for a Sheets integration.
+not a frozen snapshot.
 
 Delivered in the current source:
 
@@ -15,8 +15,8 @@ Delivered in the current source:
 - Running order including operational entries, song credits and YouTube
   embeds, and categorized gear with ownership/sharing/open needs.
 - Brand-link home navigation without a separate Overview item.
-- A footer reporting the last successful fetch as client-relative time, with
-  the original timestamp preserved during read failures.
+- Event-scoped reporting of the last successful fetch as client-relative time,
+  with the original timestamp preserved during read failures.
 - Unit tests for historical parsing, selected invalid inputs, agenda headers
   and appended entries, video links, fallback timestamp preservation, and
   relative-time formatting. Synthetic data is confined to tests.
@@ -26,26 +26,34 @@ cache semantics. Do not treat the original plan as evidence that chronological
 validation, browser automation, or general contact-detail
 redaction exist. Live historical publication is range-based, not flag-based.
 
-## Next planning pass — not implemented
+## Next-event invitation and past events — implemented
 
-1. **Inspect, do not publish.** Use the
-   [spreadsheet inspection skill](../.github/skills/inspect-spreadsheet/SKILL.md)
-   to rediscover relevant normalized column headers; signup layouts can change
-   frequently, so do not rely on fixed positions. Summarize structure and gaps, not
-   private rows; do not change the sheet or application ranges.
-2. **Confirm the event.** Ask organizers for title, date, time zone, venue,
-   ownership, and which tabs are intended for the next event. Do not infer
-   these from the historical clock times or newly discovered draft tabs.
-3. **Agree on publication.** Identify public fields and consent, separate
-   contacts/private notes, choose how drafts stay unpublished, and decide
-   whether history remains available.
-4. **Define the migration.** Plan adapter/model/UI changes, event selection,
-   preview isolation, schedule validation, and acceptable
-   refresh/outage behavior after the source contract is agreed.
-5. **Verify before switching.** Add focused synthetic regression cases for the
-   agreed contract and privacy boundaries; use the
-   [test-and-build skill](../.github/skills/test-and-build/SKILL.md) for release
-   checks and browser verification. Confirm the intended data actually renders.
+- The homepage links to the signup tab in the organizer spreadsheet and the
+  confirmed ABK Open Mic Slack channel. It does not read signup data.
+- The responsive homepage cards and `/past-events` index link to July 2025,
+  December 2025, and May 2026 archive overviews without depending on Sheets.
+- July and December song pages read only the approved song, artist (when
+  present), and performer-role columns, located by normalized headers on each
+  read. Private notes and contact columns are not fetched.
+- Event reads have isolated caches, last-known-good fallbacks, and freshness
+  timestamps. Video sections are placeholders pending approved video URLs.
+- The May 2026 adapter is named specifically for that event. Former
+  `/songs`, `/schedule`, and `/gear` routes redirect to its archive pages.
 
-The next-event implementation and operational deployment checks remain future
-work. This document does not authorize importing or publishing planning data.
+The May archive remains a live view of its historical source, not an immutable
+snapshot. The homepage and archive index remain available through Sheets
+outages. The next-event form, title, date, and venue have not been implemented;
+organizers continue to manage signup in Google Sheets.
+
+## Remaining planning and operations
+
+1. Confirm next-event title, date, time zone, venue, and other details before
+   adding them to public homepage copy.
+2. Supply organizer-approved event video URLs and permission in a future
+   change. Current song-reference links are labeled separately and are not
+   represented as recordings of the performances.
+3. Resolve any future next-event data display with an explicit publication
+   boundary and preview isolation before reading signup-tab content.
+4. Use the [test-and-build skill](../.github/skills/test-and-build/SKILL.md)
+   for release checks and browser verification. Hosting and participant access
+   remain operational settings.

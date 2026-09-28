@@ -1,50 +1,16 @@
 import "server-only";
 import { cache } from "react";
 import { cacheLife } from "next/cache";
-import { google } from "googleapis";
 import { buildHistoricalProgram } from "./historical-program";
+import { getSheetsClient, SPREADSHEET_ID } from "./google-sheets";
 import { withLastKnownGood } from "./last-known-good";
 
-const SPREADSHEET_ID = "17jHvnjnWp5x6lne5SrOMFQBtISrYMeo7o0jethdRKHA";
-const READ_ONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly";
-
-function serviceAccountCredentials() {
-  const rawCredentials = process.env.SHEETS_SERVICE_ACCOUNT;
-  if (!rawCredentials) {
-    throw new Error("Sheets service account is not configured");
-  }
-
-  try {
-    const credentials: unknown = JSON.parse(rawCredentials);
-    if (
-      typeof credentials !== "object" ||
-      credentials === null ||
-      !("client_email" in credentials) ||
-      !("private_key" in credentials) ||
-      typeof credentials.client_email !== "string" ||
-      typeof credentials.private_key !== "string"
-    ) {
-      throw new Error("Invalid credentials");
-    }
-    return {
-      client_email: credentials.client_email,
-      private_key: credentials.private_key,
-    };
-  } catch {
-    throw new Error("Sheets service account is not configured");
-  }
-}
-
-async function readHistoricalProgram() {
+async function readMay2026Program() {
   "use cache";
 
   cacheLife("minutes");
 
-  const auth = new google.auth.GoogleAuth({
-    credentials: serviceAccountCredentials(),
-    scopes: [READ_ONLY_SCOPE],
-  });
-  const sheets = google.sheets({ version: "v4", auth });
+  const sheets = getSheetsClient();
   const [rowsResponse, linksResponse] = await Promise.all([
     sheets.spreadsheets.values.batchGet({
       spreadsheetId: SPREADSHEET_ID,
@@ -77,6 +43,6 @@ async function readHistoricalProgram() {
   return { ...program, fetchedAt: new Date().toISOString() };
 }
 
-const loadHistoricalProgram = withLastKnownGood(readHistoricalProgram);
+const loadMay2026Program = withLastKnownGood(readMay2026Program);
 
-export const getHistoricalProgram = cache(loadHistoricalProgram);
+export const getMay2026Program = cache(loadMay2026Program);

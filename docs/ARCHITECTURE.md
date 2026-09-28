@@ -2,10 +2,11 @@
 
 ## Current scope
 
-The implemented site is a public, read-only historical preview of the May 2026
-performance for colleagues from Activision, Blizzard, and King. It reads live
-data from selected ranges of a private Google Sheet; it is not a frozen
-snapshot or a next-event registration system.
+The public, read-only site invites colleagues from Activision, Blizzard, and
+King to participate in the next ABK Open Mic and archives the July 2025,
+December 2025, and May 2026 events. Archive data is read live from approved
+fields in a private Google Sheet; it is not a frozen snapshot. The signup link
+points to the Future tab, but the website does not read or publish its contents.
 
 There are no website accounts, authentication, authorization, database, write
 endpoints, Server Actions, or sign-up forms. Organizers edit Google Sheets
@@ -16,10 +17,10 @@ outside the site. Everything rendered is visible to anyone on the internet.
 ```text
 Public browser (MUI presentation)
   -> Next.js App Router Server Components
-    -> server-only historical-program-data.ts
+    -> server-only, event-specific Google Sheets adapters
       -> Google Sheets API (viewer service account, read-only scope)
-      -> historical-program.ts validation and public projection
-    -> cached HistoricalProgram / instance-local last-known-good fallback
+      -> event-specific validation and public projection
+    -> event-isolated cache / instance-local last-known-good fallback
 ```
 
 The application uses TypeScript, Cache Components (`cacheComponents: true`),
@@ -30,7 +31,8 @@ must never reach client components.
 
 ## Current spreadsheet contract
 
-`src/lib/historical-program-data.ts` owns the spreadsheet ID and these ranges:
+`src/lib/google-sheets.ts` owns the spreadsheet ID and read-only service-account
+client. The May 2026 adapter at `src/lib/may-2026-program-data.ts` reads:
 
 | Range | Use |
 | --- | --- |
@@ -47,6 +49,15 @@ the adapter does not auto-discover columns. New signup data may change shape
 frequently. Inspect normalized headers afresh rather than assuming any column
 stays put, and review the adapter before changing its source layout.
 
+The July and December 2025 adapters read the first row of each confirmed
+timetable tab to locate normalized song, artist, and performer-role headers.
+They then request only those selected public columns, stopping at the first
+blank row in the song table. July has no artist column; December does. The
+projection excludes other columns and treats the `<Open>` performer marker as
+unassigned. Missing or malformed song tables are unavailable rather than
+partially published. These event-specific reads and their last-known-good
+fallbacks are isolated from one another and from May 2026.
+
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
 schedule entries, and grouped gear. It skips recognized schedule headings and
 the song signup-closed marker, validates required text, clock-time shapes,
@@ -61,15 +72,21 @@ Gear retains sharing availability and tentative/open items.
 
 ## Publication and privacy
 
-Performer-name consent has been confirmed for the historical site. This is not
-permission to publish contact details, private planning notes, or new photos.
+Publication of the July and December 2025 event song lineups has been approved,
+as has the existing May 2026 historical site. This is not permission to publish
+contact details, private planning notes, or new photos.
 
-**The live historical adapter has no `published` flag.** Its
+**The May 2026 adapter has no `published` flag.** Its
 publication boundary is the selected historical ranges and projected columns.
 Organizers must keep those cells suitable for public display, including gear
 details and notes. Text validation rejects whole-cell email addresses; it is
 not a general detector for embedded emails, phone numbers, or private prose.
 Do not describe inspection or parsing as automatic anonymization.
+
+The 2025 adapters publish only song titles, available original-artist credits,
+and assigned performers in recognized role columns. Contact and note columns
+are not fetched for those archives. The next-event signup tab is linked to
+directly but is never read by the site.
 
 Keep the spreadsheet private and grant the service account Viewer access.
 Use only `https://www.googleapis.com/auth/spreadsheets.readonly`. Store
@@ -80,13 +97,13 @@ intended for sharing, public logs, or client bundles.
 
 ## Rendering, caching, and failures
 
-The server adapter caches the validated public program with `use cache` and
+The May server adapter caches the validated public program with `use cache` and
 `cacheLife("minutes")`: one-minute server revalidation, five-minute client
 stale time, and one-hour expiry. Refresh is request-driven; the first request
 after the revalidation interval may receive the previous result while a
 background refresh runs. This is not an immediate-publishing guarantee.
 
-`withLastKnownGood` keeps a best-effort in-memory copy per running instance.
+Each event uses `withLastKnownGood` to keep a best-effort in-memory copy per running instance.
 If a read or validation fails, that instance can return its last successful
 program. There is no durable/shared fallback or maximum fallback age; a new
 instance without successful data returns `null` and the pages show an
@@ -94,10 +111,10 @@ unavailable state. Do not promise freshness during an outage.
 
 The cached public result includes `fetchedAt`, assigned only after a successful
 Sheets read and validation. The last-known-good fallback retains this timestamp.
-React request memoization shares the same result between the page and footer.
-The server template passes only the timestamp to the footer's client component;
-using a template rather than the persistent layout keeps it aligned with route
-navigation. “Last updated” means last successful data fetch, not a sheet edit.
+React request memoization shares the same event result between a page and its
+event template. The homepage and archive index make no Sheets read and have no
+historical freshness indicator. Event pages show their own successful-fetch
+timestamp; “Last updated” means last successful data fetch, not a sheet edit.
 The initial HTML contains an ISO time; after hydration, the client shows
 relative minutes/hours/days and refreshes that label every 30 seconds. This
 timer does not poll Sheets or refresh page data. Without a successful result,
@@ -112,14 +129,24 @@ can render the unavailable state. Verify rendered content as well.
 
 | Route | Current behavior |
 | --- | --- |
-| `/` | Historical overview, summary counts, links to the other pages |
-| `/schedule` | Source-order running order with time, duration, and performer roles |
-| `/songs` | Song credits, performer roles, and available video embeds |
-| `/gear` | Equipment grouped by category, ownership, sharing, and open needs |
+| `/` | Next-event invitation, Future-tab signup and Slack links, past-event cards |
+| `/past-events` | Static archive index, independent of Sheets availability |
+| `/past-events/july-2025` | July 2025 overview and approved song lineup |
+| `/past-events/december-2025` | December 2025 overview and approved song lineup |
+| `/past-events/may-2026` | May 2026 overview, video placeholder, and lineup |
+| `/past-events/<event>/songs` | Event song lineup; May also retains approved song-reference embeds |
+| `/past-events/may-2026/schedule` | Source-order running order with time, duration, and performer roles |
+| `/past-events/may-2026/gear` | Equipment grouped by category, ownership, sharing, and open needs |
+| `/songs`, `/schedule`, `/gear` | Redirects to the corresponding May 2026 archive pages |
 
-The ABK Open Mic brand links home; navigation lists Schedule, Songs, and Gear,
-not a separate Overview item. MUI handles responsive layout and presentation.
-No exact event date or venue is invented.
+The ABK Open Mic brand links home; the footer says “ABK Open Mic” and places an
+event's successful-fetch metadata directly below the site name. Global
+navigation includes Past events.
+Archive pages use functional breadcrumbs to navigate the archive hierarchy.
+Songs, Schedule, and Gear are within the May 2026 event navigation. Event video
+sections show a placeholder before the song lineup until approved URLs are
+supplied. No next-event date or venue is invented. MUI handles responsive
+layout and presentation.
 
 ## Verification and operations
 
@@ -139,17 +166,18 @@ same hard-coded historical sheet; separate preview data is not implemented.
 
 ## Decisions before using next-event data
 
-1. Confirm the event title, date, time zone, venue, organizers, and source tabs.
+1. Confirm the next event's title, date, time zone, venue, organizers, and source tabs.
 2. Agree on public fields, performer consent, approved media, and retention.
    Keep contacts and private planning separate from public inputs.
 3. Choose an explicit draft/publication boundary and test it before connecting
    any next-event ranges.
 4. Decide whether to retain the historical view and how event selection and
    preview isolation should work.
-5. Agree on refresh delay and outage/stale-data handling; the current footer
+5. Agree on refresh delay and outage/stale-data handling; event freshness
    reports fetch age, not the source's edit time.
 6. Confirm production/preview access and browser checks before switching.
 
 Use the [spreadsheet inspection skill](../.github/skills/inspect-spreadsheet/SKILL.md)
 to gather facts read-only. Discovery never authorizes publication or a sheet
-write. See [the update status](WEBSITE_UPDATE_PLAN.md) for the next planning pass.
+write. See [the update status](WEBSITE_UPDATE_PLAN.md) for delivered work and
+remaining next-event data decisions.

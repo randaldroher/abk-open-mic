@@ -1,9 +1,7 @@
 import { AppBar, Box, Container, Link as MuiLink, Toolbar, Typography } from "@mui/material";
 
 const navigation = [
-  { label: "Songs", href: "/songs" },
-  { label: "Schedule", href: "/schedule" },
-  { label: "Gear", href: "/gear" },
+  { label: "Past events", href: "/past-events" },
 ];
 
 export default function SiteNavigation() {
