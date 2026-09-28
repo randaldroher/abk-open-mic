@@ -6,7 +6,7 @@ export default async function SongsPage() {
 
   return (
     <Stack spacing={3}>
-      <Box>
+      <Box sx={{ p: { xs: 3, sm: 4 }, borderRadius: 1, backgroundImage: "var(--abk-section-gradient)" }}>
         <Typography variant="overline" color="secondary">
           May 2026 historical preview
         </Typography>
@@ -17,7 +17,7 @@ export default async function SongsPage() {
       </Box>
       <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" } }}>
         {songs.map((song) => (
-          <Card key={song.title} variant="outlined">
+          <Card key={song.title} variant="outlined" sx={{ minWidth: 0, borderTop: 2, borderTopColor: "primary.main" }}>
             <CardContent sx={{ p: 3 }}>
               <Stack spacing={2}>
                 <Box>
@@ -32,7 +32,7 @@ export default async function SongsPage() {
                   )}
                 </Stack>
                 {song.videoEmbedUrl && (
-                  <Box sx={{ aspectRatio: "16 / 9" }}>
+                  <Box sx={{ aspectRatio: "16 / 9", borderRadius: 0.5, overflow: "hidden", bgcolor: "background.default" }}>
                     <iframe
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen

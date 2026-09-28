@@ -6,7 +6,7 @@ export default async function SchedulePage() {
 
   return (
     <Stack spacing={3}>
-      <Box>
+      <Box sx={{ p: { xs: 3, sm: 4 }, borderRadius: 1, backgroundImage: "var(--abk-section-gradient)" }}>
         <Typography variant="overline" color="secondary">
           May 2026 historical preview
         </Typography>
@@ -32,9 +32,11 @@ export default async function SchedulePage() {
                 gap: 2,
                 gridTemplateColumns: { xs: "1fr", sm: "120px 1fr" },
                 p: { xs: 2.5, sm: 3 },
+                borderLeft: 3,
+                borderLeftColor: slot.originalArtist ? "secondary.main" : "info.main",
               }}
             >
-              <Typography color="secondary" variant="h6">
+              <Typography color="secondary" variant="h6" sx={{ fontVariantNumeric: "tabular-nums" }}>
                 {slot.startsAt}
               </Typography>
               <Box>

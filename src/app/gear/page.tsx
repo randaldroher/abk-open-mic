@@ -7,7 +7,7 @@ export default async function GearPage() {
 
   return (
     <Stack spacing={4}>
-      <Box>
+      <Box sx={{ p: { xs: 3, sm: 4 }, borderRadius: 1, backgroundImage: "var(--abk-section-gradient)" }}>
         <Typography variant="overline" color="secondary">
           May 2026 historical preview
         </Typography>
@@ -18,7 +18,7 @@ export default async function GearPage() {
       </Box>
       {[...categories].map(([category, items]) => (
         <Box component="section" key={category}>
-          <Typography variant="h2" sx={{ mb: 2 }}>{category}</Typography>
+          <Typography variant="h2" sx={{ mb: 2, color: "info.main" }}>{category}</Typography>
           <Stack spacing={1.5}>
             {items.map((item) => (
               <Paper component="article" key={`${category}-${item.name}-${item.owner}`} variant="outlined" sx={{ p: 2.5 }}>
@@ -26,7 +26,7 @@ export default async function GearPage() {
                   <Stack direction="row" sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
                     <Typography variant="h3">{item.name}</Typography>
                     {item.isTentative && <Chip color="warning" label="Open / tentative" size="small" />}
-                    {item.isShareable === true && <Chip label="Shareable" size="small" />}
+                    {item.isShareable === true && <Chip color="primary" variant="outlined" label="Shareable" size="small" />}
                   </Stack>
                   {item.details && <Typography color="text.secondary">{item.details}</Typography>}
                   {(item.owner || item.notes) && (

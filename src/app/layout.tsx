@@ -34,6 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                 sx={{
                   borderTop: 1,
                   borderColor: "divider",
+                  backgroundImage: "var(--abk-section-gradient)",
                   color: "text.secondary",
                   py: 3,
                   textAlign: "center",
