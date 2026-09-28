@@ -59,7 +59,7 @@ async function SongCards({ event }: { event: string }) {
   return (
       <Box component="ol" sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" }, listStyle: "none", p: 0, m: 0 }}>
         {songs.map((song, index) => (
-          <Card component="li" key={`${song.title}-${index}`} variant="outlined" sx={{ minWidth: 0, borderTop: 2, borderTopColor: "primary.main" }}>
+          <Card component="li" key={`${song.title}-${index}`} variant="outlined" sx={{ minWidth: 0 }}>
             <CardContent sx={{ p: 3 }}>
               <Stack spacing={2}>
                 <Box>

@@ -4,7 +4,7 @@ export default function SongCardsSkeleton({ showReferences }: { showReferences: 
   return (
     <Box role="status" aria-label="Loading songs" sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" } }}>
       {Array.from({ length: 4 }, (_, index) => (
-        <Card key={index} variant="outlined" aria-hidden="true" sx={{ minWidth: 0, borderTop: 2, borderTopColor: "primary.main" }}>
+        <Card key={index} variant="outlined" aria-hidden="true" sx={{ minWidth: 0 }}>
           <CardContent sx={{ p: 3 }}>
             <Stack spacing={2}>
               <Box>

@@ -16,8 +16,8 @@ const theme = createTheme({
   shape: { borderRadius: 20 },
   typography: {
     fontFamily: "Arial, Helvetica, sans-serif",
-    h1: { fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 800, lineHeight: 1.08, letterSpacing: "-0.045em" },
-    h2: { fontSize: "clamp(1.65rem, 4vw, 2.5rem)", fontWeight: 700, letterSpacing: "-0.03em" },
+    h1: { fontSize: "clamp(2.25rem, 4.5vw, 3.5rem)", fontWeight: 800, lineHeight: 1.08, letterSpacing: "-0.045em" },
+    h2: { fontSize: "clamp(1.65rem, 3vw, 2.25rem)", fontWeight: 700, letterSpacing: "-0.03em" },
     h3: { fontSize: "1.35rem", fontWeight: 700, letterSpacing: "-0.015em" },
     h6: { fontWeight: 600, lineHeight: 1.5 },
     body1: { lineHeight: 1.75 },

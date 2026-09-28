@@ -46,7 +46,7 @@ export default function Home() {
       >
         <Stack spacing={3} sx={{ maxWidth: 760, position: "relative", zIndex: 1 }}>
           <Typography variant="overline" sx={{ color: "primary.main" }}>
-            Activision · Blizzard · King
+            Now taking song suggestions
           </Typography>
           <Box>
             <Typography variant="h1">Join the next ABK Open Mic</Typography>

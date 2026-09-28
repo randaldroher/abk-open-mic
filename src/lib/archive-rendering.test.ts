@@ -10,9 +10,11 @@ import { PAST_EVENTS } from "./past-events";
 test("event cards render every archive with decorative Material SVG arrows", () => {
   const html = renderToStaticMarkup(createElement(PastEventCards));
 
-  for (const { slug, label } of PAST_EVENTS) {
+  for (const { slug, label, theme } of PAST_EVENTS) {
     assert.ok(html.includes(`href="/past-events/${slug}/videos"`));
     assert.ok(html.includes(`aria-label="ABK Open Mic ${label}"`));
+    assert.ok(html.includes(label));
+    assert.ok(html.includes(theme));
   }
   assert.equal((html.match(/<svg /g) ?? []).length, 3);
   assert.equal((html.match(/aria-hidden="true"/g) ?? []).length, 3);
