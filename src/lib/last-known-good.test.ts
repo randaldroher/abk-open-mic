@@ -20,10 +20,10 @@ test("serves the last successful result on read or validation failure and recove
   assert.equal(await load(), "updated");
 });
 
-test("throws when no successful result is available", async () => {
+test("returns unavailable when no successful result is available", async () => {
   const load = withLastKnownGood(async () => {
     throw new Error("Sheets unavailable");
   });
 
-  await assert.rejects(load(), /Sheets unavailable/);
+  assert.equal(await load(), null);
 });

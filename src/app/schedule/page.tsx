@@ -1,8 +1,13 @@
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import { getHistoricalProgram } from "@/lib/historical-program-data";
+import ProgramUnavailable from "@/components/program-unavailable";
 
 export default async function SchedulePage() {
-  const { schedule, timeZone } = await getHistoricalProgram();
+  const program = await getHistoricalProgram();
+  if (!program) {
+    return <ProgramUnavailable />;
+  }
+  const { schedule, timeZone } = program;
 
   return (
     <Stack spacing={3}>

@@ -1,4 +1,4 @@
-export function withLastKnownGood<T>(load: () => Promise<T>): () => Promise<T> {
+export function withLastKnownGood<T>(load: () => Promise<T>): () => Promise<T | null> {
   let lastKnownGood: T | undefined;
 
   return async () => {
@@ -6,11 +6,8 @@ export function withLastKnownGood<T>(load: () => Promise<T>): () => Promise<T> {
       const data = await load();
       lastKnownGood = data;
       return data;
-    } catch (error) {
-      if (lastKnownGood !== undefined) {
-        return lastKnownGood;
-      }
-      throw error;
+    } catch {
+      return lastKnownGood ?? null;
     }
   };
 }
