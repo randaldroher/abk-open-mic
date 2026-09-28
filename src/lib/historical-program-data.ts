@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife } from "next/cache";
 import { google } from "googleapis";
 import { buildHistoricalProgram } from "./historical-program";
+import { withLastKnownGood } from "./last-known-good";
 
 const SPREADSHEET_ID = "17jHvnjnWp5x6lne5SrOMFQBtISrYMeo7o0jethdRKHA";
 const READ_ONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly";
@@ -33,10 +34,10 @@ function serviceAccountCredentials() {
   }
 }
 
-export async function getHistoricalProgram() {
+async function readHistoricalProgram() {
   "use cache";
 
-  cacheLife("hours");
+  cacheLife("minutes");
 
   const auth = new google.auth.GoogleAuth({
     credentials: serviceAccountCredentials(),
@@ -73,3 +74,5 @@ export async function getHistoricalProgram() {
     gearRows: gear?.values ?? [],
   });
 }
+
+export const getHistoricalProgram = withLastKnownGood(readHistoricalProgram);
