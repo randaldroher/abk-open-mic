@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cacheLife } from "next/cache";
 import { google } from "googleapis";
 import { buildHistoricalProgram } from "./historical-program";
@@ -68,15 +69,14 @@ async function readHistoricalProgram() {
     videoCells[index]?.values?.[0]?.chipRuns?.[0]?.chip?.richLinkProperties?.uri ?? "",
   ]);
 
-  return buildHistoricalProgram({
+  const program = buildHistoricalProgram({
     songsRows,
     scheduleRows: schedule?.values ?? [],
     gearRows: gear?.values ?? [],
   });
+  return { ...program, fetchedAt: new Date().toISOString() };
 }
 
 const loadHistoricalProgram = withLastKnownGood(readHistoricalProgram);
 
-export async function getHistoricalProgram() {
-  return loadHistoricalProgram();
-}
+export const getHistoricalProgram = cache(loadHistoricalProgram);

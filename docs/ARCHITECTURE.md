@@ -42,15 +42,17 @@ must never reach client components.
 Values are read as formatted rows; rich-link metadata is read separately.
 The agenda starts at a recognized header row and deliberately has no end-row
 limit so appended performances are included. Song and gear ranges are still
-bounded. Tab names, ranges, and positional column mappings are a contract,
-not auto-discovery; review them before changing spreadsheet layout.
+bounded. These positional mappings describe only the historical source;
+the adapter does not auto-discover columns. New signup data may change shape
+frequently. Inspect normalized headers afresh rather than assuming any column
+stays put, and review the adapter before changing its source layout.
 
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
 schedule entries, and grouped gear. It skips recognized schedule headings and
 the song signup-closed marker, validates required text, clock-time shapes,
 duration bounds, and gear categories, and rejects an empty songs/schedule/gear
 collection. It preserves source order; it does not validate chronological
-ordering, overlaps, or act references. Times are historical clock strings,
+ordering or overlaps. Times are historical clock strings,
 with the program labeled `America/Los_Angeles`, not full dated timestamps.
 The title and time zone are currently fixed in the parser.
 
@@ -62,17 +64,12 @@ Gear retains sharing availability and tentative/open items.
 Performer-name consent has been confirmed for the historical site. This is not
 permission to publish contact details, private planning notes, or new photos.
 
-**The live historical adapter has no `published` flag or draft filter.** Its
+**The live historical adapter has no `published` flag.** Its
 publication boundary is the selected historical ranges and projected columns.
 Organizers must keep those cells suitable for public display, including gear
-details and notes. The text filter rejects whole-cell email addresses; it is
+details and notes. Text validation rejects whole-cell email addresses; it is
 not a general detector for embedded emails, phone numbers, or private prose.
 Do not describe inspection or parsing as automatic anonymization.
-
-The earlier Events/Acts/Schedule model in `program.ts`, its synthetic fixture,
-and `program-data.ts` remain as unused scaffold code with tests. Their
-publication filtering does not protect the current historical routes and is
-not a committed schema for the next event.
 
 Keep the spreadsheet private and grant the service account Viewer access.
 Use only `https://www.googleapis.com/auth/spreadsheets.readonly`. Store
@@ -93,8 +90,18 @@ background refresh runs. This is not an immediate-publishing guarantee.
 If a read or validation fails, that instance can return its last successful
 program. There is no durable/shared fallback or maximum fallback age; a new
 instance without successful data returns `null` and the pages show an
-unavailable state. The UI does not currently show a last-updated timestamp.
-Do not promise freshness during an outage.
+unavailable state. Do not promise freshness during an outage.
+
+The cached public result includes `fetchedAt`, assigned only after a successful
+Sheets read and validation. The last-known-good fallback retains this timestamp.
+React request memoization shares the same result between the page and footer.
+The server template passes only the timestamp to the footer's client component;
+using a template rather than the persistent layout keeps it aligned with route
+navigation. “Last updated” means last successful data fetch, not a sheet edit.
+The initial HTML contains an ISO time; after hydration, the client shows
+relative minutes/hours/days and refreshes that label every 30 seconds. This
+timer does not poll Sheets or refresh page data. Without a successful result,
+the footer shows “Last updated: unavailable”.
 
 Production prerendering attempts Sheets reads, so a meaningful release build
 needs working credentials, Viewer access, and network access to Google auth
@@ -109,22 +116,22 @@ can render the unavailable state. Verify rendered content as well.
 | `/schedule` | Source-order running order with time, duration, and performer roles |
 | `/songs` | Song credits, performer roles, and available video embeds |
 | `/gear` | Equipment grouped by category, ownership, sharing, and open needs |
-| `/acts` | Redirect to `/songs` |
 
 The ABK Open Mic brand links home; navigation lists Schedule, Songs, and Gear,
 not a separate Overview item. MUI handles responsive layout and presentation.
-There are no lineup filters or invented exact event date/venue.
+No exact event date or venue is invented.
 
 ## Verification and operations
 
 Use the [test-and-build skill](../.github/skills/test-and-build/SKILL.md).
 Existing unit tests cover historical projection, selected invalid inputs,
-YouTube references, agenda headers/appended entries, last-known-good behavior,
-and the legacy synthetic publication model. There is no automated browser
+YouTube references, agenda headers/appended entries, last-known-good timestamp
+preservation, and relative-time formatting. Synthetic data exists only in tests.
+There is no automated browser
 suite or end-to-end live Sheets/cache-refresh test.
 
 For releases, run lint, typecheck, tests, and a credentialed build; manually
-verify routes, redirects, mobile layout, keyboard navigation, unavailable
+verify routes, mobile layout, keyboard navigation, footer freshness, unavailable
 states, and that private fields do not reach rendered output. Hosting secrets,
 preview isolation, API access, and quota monitoring are operational settings,
 not guarantees provided by this repository. Preview builds currently use the
@@ -136,10 +143,11 @@ same hard-coded historical sheet; separate preview data is not implemented.
 2. Agree on public fields, performer consent, approved media, and retention.
    Keep contacts and private planning separate from public inputs.
 3. Choose an explicit draft/publication boundary and test it before connecting
-   any next-event ranges. Do not assume the legacy schema is adopted.
+   any next-event ranges.
 4. Decide whether to retain the historical view and how event selection and
    preview isolation should work.
-5. Agree on refresh delay, outage/stale-data handling, and freshness labeling.
+5. Agree on refresh delay and outage/stale-data handling; the current footer
+   reports fetch age, not the source's edit time.
 6. Confirm production/preview access and browser checks before switching.
 
 Use the [spreadsheet inspection skill](../.github/skills/inspect-spreadsheet/SKILL.md)
