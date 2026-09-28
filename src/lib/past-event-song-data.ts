@@ -16,8 +16,8 @@ export type PastEventSongs = {
 };
 
 const EVENT_SHEETS = {
-  july2025: { tab: "Time Table (Jul 2025)", title: "ABK Open Mic — July 2025" },
-  december2025: { tab: "Time Table (Dec 2025)", title: "ABK Open Mic — December 2025" },
+  july2025: { tab: "Time Table (Jul 2025)", title: "ABK Open Mic July 2025" },
+  december2025: { tab: "Time Table (Dec 2025)", title: "ABK Open Mic December 2025" },
 } as const;
 
 function columnLetter(index: number): string {

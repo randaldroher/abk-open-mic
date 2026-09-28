@@ -9,8 +9,9 @@ Future tab, but the website does not read or publish that tab.
 
 - `/`: next-event invitation with signup and Slack calls to action, plus archive cards.
 - `/past-events`: archive index.
-- `/past-events/july-2025`, `/past-events/december-2025`, `/past-events/may-2026`: event archive pages.
-- `/songs`, `/schedule`, `/gear`: redirects to the May 2026 archive routes.
+- `/past-events/july-2025`, `/past-events/december-2025`, `/past-events/may-2026`: redirect to each event's Videos tab.
+- `/past-events/<event>/videos` and `/past-events/<event>/songs`: archive tabs sharing an event header; May songs follow performance order.
+- `/songs`: redirects to the May 2026 Songs tab. Schedule and gear pages have been removed.
 
 Read the [current architecture](docs/ARCHITECTURE.md) for data, publication, and
 cache boundaries, and the [website update status](docs/WEBSITE_UPDATE_PLAN.md)
@@ -19,9 +20,8 @@ Synthetic data is confined to tests.
 
 ## Run locally
 
-Use Node.js 22 or later and npm; the gear page uses `Map.groupBy`, which is
-not available in Node.js 20. Configure the credentials below before starting
-the site.
+Use Node.js 22 or later and npm. Configure the credentials below before
+starting the site.
 
 ```bash
 npm ci

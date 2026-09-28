@@ -8,6 +8,129 @@ const rows = {
   gearRows: [["Backline", "PA", "Speaker", "Owner", "Yes", "Public note"]],
 };
 
+test("uses the May event title without a dash", () => {
+  assert.equal(buildHistoricalProgram(rows).title, "ABK Open Mic May 2026");
+});
+
+test("orders songs by schedule source order without adding operational entries or mutating inputs", () => {
+  const input = {
+    ...rows,
+    songsRows: [
+      ["Finale", "Artist"],
+      ["Opening", "Artist"],
+      ["Middle", "Artist"],
+    ],
+    scheduleRows: [
+      ["Start Time", "Song Title", "Artist", "Duration (minutes)", "End Time"],
+      ["1:00", "Setup", "", "120", "3:00"],
+      ["11:00", "Opening", "Artist", "3", "11:03", "Opening singer"],
+      ["11:03", "Break", "", "10", "11:13"],
+      ["12:00", "Middle", "Artist", "3", "12:03"],
+      ["1:00", "Finale", "Artist", "3", "1:03"],
+      ["1:03", "Teardown", "", "30", "1:33"],
+    ],
+  };
+  const original = structuredClone(input);
+  const program = buildHistoricalProgram(input);
+
+  assert.deepEqual(program.songs.map((song) => song.title), ["Opening", "Middle", "Finale"]);
+  assert.deepEqual(program.schedule.map((entry) => entry.title), [
+    "Setup", "Opening", "Break", "Middle", "Finale", "Teardown",
+  ]);
+  assert.deepEqual(program.schedule[1], {
+    startsAt: "11:00",
+    endsAt: "11:03",
+    title: "Opening",
+    originalArtist: "Artist",
+    durationMinutes: 3,
+    performers: [{ role: "Vocal", performers: ["Opening singer"] }],
+  });
+  assert.deepEqual(input, original);
+});
+
+test("keeps unmatched songs at the end in signup order and does not repeat scheduled songs", () => {
+  const program = buildHistoricalProgram({
+    ...rows,
+    songsRows: [
+      ["Unmatched first", "Artist"],
+      ["Song", "Artist"],
+      ["Unmatched second", "Artist"],
+      ["Opening", "Artist"],
+    ],
+    scheduleRows: [
+      ["6:00", "Opening", "Artist", "3", "6:03"],
+      ...rows.scheduleRows,
+      ["6:13", "Song", "Artist", "3", "6:16"],
+      ["6:16", "Schedule only", "Artist", "3", "6:19"],
+    ],
+  });
+
+  assert.deepEqual(program.songs.map((song) => song.title), [
+    "Opening", "Song", "Unmatched first", "Unmatched second",
+  ]);
+});
+
+test("matches normalized titles while retaining song metadata and references", () => {
+  const program = buildHistoricalProgram({
+    ...rows,
+    songsRows: [
+      ["Other", "Other Artist"],
+      ["  My   Song  ", "Original Artist", "Singer", "Guitar", "Second Guitar", "Bass",
+        "Keys", "Drummer", "Violin", "https://youtu.be/dQw4w9WgXcQ"],
+    ],
+    scheduleRows: [["6:00", " my \t SONG ", "", "3", "6:03", "Schedule singer"]],
+  });
+
+  assert.deepEqual(program.songs[0], {
+    title: "My   Song",
+    originalArtist: "Original Artist",
+    performers: [
+      { role: "Vocal", performers: ["Singer"] },
+      { role: "Guitar", performers: ["Guitar"] },
+      { role: "Guitar 2", performers: ["Second Guitar"] },
+      { role: "Bass", performers: ["Bass"] },
+      { role: "Keyboard", performers: ["Keys"] },
+      { role: "Drums", performers: ["Drummer"] },
+      { role: "Additional instruments", performers: ["Violin"] },
+    ],
+    videoEmbedUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+  });
+  assert.equal(program.songs[1].title, "Other");
+  assert.equal(program.schedule[0].title, "my \t SONG");
+});
+
+test("disambiguates duplicate song titles using normalized original artists", () => {
+  const program = buildHistoricalProgram({
+    ...rows,
+    songsRows: [
+      ["Same Song", "First Artist", "First singer"],
+      ["Same Song", "Second   Artist", "Second singer"],
+      ["Same Song", "Unscheduled Artist", "Unscheduled singer"],
+    ],
+    scheduleRows: [
+      ["6:00", "same song", " SECOND artist ", "3", "6:03"],
+      ["6:03", "Same Song", "FIRST ARTIST", "3", "6:06"],
+    ],
+  });
+
+  assert.deepEqual(program.songs.map((song) => song.originalArtist), [
+    "Second   Artist", "First Artist", "Unscheduled Artist",
+  ]);
+  assert.deepEqual(program.songs.map((song) => song.performers[0].performers[0]), [
+    "Second singer", "First singer", "Unscheduled singer",
+  ]);
+});
+
+test("preserves signup order when no schedule entries match songs", () => {
+  const program = buildHistoricalProgram({
+    ...rows,
+    songsRows: [["First", "Artist"], ["Second", "Artist"]],
+    scheduleRows: [["1:00", "Setup", "", "120", "3:00"]],
+  });
+
+  assert.deepEqual(program.songs.map((song) => song.title), ["First", "Second"]);
+});
+
 test("projects historical data without email addresses", () => {
   const program = buildHistoricalProgram({
     ...rows,

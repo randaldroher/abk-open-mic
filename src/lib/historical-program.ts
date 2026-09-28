@@ -138,6 +138,32 @@ const SCHEDULE_ROLES = [
   ["Drums", 10],
 ] as const;
 
+function normalizedText(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function songsInPerformanceOrder(songs: Song[], schedule: ScheduleEntry[]): Song[] {
+  const remaining = new Set(songs);
+  const ordered: Song[] = [];
+
+  for (const entry of schedule) {
+    const matches = [...remaining].filter(
+      (song) => normalizedText(song.title) === normalizedText(entry.title),
+    );
+    const match = matches.find(
+      (song) => entry.originalArtist !== null &&
+        normalizedText(song.originalArtist) === normalizedText(entry.originalArtist),
+    ) ?? matches[0];
+
+    if (match) {
+      ordered.push(match);
+      remaining.delete(match);
+    }
+  }
+
+  return [...ordered, ...remaining];
+}
+
 export function buildHistoricalProgram({
   songsRows,
   scheduleRows,
@@ -210,9 +236,9 @@ export function buildHistoricalProgram({
   }
 
   return {
-    title: "ABK Open Mic — May 2026",
+    title: "ABK Open Mic May 2026",
     timeZone: "America/Los_Angeles",
-    songs,
+    songs: songsInPerformanceOrder(songs, schedule),
     schedule,
     gear,
   };
