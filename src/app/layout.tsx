@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { Box, Container } from "@mui/material";
@@ -12,6 +12,10 @@ export const metadata: Metadata = {
     template: "%s | ABK Open Mic Night",
   },
   description: "A historical overview of the ABK Open Mic May 2026 performance.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0d091b",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -34,7 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                 sx={{
                   borderTop: 1,
                   borderColor: "divider",
-                  backgroundImage: "var(--abk-section-gradient)",
+                  backgroundColor: "#0d091b",
                   color: "text.secondary",
                   py: 3,
                   textAlign: "center",

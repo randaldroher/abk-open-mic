@@ -36,6 +36,7 @@ const theme = createTheme({
           "--abk-neon-glow": `0 0 28px ${alpha(theme.palette.secondary.main, 0.16)}, 0 0 60px ${alpha(theme.palette.primary.main, 0.08)}`,
         },
         body: {
+          backgroundColor: "#0d091b",
           backgroundImage: `radial-gradient(ellipse at 0% 0%, ${alpha(theme.palette.primary.main, 0.12)}, transparent 45%), radial-gradient(ellipse at 100% 15%, ${alpha(theme.palette.secondary.main, 0.13)}, transparent 45%)`,
           backgroundRepeat: "no-repeat",
         },
@@ -64,7 +65,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: "#0d091b",
-          backgroundImage: "var(--abk-section-gradient)",
+          backgroundImage: "none",
         },
       },
     },
