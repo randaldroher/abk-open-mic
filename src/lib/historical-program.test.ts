@@ -128,10 +128,13 @@ test("keeps signup order for duplicate titles when schedule artist matches none"
       ["Same Song", "First Artist"],
       ["Same Song", "Second Artist"],
     ],
-    scheduleRows: [["6:00", "Same Song", "Third Artist", "3", "6:03"]],
+    scheduleRows: [
+      ["6:00", "Same Song", "Third Artist", "3", "6:03"],
+      ["6:03", "Same Song", "Second Artist", "3", "6:06"],
+    ],
   });
 
-  assert.deepEqual(program.songs.map((song) => song.originalArtist), ["First Artist", "Second Artist"]);
+  assert.deepEqual(program.songs.map((song) => song.originalArtist), ["Second Artist", "First Artist"]);
 });
 
 test("preserves signup order when no schedule entries match songs", () => {
