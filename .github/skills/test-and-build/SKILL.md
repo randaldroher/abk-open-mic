@@ -44,18 +44,26 @@ do not exercise live Sheets access or full Next.js cache regeneration.
 
 ## Production build
 
-The Copilot environment supplies JSON in `SHEETS`; the application expects
-`SHEETS_SERVICE_ACCOUNT`. Map it for each command, without printing it or
-writing a credential file:
+On a local computer, use the `SHEETS_SERVICE_ACCOUNT` already set in the
+environment or loaded from the ignored `.env.local`; run the build directly:
+
+```bash
+npm run build
+```
+
+GitHub-hosted Copilot agents receive JSON in `SHEETS`; the application expects
+`SHEETS_SERVICE_ACCOUNT`. Map it for each credential-dependent command,
+without printing it or writing a credential file:
 
 ```bash
 SHEETS_SERVICE_ACCOUNT="${SHEETS:?SHEETS agent secret is required}" npm run build
 ```
 
-If `SHEETS` is missing, stop the credential-dependent checks and ask a maintainer
-to configure **Settings → Environments → copilot → Environment secrets**, then
-start a new agent session. Report other checks independently. Do not fake data
-or change application credential handling to make a build pass.
+If `SHEETS` is missing in the GitHub-hosted agent environment, stop the
+credential-dependent checks and ask a maintainer to configure **Settings →
+Environments → copilot → Environment secrets**, then start a new agent session.
+Report other checks independently. Do not fake data or change application
+credential handling to make a build pass.
 
 Local maintainers and Vercel use `SHEETS_SERVICE_ACCOUNT` directly through
 their environment or local ignored `.env.local`, as described in the README.
@@ -65,13 +73,25 @@ print environment variables, raw Google error objects, or private sheet rows.
 
 ## Browser verification
 
-For development in the agent environment:
+For development on a local computer, use the local credential directly:
+
+```bash
+npm run dev
+```
+
+For development in the GitHub-hosted agent environment:
 
 ```bash
 SHEETS_SERVICE_ACCOUNT="${SHEETS:?SHEETS agent secret is required}" npm run dev
 ```
 
-To inspect the production result after building:
+To inspect the production result after building on a local computer:
+
+```bash
+npm run start
+```
+
+In the GitHub-hosted agent environment, map `SHEETS` for the start command too:
 
 ```bash
 SHEETS_SERVICE_ACCOUNT="${SHEETS:?SHEETS agent secret is required}" npm run start

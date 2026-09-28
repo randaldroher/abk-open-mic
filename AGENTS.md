@@ -12,17 +12,17 @@
 - Use [inspect-spreadsheet](.github/skills/inspect-spreadsheet/SKILL.md) to discover tabs and inspect selected spreadsheet ranges read-only when planning an event. Inspection does not authorize publishing new data.
 - Spreadsheet layouts may change frequently during signup planning. Rediscover normalized column headers rather than assuming a column stays at a fixed position; the current adapter's positional mappings describe only the historical data.
 
-## Agent build credentials
+## Google Sheets credentials
 
-- The Copilot environment provides the service-account JSON in the `SHEETS` secret. The server adapter expects `SHEETS_SERVICE_ACCOUNT`; map it for each build command rather than changing application code or writing credentials to disk.
-- After `npm ci`, run from the repository root:
+- On a local computer, use the existing `SHEETS_SERVICE_ACCOUNT` from the shell environment or the ignored `.env.local`; run commands directly and do not require a separate `SHEETS` variable.
+- GitHub-hosted Copilot agents receive the service-account JSON in the `SHEETS` secret. The server adapter expects `SHEETS_SERVICE_ACCOUNT`; map `SHEETS` for each credential-dependent command rather than changing application code or writing credentials to disk. For example, after `npm ci`, run from the repository root:
 
   ```bash
   SHEETS_SERVICE_ACCOUNT="${SHEETS:?SHEETS agent secret is required}" npm run build
   ```
 
-- Use the same environment-variable assignment with `npm run dev` when checking pages locally. The assignment applies only to that command; repeat it in each new shell invocation.
-- Never print secret values, enable shell tracing (`set -x`), commit credentials, or use a `NEXT_PUBLIC_` variable for them. If `SHEETS` is absent, ask a maintainer to configure it under **Settings → Environments → copilot → Environment secrets** and start a new agent session.
+- For GitHub-hosted agent browser checks, use the same assignment with `npm run dev` or `npm run start`; it applies only to that command, so repeat it for each invocation. Local checks use the local credential directly.
+- Never print secret values, enable shell tracing (`set -x`), commit credentials, or use a `NEXT_PUBLIC_` variable for them. If `SHEETS` is absent in the GitHub-hosted agent environment, ask a maintainer to configure it under **Settings → Environments → copilot → Environment secrets** and start a new agent session.
 - Production prerendering reads Google Sheets, so the service account needs Viewer access to the configured spreadsheet and the environment must allow Google authentication and Sheets API requests.
 
 <!-- BEGIN:nextjs-agent-rules -->

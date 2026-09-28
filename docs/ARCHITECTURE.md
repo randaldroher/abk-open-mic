@@ -93,11 +93,13 @@ are not fetched for those archives. The next-event signup tab is linked to
 directly but is never read by the site.
 
 Keep the spreadsheet private and grant the service account Viewer access.
-Use only `https://www.googleapis.com/auth/spreadsheets.readonly`. Store
-`SHEETS_SERVICE_ACCOUNT` in local/hosting secrets; agents map the `SHEETS`
-secret per command as described in [AGENTS.md](../AGENTS.md). No credentials,
-raw sheet exports, contact lists, or drafts belong in Git, build artifacts
-intended for sharing, public logs, or client bundles.
+Use only `https://www.googleapis.com/auth/spreadsheets.readonly`. On a local
+computer, provide `SHEETS_SERVICE_ACCOUNT` through the shell environment or
+the ignored `.env.local`. Hosting uses its server-side secret configuration.
+GitHub-hosted agents map the `SHEETS` secret per command as described in
+[AGENTS.md](../AGENTS.md). No credentials, raw sheet exports, contact lists, or
+drafts belong in Git, build artifacts intended for sharing, public logs, or
+client bundles.
 
 ## Rendering, caching, and failures
 

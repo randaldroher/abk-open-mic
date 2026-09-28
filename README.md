@@ -37,7 +37,12 @@ includes generated Next.js types; on a clean checkout, run
 
 Agents should use the [test-and-build skill](.github/skills/test-and-build/SKILL.md)
 and [read-only spreadsheet inspection skill](.github/skills/inspect-spreadsheet/SKILL.md).
-In the Copilot environment, map the provided secret for each build or dev command:
+On a local computer, `npm run build` and `npm run dev` use
+`SHEETS_SERVICE_ACCOUNT` from the shell environment or the ignored
+`.env.local`; no separate `SHEETS` variable is needed.
+
+GitHub-hosted Copilot agents should map the provided `SHEETS` secret for each
+credential-dependent command:
 
 ```bash
 SHEETS_SERVICE_ACCOUNT="${SHEETS:?SHEETS agent secret is required}" npm run build
@@ -45,20 +50,21 @@ SHEETS_SERVICE_ACCOUNT="${SHEETS:?SHEETS agent secret is required}" npm run dev
 ```
 
 Never print the secret or write agent credentials to disk. If `SHEETS` is
-missing, a maintainer must configure **Settings → Environments → copilot →
-Environment secrets** and start a new agent session.
+missing in the GitHub-hosted agent environment, a maintainer must configure
+**Settings → Environments → copilot → Environment secrets** and start a new
+agent session.
 
 ## Configure Google Sheets access
 
 Create a service account, enable the Google Sheets API, and grant its
-`client_email` **Viewer** access to the private spreadsheet. Add the complete
-service-account JSON to `.env.local` as `SHEETS_SERVICE_ACCOUNT`; do not put
-this value in a committed file.
+`client_email` **Viewer** access to the private spreadsheet. Add the service-
+account JSON (or its base64-encoded form) to `.env.local` as
+`SHEETS_SERVICE_ACCOUNT`; do not put this value in a committed file.
 
 For Vercel, open the project’s **Settings → Environment Variables**, add
-`SHEETS_SERVICE_ACCOUNT` with the complete JSON value, select the required
-environments, and redeploy. The spreadsheet ID is intentionally stored in the
-server-only adapter; the secret is not.
+`SHEETS_SERVICE_ACCOUNT` with the JSON value or its base64-encoded form, select
+the required environments, and redeploy. The spreadsheet ID is intentionally
+stored in the server-only adapter; the secret is not.
 
 The site reads approved archive fields live from the private spreadsheet and
 caches validated public results. May 2026 still uses selected historical ranges

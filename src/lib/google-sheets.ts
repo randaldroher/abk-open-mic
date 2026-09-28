@@ -12,7 +12,10 @@ export function getSheetsClient() {
   }
 
   try {
-    const credentials: unknown = JSON.parse(rawCredentials);
+    const credentialJson = rawCredentials.trim().startsWith('{')
+      ? rawCredentials
+      : Buffer.from(rawCredentials, 'base64').toString('utf8');
+    const credentials: unknown = JSON.parse(credentialJson);
     if (
       typeof credentials !== "object" ||
       credentials === null ||
