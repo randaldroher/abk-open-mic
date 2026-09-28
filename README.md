@@ -37,3 +37,5 @@ only: after a restart, on another instance, or before the first successful
 read, the unavailable state is shown instead. Live spreadsheet reads run at
 request time so invalid source data does not prevent the site from building;
 validation still rejects malformed rows rather than publishing partial data.
+The agenda reader skips its column-heading row and reads through the end of
+the schedule, so adding a performance does not require updating a row limit.
