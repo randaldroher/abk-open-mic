@@ -1,13 +1,12 @@
 import type { ReactNode } from "react";
 import { Box, Container, Typography } from "@mui/material";
-import LastUpdated from "@/components/last-updated";
 
 export default function SiteFrame({
   children,
-  fetchedAt,
+  freshness,
 }: {
   children: ReactNode;
-  fetchedAt?: string | null;
+  freshness?: ReactNode;
 }) {
   return (
     <>
@@ -27,9 +26,9 @@ export default function SiteFrame({
       >
         <Container maxWidth="lg">
           <Typography component="div">ABK Open Mic</Typography>
-          {fetchedAt !== undefined && (
-            <Typography variant="body2" sx={{ mt: 1 }}>
-              {fetchedAt ? <LastUpdated fetchedAt={fetchedAt} /> : "Last updated: unavailable"}
+          {freshness && (
+            <Typography component="div" variant="body2" sx={{ mt: 1 }}>
+              {freshness}
             </Typography>
           )}
         </Container>

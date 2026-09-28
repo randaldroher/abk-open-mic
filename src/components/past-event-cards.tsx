@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Box, Card, CardContent, Typography } from "@mui/material";
+import { Box, Card, CardContent, SvgIcon, Typography } from "@mui/material";
 import { PAST_EVENTS } from "@/lib/past-events";
 
 export default function PastEventCards() {
@@ -34,10 +34,12 @@ export default function PastEventCards() {
               }}
             >
               <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
-                <Typography variant="overline" color="primary.main">{year}</Typography>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, mt: 2 }}>
+                <Typography component="div" variant="overline" color="primary.main" sx={{ lineHeight: 1.5 }}>{year}</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2 }}>
                   <Typography component="h3" variant="h2">{month}</Typography>
-                  <Typography component="span" aria-hidden="true" sx={{ color: "primary.main", fontSize: "1.75rem" }}>↗</Typography>
+                  <SvgIcon sx={{ color: "primary.main", fontSize: "1.75rem" }}>
+                    <path d="m12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                  </SvgIcon>
                 </Box>
               </CardContent>
             </Card>

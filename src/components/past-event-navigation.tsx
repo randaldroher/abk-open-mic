@@ -15,6 +15,7 @@ export default function PastEventNavigation({ eventSlug }: { eventSlug: string }
             key={tab}
             component={Link}
             href={`/past-events/${eventSlug}/${tab}`}
+            prefetch={true}
             value={tab}
             label={tab === "videos" ? "Videos" : "Songs"}
             id={`event-${tab}-tab`}

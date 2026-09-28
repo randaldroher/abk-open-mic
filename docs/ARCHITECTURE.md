@@ -23,7 +23,8 @@ Public browser (MUI presentation)
     -> event-isolated cache / instance-local last-known-good fallback
 ```
 
-The application uses TypeScript, Cache Components (`cacheComponents: true`),
+The application uses TypeScript, Cache Components (`cacheComponents: true`,
+which enables Partial Prerendering in Next.js 16),
 and MUI's App Router cache provider, shared theme, and baseline. Check
 `package.json`, the lockfile, and installed documentation before changing
 framework APIs. Server Components own the reads; credentials and raw responses
@@ -150,6 +151,13 @@ navigation includes Past events.
 Each event's App Router layout keeps breadcrumbs, an event title without a dash,
 a subtitle, and Videos/Songs tabs above the child page. Next.js links switch tabs
 without replacing the shared layout, and the selected tab follows the URL.
+The event layout supplies `generateStaticParams` for all three known slugs.
+Titles, breadcrumbs, tabs, and the Videos placeholder are prerendered, not loading
+UI. Sheets reads are isolated behind Suspense in the song cards and footer
+freshness metadata; their fallbacks match the responsive card grid (including
+May's reference-video aspect ratio) and timestamp line, respectively. There is
+no whole-page loading boundary replacing the event shell. Tab links prefetch
+their destination content while the existing data-cache lifetimes remain intact.
 Event videos show a placeholder until approved URLs are supplied; song-reference
 videos remain separately labeled on Songs. Home and archive-index cards share
 a compact month/year design with one link per event and no repeated descriptions.
