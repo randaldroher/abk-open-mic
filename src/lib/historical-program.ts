@@ -42,6 +42,13 @@ type Row = string[];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TIME = /^(?:[1-9]|1[0-2]):[0-5]\d$/;
 
+function isScheduleHeader(row: Row): boolean {
+  return /\b(?:start|time)\b/i.test(row[0] ?? "") &&
+    /\b(?:song|title|event|agenda|act)\b/i.test(row[1] ?? "") &&
+    /\b(?:duration|length|minutes|mins)\b/i.test(row[3] ?? "") &&
+    /\b(?:end|time)\b/i.test(row[4] ?? "");
+}
+
 function clean(value: string | undefined): string {
   return value?.trim() ?? "";
 }
@@ -150,7 +157,7 @@ export function buildHistoricalProgram({
     }));
 
   const schedule = scheduleRows
-    .filter((row) => clean(row[1]))
+    .filter((row) => clean(row[1]) && !isScheduleHeader(row))
     .map((row) => ({
       startsAt: parseTime(row[0]),
       title: required(row[1]),

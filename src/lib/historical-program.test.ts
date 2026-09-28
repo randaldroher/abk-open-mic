@@ -60,6 +60,20 @@ test("retains operational schedule entries and groups gear", () => {
   assert.equal(program.gear[1].isShareable, false);
 });
 
+test("ignores agenda headers and includes appended schedule entries", () => {
+  const program = buildHistoricalProgram({
+    ...rows,
+    scheduleRows: [
+      ["Start Time", "Song Title", "Artist", "Duration (minutes)", "End Time"],
+      ...rows.scheduleRows,
+      ["6:13", "Encore", "Artist", "4", "6:17"],
+    ],
+  });
+
+  assert.equal(program.schedule.length, 2);
+  assert.equal(program.schedule[1].title, "Encore");
+});
+
 test("rejects invalid schedule data and gear without a category", () => {
   assert.throws(
     () => buildHistoricalProgram({ ...rows, scheduleRows: [["bad", "Song", "Artist", "3", "6:13"]] }),
@@ -71,6 +85,16 @@ test("rejects invalid schedule data and gear without a category", () => {
   );
   assert.throws(
     () => buildHistoricalProgram({ ...rows, scheduleRows: [] }),
+    /Invalid historical program data/,
+  );
+  assert.throws(
+    () => buildHistoricalProgram({
+      ...rows,
+      scheduleRows: [
+        ["Start Time", "Song Title", "Artist", "Duration (minutes)", "End Time"],
+        ["bad", "Encore", "Artist", "4", "6:17"],
+      ],
+    }),
     /Invalid historical program data/,
   );
 });

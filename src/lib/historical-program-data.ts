@@ -49,7 +49,7 @@ async function readHistoricalProgram() {
       spreadsheetId: SPREADSHEET_ID,
       ranges: [
         "'Time Table (May 2026)'!A2:I15",
-        "'Time Table (May 2026)'!M95:W114",
+        "'Time Table (May 2026)'!M95:W",
         "'Gear (May 2026)'!B3:G67",
       ],
       majorDimension: "ROWS",
