@@ -43,20 +43,32 @@ export async function getHistoricalProgram() {
     scopes: [READ_ONLY_SCOPE],
   });
   const sheets = google.sheets({ version: "v4", auth });
-  const response = await sheets.spreadsheets.values.batchGet({
-    spreadsheetId: SPREADSHEET_ID,
-    ranges: [
-      "'Time Table (May 2026)'!A2:I15",
-      "'Time Table (May 2026)'!M95:W114",
-      "'Gear (May 2026)'!B3:G67",
-    ],
-    majorDimension: "ROWS",
-    valueRenderOption: "FORMATTED_VALUE",
-  });
-  const [songs, schedule, gear] = response.data.valueRanges ?? [];
+  const [rowsResponse, linksResponse] = await Promise.all([
+    sheets.spreadsheets.values.batchGet({
+      spreadsheetId: SPREADSHEET_ID,
+      ranges: [
+        "'Time Table (May 2026)'!A2:I15",
+        "'Time Table (May 2026)'!M95:W114",
+        "'Gear (May 2026)'!B3:G67",
+      ],
+      majorDimension: "ROWS",
+      valueRenderOption: "FORMATTED_VALUE",
+    }),
+    sheets.spreadsheets.get({
+      spreadsheetId: SPREADSHEET_ID,
+      ranges: ["'Time Table (May 2026)'!J2:J15"],
+      includeGridData: true,
+    }),
+  ]);
+  const [songs, schedule, gear] = rowsResponse.data.valueRanges ?? [];
+  const videoCells = linksResponse.data.sheets?.[0]?.data?.[0]?.rowData ?? [];
+  const songsRows = (songs?.values ?? []).map((row, index) => [
+    ...row,
+    videoCells[index]?.values?.[0]?.chipRuns?.[0]?.chip?.richLinkProperties?.uri ?? "",
+  ]);
 
   return buildHistoricalProgram({
-    songsRows: songs?.values ?? [],
+    songsRows,
     scheduleRows: schedule?.values ?? [],
     gearRows: gear?.values ?? [],
   });

@@ -7,6 +7,7 @@ export type Song = {
   title: string;
   originalArtist: string;
   performers: PerformerRole[];
+  videoEmbedUrl: string | null;
 };
 
 export type ScheduleEntry = {
@@ -74,6 +75,33 @@ function parseTime(value: string | undefined): string {
   return time;
 }
 
+function youTubeEmbedUrl(value: string | undefined): string | null {
+  const link = clean(value);
+  if (!link) {
+    return null;
+  }
+
+  try {
+    const url = new URL(link);
+    const host = url.hostname.toLowerCase();
+    let videoId: string | null = null;
+
+    if (host === "youtu.be" || host === "www.youtu.be") {
+      videoId = url.pathname.split("/")[1] ?? null;
+    } else if (host === "youtube.com" || host === "www.youtube.com" || host === "m.youtube.com") {
+      videoId = url.pathname === "/watch"
+        ? url.searchParams.get("v")
+        : url.pathname.match(/^\/(?:embed|shorts)\/([^/]+)/)?.[1] ?? null;
+    }
+
+    return videoId && /^[A-Za-z0-9_-]{11}$/.test(videoId)
+      ? `https://www.youtube-nocookie.com/embed/${videoId}`
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function performerRoles(
   row: Row,
   columns: ReadonlyArray<readonly [string, number]>,
@@ -118,6 +146,7 @@ export function buildHistoricalProgram({
       title: required(row[0]),
       originalArtist: required(row[1]),
       performers: performerRoles(row, SONG_ROLES),
+      videoEmbedUrl: youTubeEmbedUrl(row[9]),
     }));
 
   const schedule = scheduleRows

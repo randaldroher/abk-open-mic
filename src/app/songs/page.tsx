@@ -31,6 +31,19 @@ export default async function SongsPage() {
                     )),
                   )}
                 </Stack>
+                {song.videoEmbedUrl && (
+                  <Box sx={{ aspectRatio: "16 / 9" }}>
+                    <iframe
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      src={song.videoEmbedUrl}
+                      style={{ border: 0, height: "100%", width: "100%" }}
+                      title={`${song.title} on YouTube`}
+                    />
+                  </Box>
+                )}
               </Stack>
             </CardContent>
           </Card>

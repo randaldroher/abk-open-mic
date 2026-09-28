@@ -15,7 +15,21 @@ test("projects historical data without email addresses", () => {
   });
 
   assert.deepEqual(program.songs[0].performers, [{ role: "Guitar", performers: ["Guitar"] }]);
+  assert.equal(program.songs[0].videoEmbedUrl, null);
   assert.equal("email" in program.gear[0], false);
+});
+
+test("converts only valid YouTube links into privacy-enhanced embed URLs", () => {
+  const program = buildHistoricalProgram({
+    ...rows,
+    songsRows: [
+      ["Song", "Artist", "", "", "", "", "", "", "", "https://youtu.be/dQw4w9WgXcQ"],
+      ["Other", "Artist", "", "", "", "", "", "", "", "https://example.com/video"],
+    ],
+  });
+
+  assert.equal(program.songs[0].videoEmbedUrl, "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+  assert.equal(program.songs[1].videoEmbedUrl, null);
 });
 
 test("retains operational schedule entries and groups gear", () => {
