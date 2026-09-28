@@ -31,8 +31,9 @@ redaction exist. Live historical publication is range-based, not flag-based.
 
 - The homepage links to the signup tab in the organizer spreadsheet and the
   confirmed ABK Open Mic Slack channel. It does not read signup data.
-- The responsive homepage cards and `/past-events` index link to July 2025,
-  December 2025, and May 2026 Videos tabs without depending on Sheets.
+- The responsive homepage cards and `/past-events` index show each event's
+  month, year, and theme and link to the July 2025, December 2025, and May 2026
+  Videos tabs without depending on Sheets.
 - Each archive has shared breadcrumbs, a dash-free title, a subtitle, and
   URL-based Videos/Songs tabs. Event root URLs redirect to Videos by default.
 - July and December song pages read only the approved song, artist (when

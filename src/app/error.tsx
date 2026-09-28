@@ -10,9 +10,9 @@ export default function ErrorPage({
 }) {
   return (
     <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 5 } }}>
-      <Stack spacing={2} sx={{ alignItems: "flex-start" }}>
+      <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
         <Typography variant="h2">Event information is unavailable</Typography>
-        <Typography color="text.secondary">
+        <Typography color="textSecondary">
           Please try again in a little while.
         </Typography>
         <Button onClick={reset} variant="contained">

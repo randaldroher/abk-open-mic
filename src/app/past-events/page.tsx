@@ -12,19 +12,18 @@ export const metadata: Metadata = {
 export default function PastEventsPage() {
   return (
     <SiteFrame>
-    <Stack spacing={3}>
-      <Box>
-        <PageBreadcrumbs items={[
-          { label: "Home", href: "/" },
-          { label: "Past events" },
-        ]} />
-        <Typography variant="h1">Past events</Typography>
-        <Typography color="text.secondary" sx={{ mt: 1 }}>
-          Revisit the music from our past performances.
-        </Typography>
-      </Box>
-      <PastEventCards />
-    </Stack>
+      <Stack spacing={3}>
+        <Box>
+          <PageBreadcrumbs
+            items={[{ label: 'Home', href: '/' }, { label: 'Past events' }]}
+          />
+          <Typography variant="h1">Past events</Typography>
+          <Typography color="textSecondary" sx={{ mt: 1 }}>
+            Revisit the music from our past performances.
+          </Typography>
+        </Box>
+        <PastEventCards />
+      </Stack>
     </SiteFrame>
   );
 }

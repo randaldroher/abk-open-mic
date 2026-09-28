@@ -3,17 +3,29 @@ import test from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import PastEventCards from "../components/past-event-cards";
+import SiteNavigation from "../components/site-navigation";
 import SongCardsSkeleton from "../components/song-cards-skeleton";
 import SiteFrame from "../components/site-frame";
 import { PAST_EVENTS } from "./past-events";
+import { SIGNUP_URL } from "./site-links";
 
 test("event cards render every archive with decorative Material SVG arrows", () => {
   const html = renderToStaticMarkup(createElement(PastEventCards));
 
-  for (const { slug, label } of PAST_EVENTS) {
+  for (const { slug, label, theme } of PAST_EVENTS) {
     assert.ok(html.includes(`href="/past-events/${slug}/videos"`));
     assert.ok(html.includes(`aria-label="ABK Open Mic ${label}"`));
+    assert.ok(html.includes(label));
+    assert.ok(html.includes(theme));
   }
+  for (const image of [
+    'abk-open-mic-may-2026.png',
+    'abk-open-mic-december-2025.png',
+    'abk-open-mic-july-2025.png',
+  ]) {
+    assert.ok(html.includes(image));
+  }
+  assert.equal((html.match(/alt=""/g) ?? []).length, 3);
   assert.equal((html.match(/<svg /g) ?? []).length, 3);
   assert.equal((html.match(/aria-hidden="true"/g) ?? []).length, 3);
   assert.ok(!html.includes("↗"));
@@ -42,4 +54,11 @@ test("site frame renders content independently of optional freshness metadata", 
 
   const home = renderToStaticMarkup(SiteFrame({ children: content }));
   assert.ok(!home.includes("Last updated"));
+});
+
+test("site navigation includes the spreadsheet signup action", () => {
+  const html = renderToStaticMarkup(createElement(SiteNavigation));
+
+  assert.ok(html.includes(`href="${SIGNUP_URL.replaceAll("&", "&amp;")}"`));
+  assert.ok(html.includes(">Sign up</a>"));
 });

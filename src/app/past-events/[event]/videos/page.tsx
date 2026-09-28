@@ -23,10 +23,15 @@ export default async function VideosPage({ params }: Props) {
       id="event-videos-panel"
       aria-labelledby="event-videos-tab"
       variant="outlined"
-      sx={{ p: { xs: 3, sm: 4 }, backgroundImage: "var(--abk-section-gradient)" }}
+      sx={{
+        p: { xs: 3, sm: 4 },
+        backgroundImage: 'var(--abk-section-gradient)',
+      }}
     >
-      <Typography variant="h2" gutterBottom>Event videos</Typography>
-      <Typography color="text.secondary">
+      <Typography variant="h2" gutterBottom>
+        Event videos
+      </Typography>
+      <Typography color="textSecondary">
         Videos will be added in a future update.
       </Typography>
     </Paper>

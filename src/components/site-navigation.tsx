@@ -1,8 +1,17 @@
-import { AppBar, Box, Container, Link as MuiLink, Toolbar, Typography } from "@mui/material";
+'use client';
 
-const navigation = [
-  { label: "Past events", href: "/past-events" },
-];
+import { SIGNUP_URL, SLACK_URL } from '@/lib/site-links';
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  Stack,
+  Typography,
+} from '@mui/material';
+import Link from 'next/link';
+
+const navigation = [{ label: 'Past events', href: '/past-events' }];
 
 export default function SiteNavigation() {
   return (
@@ -11,42 +20,73 @@ export default function SiteNavigation() {
       color="inherit"
       elevation={0}
       position="static"
-      sx={{ borderBottom: 1, borderColor: "divider" }}
+      sx={{ borderBottom: 1, borderColor: 'divider' }}
     >
       <Container maxWidth="lg">
-        <Toolbar
-          disableGutters
-          sx={{ justifyContent: "space-between", minHeight: 80, flexWrap: "wrap", gap: 1, py: 1.5 }}
+        <Stack
+          component="nav"
+          direction="row"
+          spacing={{ xs: 0, sm: 1 }}
+          sx={{ height: 56, alignItems: 'center' }}
         >
           <Typography
             component="a"
             href="/"
             variant="h6"
-            sx={{ color: "primary.main", fontWeight: 800, letterSpacing: "-0.04em", textDecoration: "none", py: 1 }}
+            sx={{
+              color: 'secondary.main',
+              fontFamily: 'var(--font-wordmark), Arial, sans-serif',
+              fontSize: { xs: '1.375rem', sm: '1.5rem' },
+              fontWeight: 400,
+              letterSpacing: '0.01em',
+              lineHeight: 1.1,
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              pt: '9px',
+              pb: '7px',
+            }}
           >
-            ABK <Box component="span" sx={{ color: "secondary.main" }}>Open Mic</Box>
+            ABK{' '}
+            <Box component="span" sx={{ color: 'primary.main' }}>
+              Open Mic
+            </Box>
           </Typography>
-          <Box component="nav" aria-label="Main navigation" sx={{ display: "flex", gap: { xs: 0.5, sm: 1 } }}>
-            {navigation.map(({ label, href }) => (
-              <MuiLink
-                href={href}
-                key={href}
-                underline="none"
-                color="text.primary"
-                sx={{
-                  fontSize: { xs: "0.875rem", sm: "1rem" },
-                  fontWeight: 600,
-                  px: { xs: 1.25, sm: 2 },
-                  py: 1.25,
-                  borderRadius: 2,
-                  "&:hover": { color: "primary.main", bgcolor: "action.hover" },
-                }}
-              >
-                {label}
-              </MuiLink>
-            ))}
-          </Box>
-        </Toolbar>
+          <Box sx={{ flexGrow: 1 }} />
+          <Button
+            component="a"
+            href={SIGNUP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outlined"
+            color="secondary"
+            sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+          >
+            Sign up
+          </Button>
+          <Button
+            component="a"
+            href={SLACK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="text"
+            color="inherit"
+            sx={{ px: { xs: 0.5, sm: 1 }, whiteSpace: 'nowrap' }}
+          >
+            Slack
+          </Button>
+          {navigation.map(({ label, href }) => (
+            <Button
+              component={Link}
+              href={href}
+              key={href}
+              variant="text"
+              color="inherit"
+              sx={{ px: { xs: 0.5, sm: 1 }, whiteSpace: 'nowrap' }}
+            >
+              {label}
+            </Button>
+          ))}
+        </Stack>
       </Container>
     </AppBar>
   );
