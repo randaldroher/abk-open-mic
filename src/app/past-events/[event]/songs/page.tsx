@@ -1,24 +1,36 @@
-import { Suspense } from "react";
-import { Box, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
-import { notFound } from "next/navigation";
-import { getMay2026Program } from "@/lib/may-2026-program-data";
-import { getJuly2025Songs, getDecember2025Songs } from "@/lib/past-event-song-data";
-import type { Song as HistoricalSong } from "@/lib/historical-program";
-import type { PastEventSong } from "@/lib/past-event-songs";
-import ProgramUnavailable from "@/components/program-unavailable";
-import SongCardsSkeleton from "@/components/song-cards-skeleton";
+import ProgramUnavailable from '@/components/program-unavailable';
+import SongCardsSkeleton from '@/components/song-cards-skeleton';
+import type { Song as HistoricalSong } from '@/lib/historical-program';
+import { getMay2026Program } from '@/lib/may-2026-program-data';
+import {
+  getDecember2025Songs,
+  getJuly2025Songs,
+} from '@/lib/past-event-song-data';
+import type { PastEventSong } from '@/lib/past-event-songs';
+import { Box, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
+import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 type Props = { params: Promise<{ event: string }> };
-type EventSong = HistoricalSong | (PastEventSong & { videoEmbedUrl?: string | null });
+type EventSong =
+  | HistoricalSong
+  | (PastEventSong & { videoEmbedUrl?: string | null });
 
 export async function generateMetadata({ params }: Props) {
   const { event } = await params;
-  const eventLabel = event === "may-2026" ? "May 2026"
-    : event === "july-2025" ? "July 2025"
-      : event === "december-2025" ? "December 2025"
-        : null;
+  const eventLabel =
+    event === 'may-2026'
+      ? 'May 2026'
+      : event === 'july-2025'
+        ? 'July 2025'
+        : event === 'december-2025'
+          ? 'December 2025'
+          : null;
   if (!eventLabel) {
-    return { title: "Songs", description: "Archived ABK Open Mic song lineups." };
+    return {
+      title: 'Songs',
+      description: 'Archived ABK Open Mic song lineups.',
+    };
   }
 
   return {
@@ -28,29 +40,42 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function SongsPage({ params }: Props) {
-  const { event } = await params;
-  if (!["may-2026", "july-2025", "december-2025"].includes(event)) {
-    notFound();
-  }
-
   return (
-    <Stack role="tabpanel" id="event-songs-panel" aria-labelledby="event-songs-tab" spacing={3}>
-      <Typography variant="h2">
-        {event === "may-2026" ? "Performance order" : "Song lineup"}
-      </Typography>
-      <Suspense fallback={<SongCardsSkeleton showReferences={event === "may-2026"} />}>
-        <SongCards event={event} />
+    <Stack
+      role="tabpanel"
+      id="event-songs-panel"
+      aria-labelledby="event-songs-tab"
+      spacing={3}
+    >
+      <Suspense>
+        {params.then(({ event }) => {
+          if (!['may-2026', 'july-2025', 'december-2025'].includes(event)) {
+            notFound();
+          }
+          return (
+            <>
+              <Suspense
+                fallback={
+                  <SongCardsSkeleton showReferences={event === 'may-2026'} />
+                }
+              >
+                <SongCards event={event} />
+              </Suspense>
+            </>
+          );
+        })}
       </Suspense>
     </Stack>
   );
 }
 
 async function SongCards({ event }: { event: string }) {
-  const eventData = event === "may-2026"
-    ? await getMay2026Program()
-    : event === "july-2025"
-      ? await getJuly2025Songs()
-      : await getDecember2025Songs();
+  const eventData =
+    event === 'may-2026'
+      ? await getMay2026Program()
+      : event === 'july-2025'
+        ? await getJuly2025Songs()
+        : await getDecember2025Songs();
   if (!eventData) {
     return <ProgramUnavailable />;
   }

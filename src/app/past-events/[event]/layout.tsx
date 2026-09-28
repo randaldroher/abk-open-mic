@@ -39,12 +39,6 @@ async function EventFreshness({ event }: { event: string }) {
 }
 
 export default async function PastEventLayout({ children, params }: Props) {
-  const { event } = await params;
-  const pastEvent = getPastEvent(event);
-  if (!pastEvent) {
-    notFound();
-  }
-
   return (
     <SiteFrame
       freshness={
@@ -55,27 +49,41 @@ export default async function PastEventLayout({ children, params }: Props) {
             </Box>
           }
         >
-          <EventFreshness event={event} />
+          {params.then(({ event }) => (
+            <EventFreshness event={event} />
+          ))}
         </Suspense>
       }
     >
-      <Stack spacing={3}>
-        <Box component="header">
-          <PageBreadcrumbs
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Past events', href: '/past-events' },
-              { label: pastEvent.label },
-            ]}
-          />
-          <Typography variant="h1">ABK Open Mic {pastEvent.label}</Typography>
-          <Typography color="textSecondary" sx={{ mt: 1 }}>
-            Revisit the music and musicians from {pastEvent.label}.
-          </Typography>
-        </Box>
-        <PastEventNavigation eventSlug={event} />
-        {children}
-      </Stack>
+      <Suspense>
+        {params.then(({ event }) => {
+          const pastEvent = getPastEvent(event);
+          if (!pastEvent) {
+            notFound();
+          }
+          return (
+            <Stack spacing={3}>
+              <Box component="header">
+                <PageBreadcrumbs
+                  items={[
+                    { label: 'Home', href: '/' },
+                    { label: 'Past events', href: '/past-events' },
+                    { label: pastEvent.label },
+                  ]}
+                />
+                <Typography variant="h1">
+                  ABK Open Mic {pastEvent.label}
+                </Typography>
+                <Typography color="textSecondary" sx={{ mt: 1 }}>
+                  Revisit the music and musicians from {pastEvent.label}.
+                </Typography>
+              </Box>
+              <PastEventNavigation eventSlug={event} />
+              {children}
+            </Stack>
+          );
+        })}
+      </Suspense>
     </SiteFrame>
   );
 }
