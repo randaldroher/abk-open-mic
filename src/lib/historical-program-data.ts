@@ -37,7 +37,7 @@ function serviceAccountCredentials() {
 async function readHistoricalProgram() {
   "use cache";
 
-  cacheLife({ stale: 60, revalidate: 60, expire: 3600 });
+  cacheLife("minutes");
 
   const auth = new google.auth.GoogleAuth({
     credentials: serviceAccountCredentials(),

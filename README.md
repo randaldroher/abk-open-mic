@@ -29,8 +29,9 @@ server-only adapter; the secret is not.
 The adapter only reads the May 2026 timetable and gear tabs, caches the
 validated public projection, and excludes email addresses, contact details,
 spreadsheet-only calculations, and private planning notes. The historical
-program is prerendered and refreshed with Next.js ISR (one-minute server
-revalidation and client stale time, one-hour expiry). The first request after
+program is prerendered and refreshed with Next.js ISR using the `minutes`
+profile (one-minute server revalidation, five-minute client stale time,
+one-hour expiry). The first request after
 one minute can still receive the previous version while regeneration runs in
 the background; browser navigation checks the server after its stale time.
 On a failed
