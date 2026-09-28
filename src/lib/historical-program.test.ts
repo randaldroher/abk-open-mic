@@ -32,6 +32,16 @@ test("converts only valid YouTube links into privacy-enhanced embed URLs", () =>
   assert.equal(program.songs[1].videoEmbedUrl, null);
 });
 
+test("does not treat a sparse row's video link as an additional instrument", () => {
+  const program = buildHistoricalProgram({
+    ...rows,
+    songsRows: [["Song", "Artist", "", "", "", "", "", "", "", "https://youtu.be/dQw4w9WgXcQ"]],
+  });
+
+  assert.deepEqual(program.songs[0].performers, []);
+  assert.equal(program.songs[0].videoEmbedUrl, "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+});
+
 test("retains operational schedule entries and groups gear", () => {
   const program = buildHistoricalProgram({
     ...rows,

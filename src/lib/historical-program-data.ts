@@ -63,7 +63,7 @@ export async function getHistoricalProgram() {
   const [songs, schedule, gear] = rowsResponse.data.valueRanges ?? [];
   const videoCells = linksResponse.data.sheets?.[0]?.data?.[0]?.rowData ?? [];
   const songsRows = (songs?.values ?? []).map((row, index) => [
-    ...row,
+    ...Array.from({ length: 9 }, (_, column) => row[column] ?? ""),
     videoCells[index]?.values?.[0]?.chipRuns?.[0]?.chip?.richLinkProperties?.uri ?? "",
   ]);
 
