@@ -39,9 +39,9 @@ npx --no-install tsx --test src/lib/historical-program.test.ts
 npx --no-install tsx --test src/lib/last-known-good.test.ts
 ```
 
-`npm test` also covers the old synthetic Events/Acts/Schedule model. Those tests
-do not establish draft filtering for the live historical adapter. The current
-tests do not exercise live Sheets access or full Next.js cache regeneration.
+`npm test` covers historical parsing, last-known-good timestamp preservation,
+and relative-time formatting. Synthetic data belongs only in tests. The tests
+do not exercise live Sheets access or full Next.js cache regeneration.
 
 ## Production build
 
@@ -79,9 +79,11 @@ SHEETS_SERVICE_ACCOUNT="${SHEETS:?SHEETS agent secret is required}" npm run star
 ```
 
 Run only one server per port and stop it when finished. With the available
-browser tooling, check `/`, `/schedule`, `/songs`, `/gear`, and the `/acts`
-redirect. Check the home brand link, narrow and wide layouts, keyboard
-navigation, and relevant loading/unavailable states. Do not add browser
+browser tooling, check `/`, `/schedule`, `/songs`, and `/gear`.
+Check the home brand link, narrow and wide layouts, keyboard navigation,
+and relevant loading/unavailable states. Check the footer's server timestamp,
+client-relative text, timer updates, and freshness after navigation; failures
+must not advance a last-known-good timestamp. Do not add browser
 dependencies: no automated browser suite is configured.
 
 A successful build is not proof that Sheets data loaded: failures can produce

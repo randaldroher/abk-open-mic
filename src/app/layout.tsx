@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import SiteNavigation from "@/components/site-navigation";
 import ThemeProvider from "./theme-provider";
 import "./globals.css";
@@ -26,28 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <ThemeProvider>
             <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
               <SiteNavigation />
-              <Container
-                component="main"
-                maxWidth="lg"
-                sx={{ flex: 1, py: { xs: 4, md: 7 } }}
-              >
-                {children}
-              </Container>
-              <Box
-                component="footer"
-                sx={{
-                  borderTop: 1,
-                  borderColor: "divider",
-                  backgroundColor: "#0d091b",
-                  color: "text.secondary",
-                  py: 3,
-                  textAlign: "center",
-                }}
-              >
-                <Container maxWidth="lg">
-                  ABK Open Mic Night · May 2026 historical preview
-                </Container>
-              </Box>
+              {children}
             </Box>
           </ThemeProvider>
         </AppRouterCacheProvider>

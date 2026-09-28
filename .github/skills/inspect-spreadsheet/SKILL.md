@@ -10,8 +10,9 @@ description: Fetch Google Sheets metadata and selected ranges read-only to inspe
 - Read `AGENTS.md`, `docs/ARCHITECTURE.md`, and
   `src/lib/historical-program-data.ts` first. The adapter owns the current
   spreadsheet ID and ranges; `src/lib/historical-program.ts` owns the
-  positional mappings and validation. Do not assume a newly added tab uses
-  the historical layout or the legacy Events/Acts/Schedule schema.
+  positional mappings and validation for historical data only. These are not
+  a contract for signup data: new and existing planning tabs may change shape
+  frequently as organizers iterate. Never assume any column will stay put.
 - Inspection is read-only and does not authorize publishing new data. Never
   change sharing, write cells, change the website's ranges, or add a public
   debug endpoint for inspection.
@@ -71,10 +72,21 @@ directly; standalone Node does not automatically load Next.js `.env.local`.
 
 ## Fetch the smallest relevant range
 
-Confirm the tab and columns relevant to the user's question before requesting
-cells. Use bounded A1 ranges for exploratory reads (for example, only a
-header row first), quote tab names, and escape embedded apostrophes by doubling
+Confirm the tab and locate the current header row/section before requesting
+data cells. Use bounded A1 ranges for exploratory reads (only the likely
+header area first), quote tab names, and escape embedded apostrophes by doubling
 them. Do not fetch entire tabs or unrelated contact/planning columns.
+
+Locate columns primarily by **normalized header names**, not remembered A1
+letters or offsets. Normalize Unicode, trim leading/trailing whitespace,
+collapse whitespace/newlines, and compare case-insensitively. Map reviewed
+aliases explicitly; do not guess that two similarly named fields mean the
+same thing. Rebuild the header-to-index mapping on each inspection, retaining
+original cell positions even when headers are blank. Check for moved or added
+columns, repeated tables, merged headings, duplicates, and missing required
+headers. If the mapping is ambiguous or a section has no headers, inspect a
+small relevant area or ask the organizer rather than silently using historical
+positions. Limit subsequent reads and public projections to reviewed fields.
 
 Reuse the authentication above and replace the metadata request/output with
 the following, passing a reviewed, bounded `SHEETS_RANGE` alongside
@@ -102,7 +114,8 @@ replace the summary with an explicit projection of only the reviewed columns.
 Do not print `data`, `rows`, or a whole workbook indiscriminately. Summarize
 private planning findings without reproducing personal/contact details.
 
-For the current historical source:
+Historical implementation reference only (rediscover headers before using any
+of these positions for planning data):
 
 - Compare the exact ranges in the adapter with the positional mappings in
   `historical-program.ts`. The production agenda's open-ended `M95:W` range
@@ -114,7 +127,7 @@ For the current historical source:
 - Reuse the pure `buildHistoricalProgram` projection through installed tsx
   when checking compatibility of approved historical inputs; preserve nine
   song columns before attaching a video URI. Do not apply this parser to
-  unknown next-event layouts as if it supplied draft filtering.
+  unknown next-event layouts as if it established publication approval.
 
 ## Report and stop
 

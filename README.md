@@ -9,13 +9,11 @@ configured yet.
 
 - `/`: historical overview (also reached through the ABK Open Mic brand).
 - `/schedule`, `/songs`, `/gear`: running order, song credits/videos, and equipment.
-- `/acts`: redirect to `/songs`.
 
 Read the [current architecture](docs/ARCHITECTURE.md) for data, publication, and
 cache boundaries, and the [website update status](docs/WEBSITE_UPDATE_PLAN.md)
-for next-event decisions. The [scaffold plan](docs/SCAFFOLD_PLAN.md) is archived,
-not an instruction to regenerate the application. `docs/palette-options.svg`
-is an earlier design reference, not the source of the active theme.
+for next-event decisions. The existing application should not be regenerated.
+Synthetic data is confined to tests.
 
 ## Run locally
 
@@ -76,7 +74,12 @@ On a failed Sheets read or invalid spreadsheet data, a running server instance s
 its last successfully validated public program. This fallback is in memory
 only: after a restart, on another instance, or before the first successful
 read, the unavailable state is shown instead. There is no maximum age for
-that fallback or last-updated indicator. Production builds need Sheets access
+that fallback. The footer shows “Last updated” as relative time since the last
+successful server fetch, not the spreadsheet's edit time. It keeps the original
+fetch timestamp during failures and displays “unavailable” before a successful
+read. Relative time updates in the browser every 30 seconds without fetching
+the sheet; a page load or navigation still follows the cache policy above.
+Production builds need Sheets access
 to prerender real content; a build can still succeed with unavailable pages,
 so check the rendered result. Validation rejects malformed required fields
 rather than publishing a partially parsed program.
@@ -84,3 +87,6 @@ The agenda reader skips its column-heading row and reads through the end of
 the schedule, so adding a performance does not require updating a row limit.
 Song and gear ranges are still bounded. Do not switch ranges to next-event
 drafts until the architecture's publication decisions are resolved.
+During signup planning, rediscover columns primarily by normalized headers:
+new data may change shape frequently, and historical positions are not a
+contract for future tabs.
