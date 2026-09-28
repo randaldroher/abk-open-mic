@@ -1,5 +1,6 @@
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { notFound } from "next/navigation";
+import PageBreadcrumbs from "@/components/page-breadcrumbs";
 import { getMay2026Program } from "@/lib/may-2026-program-data";
 import ProgramUnavailable from "@/components/program-unavailable";
 
@@ -26,9 +27,11 @@ export default async function GearPage({ params }: Props) {
   return (
     <Stack spacing={4}>
       <Box sx={{ p: { xs: 3, sm: 4 }, borderRadius: 1, backgroundImage: "var(--abk-section-gradient)" }}>
-        <Typography variant="overline" color="secondary">
-          May 2026 archive
-        </Typography>
+        <PageBreadcrumbs items={[
+          { label: "Past events", href: "/past-events" },
+          { label: "May 2026", href: "/past-events/may-2026" },
+          { label: "Gear" },
+        ]} />
         <Typography variant="h1">Gear</Typography>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
           Equipment recorded for the performance. Open items were still being planned.

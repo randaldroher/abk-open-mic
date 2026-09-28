@@ -1,5 +1,6 @@
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import { notFound } from "next/navigation";
+import PageBreadcrumbs from "@/components/page-breadcrumbs";
 import { getMay2026Program } from "@/lib/may-2026-program-data";
 import ProgramUnavailable from "@/components/program-unavailable";
 
@@ -25,9 +26,11 @@ export default async function SchedulePage({ params }: Props) {
   return (
     <Stack spacing={3}>
       <Box sx={{ p: { xs: 3, sm: 4 }, borderRadius: 1, backgroundImage: "var(--abk-section-gradient)" }}>
-        <Typography variant="overline" color="secondary">
-          May 2026 archive
-        </Typography>
+        <PageBreadcrumbs items={[
+          { label: "Past events", href: "/past-events" },
+          { label: "May 2026", href: "/past-events/may-2026" },
+          { label: "Schedule" },
+        ]} />
         <Typography variant="h1">Schedule</Typography>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
           All times are shown in {timeZone}. Operational entries are included alongside songs.

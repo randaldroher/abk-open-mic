@@ -1,5 +1,6 @@
 import { Box, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
 import { notFound } from "next/navigation";
+import PageBreadcrumbs from "@/components/page-breadcrumbs";
 import { getMay2026Program } from "@/lib/may-2026-program-data";
 import { getJuly2025Songs, getDecember2025Songs } from "@/lib/past-event-song-data";
 import type { Song as HistoricalSong } from "@/lib/historical-program";
@@ -46,9 +47,11 @@ export default async function SongsPage({ params }: Props) {
   return (
     <Stack spacing={3}>
       <Box sx={{ p: { xs: 3, sm: 4 }, borderRadius: 1, backgroundImage: "var(--abk-section-gradient)" }}>
-        <Typography variant="overline" color="secondary">
-          {eventLabel} archive
-        </Typography>
+        <PageBreadcrumbs items={[
+          { label: "Past events", href: "/past-events" },
+          { label: eventLabel, href: `/past-events/${event}` },
+          { label: "Songs" },
+        ]} />
         <Typography variant="h1">Songs</Typography>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
           The songs performed by the ABK Open Mic musicians.

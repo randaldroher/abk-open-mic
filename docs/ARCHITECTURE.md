@@ -133,7 +133,7 @@ can render the unavailable state. Verify rendered content as well.
 | `/past-events` | Static archive index, independent of Sheets availability |
 | `/past-events/july-2025` | July 2025 overview and approved song lineup |
 | `/past-events/december-2025` | December 2025 overview and approved song lineup |
-| `/past-events/may-2026` | May 2026 overview, lineup, schedule/gear links, and summary |
+| `/past-events/may-2026` | May 2026 overview, video placeholder, and lineup |
 | `/past-events/<event>/songs` | Event song lineup; May also retains approved song-reference embeds |
 | `/past-events/may-2026/schedule` | Source-order running order with time, duration, and performer roles |
 | `/past-events/may-2026/gear` | Equipment grouped by category, ownership, sharing, and open needs |
@@ -142,9 +142,11 @@ can render the unavailable state. Verify rendered content as well.
 The ABK Open Mic brand links home; the footer says “ABK Open Mic” and places an
 event's successful-fetch metadata directly below the site name. Global
 navigation includes Past events.
+Archive pages use functional breadcrumbs to navigate the archive hierarchy.
 Songs, Schedule, and Gear are within the May 2026 event navigation. Event video
-sections show a placeholder until approved URLs are supplied. No next-event
-date or venue is invented. MUI handles responsive layout and presentation.
+sections show a placeholder before the song lineup until approved URLs are
+supplied. No next-event date or venue is invented. MUI handles responsive
+layout and presentation.
 
 ## Verification and operations
 

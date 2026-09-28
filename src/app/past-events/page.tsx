@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Box, Button, Card, CardActions, CardContent, Stack, Typography } from "@mui/material";
+import PageBreadcrumbs from "@/components/page-breadcrumbs";
 import SiteFrame from "@/components/site-frame";
 import { PAST_EVENTS } from "@/lib/past-events";
 
@@ -13,7 +14,10 @@ export default function PastEventsPage() {
     <SiteFrame>
     <Stack spacing={3}>
       <Box>
-        <Typography variant="overline" color="secondary">ABK Open Mic archive</Typography>
+        <PageBreadcrumbs items={[
+          { label: "Home", href: "/" },
+          { label: "Past events" },
+        ]} />
         <Typography variant="h1">Past events</Typography>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
           Browse event overviews and the songs performed.

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 import { notFound } from "next/navigation";
+import PageBreadcrumbs from "@/components/page-breadcrumbs";
 import ProgramUnavailable from "@/components/program-unavailable";
 import { getMay2026Program } from "@/lib/may-2026-program-data";
 import { getDecember2025Songs, getJuly2025Songs } from "@/lib/past-event-song-data";
@@ -55,25 +56,27 @@ function EventArchive({
   title,
   description,
   songs,
-  details,
+  eventLabel,
   note,
 }: {
   title: string;
   description: string;
   songs: Array<{ title: string; originalArtist: string | null }>;
-  details?: ReactNode;
+  eventLabel: string;
   note?: ReactNode;
 }) {
   return (
     <Stack spacing={4}>
       <Box>
-        <Typography variant="overline" color="secondary">ABK Open Mic archive</Typography>
+        <PageBreadcrumbs items={[
+          { label: "Past events", href: "/past-events" },
+          { label: eventLabel },
+        ]} />
         <Typography variant="h1">{title}</Typography>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
           {description}
         </Typography>
       </Box>
-      {details}
       <EventVideos />
       <EventSongs songs={songs} />
       {note}
@@ -93,55 +96,12 @@ export default async function PastEventPage({ params }: Props) {
     if (!program) {
       return <ProgramUnavailable />;
     }
-    const performerCount = new Set(
-      program.schedule.flatMap((entry) => entry.performers.flatMap(({ performers }) => performers)),
-    ).size;
-
     return (
       <EventArchive
         title={program.title}
         description="Songs, running order, and equipment from the May 2026 performance."
         songs={program.songs}
-        details={(
-          <>
-            <Box
-              component="section"
-              aria-label="Event details"
-              sx={{
-                display: "grid",
-                gap: 2,
-                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
-              }}
-            >
-              {[
-                {
-                  label: "Performance window",
-                  value: `${program.schedule[0].startsAt}–${program.schedule.at(-1)?.endsAt} ${program.timeZone}`,
-                  color: "primary.main",
-                },
-                { label: "Songs", value: `${program.songs.length} performed songs`, color: "secondary.main" },
-                { label: "Performers", value: `${performerCount} participants`, color: "info.main" },
-                { label: "Equipment", value: `${program.gear.length} recorded items`, color: "primary.main" },
-              ].map(({ label, value, color }) => (
-                <Paper key={label} variant="outlined" sx={{ p: 3, borderTop: 2, borderTopColor: color }}>
-                  <Typography color={color} variant="overline">{label}</Typography>
-                  <Typography variant="h6" sx={{ mt: 1 }}>{value}</Typography>
-                </Paper>
-              ))}
-            </Box>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Button href="/past-events/may-2026/schedule" variant="contained" color="secondary">
-                View the schedule
-              </Button>
-              <Button href="/past-events/may-2026/songs" variant="outlined">
-                Browse songs
-              </Button>
-              <Button href="/past-events/may-2026/gear" variant="outlined">
-                View gear
-              </Button>
-            </Stack>
-          </>
-        )}
+        eventLabel={pastEvent.label}
         note={(
           <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 4 }, backgroundImage: "var(--abk-section-gradient)" }}>
             <Typography variant="h2" gutterBottom>Historical archive</Typography>
@@ -167,6 +127,7 @@ export default async function PastEventPage({ params }: Props) {
       title={eventData.eventTitle}
       description="Explore the songs and musicians from this past event."
       songs={eventData.songs}
+      eventLabel={pastEvent.label}
     />
   );
 }
