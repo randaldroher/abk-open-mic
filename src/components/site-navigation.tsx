@@ -26,7 +26,7 @@ export default function SiteNavigation() {
         <Stack
           component="nav"
           direction="row"
-          spacing={{ xs: 0, sm: 1 }}
+          spacing={1}
           sx={{ height: 56, alignItems: 'center' }}
         >
           <Typography
@@ -52,28 +52,6 @@ export default function SiteNavigation() {
             </Box>
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
-          <Button
-            component="a"
-            href={SIGNUP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="outlined"
-            color="secondary"
-            sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-          >
-            Sign up
-          </Button>
-          <Button
-            component="a"
-            href={SLACK_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="text"
-            color="inherit"
-            sx={{ px: { xs: 0.5, sm: 1 }, whiteSpace: 'nowrap' }}
-          >
-            Slack
-          </Button>
           {navigation.map(({ label, href }) => (
             <Button
               component={Link}
@@ -86,6 +64,32 @@ export default function SiteNavigation() {
               {label}
             </Button>
           ))}
+          <Button
+            component="a"
+            href={SLACK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="text"
+            color="inherit"
+            sx={{
+              px: { xs: 0.5, sm: 1 },
+              whiteSpace: 'nowrap',
+              display: { xs: 'none', sm: 'inline-flex' },
+            }}
+          >
+            Slack
+          </Button>
+          <Button
+            component="a"
+            href={SIGNUP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outlined"
+            color="secondary"
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            Sign up
+          </Button>
         </Stack>
       </Container>
     </AppBar>
