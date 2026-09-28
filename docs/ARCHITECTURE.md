@@ -1,70 +1,147 @@
-# ABK Open Mic Night architecture
+# ABK Open Mic architecture
 
-## Purpose and scope
+## Current scope
 
-A publicly accessible, read-only site for an Open Mic Night featuring colleagues from Activision, Blizzard, and King. Visitors can view event details, participating acts, and the running order. Organizers plan and edit the event directly in one Google Sheets spreadsheet; the site never writes to the sheet and has no accounts, authentication, authorization, or in-app submission flow.
+The implemented site is a public, read-only historical preview of the May 2026
+performance for colleagues from Activision, Blizzard, and King. It reads live
+data from selected ranges of a private Google Sheet; it is not a frozen
+snapshot or a next-event registration system.
 
-This is a proposed architecture, not an implemented application. Assume that everything rendered on the site can be seen by anyone on the internet. Get permission before publishing names or other personal details.
-
-## Product flows
-
-- Visitors see the date, venue, guidelines, performers/acts, and published schedule without signing in.
-- Visitors browse or filter the lineup and can see when the published information was last updated.
-- Organizers edit the spreadsheet outside the site; rows marked as published appear on the site after cache refresh. Draft rows remain unpublished.
-- Coordination, performer applications, and changes to the running order happen outside this read-only site, using channels chosen by organizers.
+There are no website accounts, authentication, authorization, database, write
+endpoints, Server Actions, or sign-up forms. Organizers edit Google Sheets
+outside the site. Everything rendered is visible to anyone on the internet.
 
 ## System boundaries
 
 ```text
-Public browser (MUI presentation and optional client-side filters)
-  -> Next.js App Router on Vercel (Server Components and layouts)
-    -> server-only read adapter (Google Sheets API, read-only scope)
-      -> organizer-managed Google Sheets spreadsheet
+Public browser (MUI presentation)
+  -> Next.js App Router Server Components
+    -> server-only historical-program-data.ts
+      -> Google Sheets API (viewer service account, read-only scope)
+      -> historical-program.ts validation and public projection
+    -> cached HistoricalProgram / instance-local last-known-good fallback
 ```
 
-- Use TypeScript, the Next.js App Router, and Cache Components (`cacheComponents: true` in `next.config.ts`). Server Components own sheet reads; Client Components are limited to filters and other presentation interactions. Follow MUI's App Router integration for the installed Next.js major version, including its style-insertion/cache provider, theme, and baseline in the root layout.
-- Keep the spreadsheet private and grant a dedicated service account **viewer** access. The server uses a read-only Google Sheets API scope and credentials stored only in Vercel environment variables (locally in `.env.local`). No API keys, sheet credentials, unpublished rows, or raw sheet responses go to the browser. A private sheet protects drafts at the source; the published site itself is unrestricted.
-- Access the Sheets API from a `server-only` adapter that reads named tabs/ranges, validates rows, projects only approved public fields, and returns typed view models. Do not add Server Actions, write API routes, a database, or any app-level identity system for this scope. Spreadsheet editors are managed in Google Workspace, outside the website.
-- Deploy preview environments from pull requests and production from the main branch on Vercel. Use separate spreadsheet IDs or synthetic data for previews; never expose unpublished production rows in a preview.
+The application uses TypeScript, Cache Components (`cacheComponents: true`),
+and MUI's App Router cache provider, shared theme, and baseline. Check
+`package.json`, the lockfile, and installed documentation before changing
+framework APIs. Server Components own the reads; credentials and raw responses
+must never reach client components.
 
-## Spreadsheet contract and publication
+## Current spreadsheet contract
 
-Use a single spreadsheet with a stable `event_id` (even if the initial release covers only one night) and these tabs. Agree on exact column names before implementation, and treat missing or malformed fields as validation errors rather than silently inventing data.
+`src/lib/historical-program-data.ts` owns the spreadsheet ID and these ranges:
 
-| Tab | Public fields | Publication rule |
-| --- | --- | --- |
-| Events | event_id, title, starts_at, time_zone, venue, guidelines, updated_at, published | Show published event only |
-| Acts | act_id, event_id, display_name, description, instruments, duration_minutes, published | Show published acts linked to a published event |
-| Schedule | event_id, act_id, starts_at, order, published | Show published slots referencing published acts |
+| Range | Use |
+| --- | --- |
+| `'Time Table (May 2026)'!A2:I15` | Song titles, original artists, and performers by role |
+| `'Time Table (May 2026)'!J2:J15` | Rich-link chips used for YouTube references |
+| `'Time Table (May 2026)'!M95:W` | Running order, including operational entries |
+| `'Gear (May 2026)'!B3:G67` | Gear category, item, details, owner, sharing, and notes |
 
-Keep drafts and planning-only columns out of the returned view models. Do not put private contact details or sensitive workplace information in public fields; ideally keep those in a different spreadsheet entirely. Agree on consent for public performer names/photos and a retention policy with organizers. Validate IDs, dates, time zone, order, external links (if added), and references between rows. Display times in the event's specified time zone, not the visitor's implicit browser zone.
+Values are read as formatted rows; rich-link metadata is read separately.
+The agenda starts at a recognized header row and deliberately has no end-row
+limit so appended performances are included. Song and gear ranges are still
+bounded. Tab names, ranges, and positional column mappings are a contract,
+not auto-discovery; review them before changing spreadsheet layout.
 
-The server filters `published` rows before rendering, but this is an editorial visibility rule, not user authorization. Sheet editors are responsible for approving content before marking it published. A direct sheet edit is the only publishing mechanism; the site never offers an edit form.
+`buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
+schedule entries, and grouped gear. It skips recognized schedule headings and
+the song signup-closed marker, validates required text, clock-time shapes,
+duration bounds, and gear categories, and rejects an empty songs/schedule/gear
+collection. It preserves source order; it does not validate chronological
+ordering, overlaps, or act references. Times are historical clock strings,
+with the program labeled `America/Los_Angeles`, not full dated timestamps.
+The title and time zone are currently fixed in the parser.
 
-## Rendering and cache policy
+Only recognized YouTube video IDs become `youtube-nocookie.com` embed URLs.
+Gear retains sharing availability and tentative/open items.
 
-- Prerender the site shell and cache the public, validated view models with `use cache` and an explicit `cacheLife` suited to the event's update cadence. All cached output is safe to share with every visitor; do not cache raw draft-containing sheet responses as public view models.
-- Refresh on the configured lifetime rather than promising immediate publication: spreadsheet edits cannot automatically call a Next.js invalidation API. Agree on an acceptable delay with organizers and show the sheet's `updated_at` or a clearly labeled last-refreshed time.
-- Handle Google API quota errors, invalid rows, and temporary unavailability with an accessible error state; never fall back to exposing unfiltered sheet data. Keep server logs free of credentials and unpublished content.
+## Publication and privacy
+
+Performer-name consent has been confirmed for the historical site. This is not
+permission to publish contact details, private planning notes, or new photos.
+
+**The live historical adapter has no `published` flag or draft filter.** Its
+publication boundary is the selected historical ranges and projected columns.
+Organizers must keep those cells suitable for public display, including gear
+details and notes. The text filter rejects whole-cell email addresses; it is
+not a general detector for embedded emails, phone numbers, or private prose.
+Do not describe inspection or parsing as automatic anonymization.
+
+The earlier Events/Acts/Schedule model in `program.ts`, its synthetic fixture,
+and `program-data.ts` remain as unused scaffold code with tests. Their
+publication filtering does not protect the current historical routes and is
+not a committed schema for the next event.
+
+Keep the spreadsheet private and grant the service account Viewer access.
+Use only `https://www.googleapis.com/auth/spreadsheets.readonly`. Store
+`SHEETS_SERVICE_ACCOUNT` in local/hosting secrets; agents map the `SHEETS`
+secret per command as described in [AGENTS.md](../AGENTS.md). No credentials,
+raw sheet exports, contact lists, or drafts belong in Git, build artifacts
+intended for sharing, public logs, or client bundles.
+
+## Rendering, caching, and failures
+
+The server adapter caches the validated public program with `use cache` and
+`cacheLife("minutes")`: one-minute server revalidation, five-minute client
+stale time, and one-hour expiry. Refresh is request-driven; the first request
+after the revalidation interval may receive the previous result while a
+background refresh runs. This is not an immediate-publishing guarantee.
+
+`withLastKnownGood` keeps a best-effort in-memory copy per running instance.
+If a read or validation fails, that instance can return its last successful
+program. There is no durable/shared fallback or maximum fallback age; a new
+instance without successful data returns `null` and the pages show an
+unavailable state. The UI does not currently show a last-updated timestamp.
+Do not promise freshness during an outage.
+
+Production prerendering attempts Sheets reads, so a meaningful release build
+needs working credentials, Viewer access, and network access to Google auth
+and Sheets. A successful build alone does not prove the data loaded: errors
+can render the unavailable state. Verify rendered content as well.
 
 ## Routes and UI
 
-- `/`: public event overview and essential details.
-- `/acts`: public published acts, with optional browser-side filters.
-- `/schedule`: public running order with event-local times.
+| Route | Current behavior |
+| --- | --- |
+| `/` | Historical overview, summary counts, links to the other pages |
+| `/schedule` | Source-order running order with time, duration, and performer roles |
+| `/songs` | Song credits, performer roles, and available video embeds |
+| `/gear` | Equipment grouped by category, ownership, sharing, and open needs |
+| `/acts` | Redirect to `/songs` |
 
-Use MUI components and theme tokens for accessible navigation, responsive layouts, loading/empty/error states, and keyboard-friendly filtering. Do not show sign-in, account, registration, or editor controls.
+The ABK Open Mic brand links home; navigation lists Schedule, Songs, and Gear,
+not a separate Overview item. MUI handles responsive layout and presentation.
+There are no lineup filters or invented exact event date/venue.
 
 ## Verification and operations
 
-- Test parsing and filtering with synthetic sheets: missing columns, malformed timestamps, draft rows, unpublished events, and broken act references must not leak or corrupt the public page.
-- Verify cache refresh behavior after a simulated sheet edit, Google API failure handling, mobile and keyboard use, and that only projected public fields reach rendered HTML or client bundles.
-- Run lint, typecheck, tests, and a production build before deployment. Monitor API errors and quota use without logging private spreadsheet content.
+Use the [test-and-build skill](../.github/skills/test-and-build/SKILL.md).
+Existing unit tests cover historical projection, selected invalid inputs,
+YouTube references, agenda headers/appended entries, last-known-good behavior,
+and the legacy synthetic publication model. There is no automated browser
+suite or end-to-end live Sheets/cache-refresh test.
 
-## Open decisions before launch
+For releases, run lint, typecheck, tests, and a credentialed build; manually
+verify routes, redirects, mobile layout, keyboard navigation, unavailable
+states, and that private fields do not reach rendered output. Hosting secrets,
+preview isolation, API access, and quota monitoring are operational settings,
+not guarantees provided by this repository. Preview builds currently use the
+same hard-coded historical sheet; separate preview data is not implemented.
 
-1. What are the final public fields, and have performers consented to publishing their names and any links or photos?
-2. What time zone, spreadsheet owner/editors, and preview-data source should be used?
-3. What cache lifetime and maximum publication delay are acceptable near the event?
+## Decisions before using next-event data
 
-Check framework details against the installed Next.js documentation before implementation: [Cache Components](https://nextjs.org/docs/app/getting-started/cache-components) and [AI coding agents](https://nextjs.org/docs/app/guides/ai-agents).
+1. Confirm the event title, date, time zone, venue, organizers, and source tabs.
+2. Agree on public fields, performer consent, approved media, and retention.
+   Keep contacts and private planning separate from public inputs.
+3. Choose an explicit draft/publication boundary and test it before connecting
+   any next-event ranges. Do not assume the legacy schema is adopted.
+4. Decide whether to retain the historical view and how event selection and
+   preview isolation should work.
+5. Agree on refresh delay, outage/stale-data handling, and freshness labeling.
+6. Confirm production/preview access and browser checks before switching.
+
+Use the [spreadsheet inspection skill](../.github/skills/inspect-spreadsheet/SKILL.md)
+to gather facts read-only. Discovery never authorizes publication or a sheet
+write. See [the update status](WEBSITE_UPDATE_PLAN.md) for the next planning pass.

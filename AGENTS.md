@@ -1,10 +1,15 @@
 # Project instructions
 
-- Read [the architecture](docs/ARCHITECTURE.md) before changing product behavior, Google Sheets access, publication rules, or cache boundaries. Use [the scaffold plan](docs/SCAFFOLD_PLAN.md) for the initial setup; neither document implies that the site has already been built.
+- Read [the architecture](docs/ARCHITECTURE.md) before changing product behavior, Google Sheets access, publication rules, or cache boundaries. The site already runs against the May 2026 historical spreadsheet; do not scaffold it again. [The original scaffold plan](docs/SCAFFOLD_PLAN.md) is archived, and [the website update plan](docs/WEBSITE_UPDATE_PLAN.md) records delivered work and next-event decisions.
 - **Before writing Next.js code, always consult the relevant up-to-date docs for the installed version** in `node_modules/next/dist/docs/`. Locate the appropriate App Router guide or API reference there, heed deprecation notices, and do not rely on remembered APIs. Before dependencies are installed, consult the [official Next.js docs index](https://nextjs.org/docs/llms.txt) and [AI agent guide](https://nextjs.org/docs/app/guides/ai-agents); confirm against bundled docs once Next.js is installed. When `next dev` adds a managed agent-rules block here, keep project-specific instructions outside it.
 - Follow the App Router with TypeScript, Cache Components, and MUI's App Router integration. Check the installed Next.js and MUI versions before choosing providers or cache directives.
-- The site is public and read-only: no website authentication, authorization, database, write endpoints, or sign-up forms. Read a private organizer-managed Google Sheet only on the server with a viewer service account and read-only scope; render only validated, published fields and never expose credentials or drafts. Resolve the architecture's consent and publication decisions before launching with real performer data.
-- After scaffold, verify affected behavior with focused tests and run lint, typecheck, and build for release changes. Keep documentation aligned with material architecture decisions.
+- The site is public and read-only: no website authentication, authorization, database, write endpoints, or sign-up forms. Read the private organizer-managed Google Sheet only on the server with a viewer service account and read-only scope. The current historical adapter publishes selected ranges, not `published` flags; never point it at next-event drafts. Performer-name consent is confirmed for the historical site, not permission to expose contacts or private notes. Resolve the architecture's next-event publication decisions before switching data.
+- Verify affected behavior with focused tests and run lint, typecheck, tests, and build for release changes. Keep documentation aligned with material architecture decisions.
+
+## Repository skills
+
+- Use [test-and-build](.github/skills/test-and-build/SKILL.md) for dependency setup, focused tests, release checks, and browser verification.
+- Use [inspect-spreadsheet](.github/skills/inspect-spreadsheet/SKILL.md) to discover tabs and inspect selected spreadsheet ranges read-only when planning an event. Inspection does not authorize publishing new data.
 
 ## Agent build credentials
 
