@@ -1,8 +1,13 @@
 import { Box, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
 import { getHistoricalProgram } from "@/lib/historical-program-data";
+import ProgramUnavailable from "@/components/program-unavailable";
 
 export default async function SongsPage() {
-  const { songs } = await getHistoricalProgram();
+  const program = await getHistoricalProgram();
+  if (!program) {
+    return <ProgramUnavailable />;
+  }
+  const { songs } = program;
 
   return (
     <Stack spacing={3}>

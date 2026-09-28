@@ -1,8 +1,12 @@
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import { getHistoricalProgram } from "@/lib/historical-program-data";
+import ProgramUnavailable from "@/components/program-unavailable";
 
 export default async function Home() {
   const program = await getHistoricalProgram();
+  if (!program) {
+    return <ProgramUnavailable />;
+  }
   const performerCount = new Set(
     program.schedule.flatMap((entry) => entry.performers.flatMap(({ performers }) => performers)),
   ).size;

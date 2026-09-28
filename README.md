@@ -28,4 +28,14 @@ server-only adapter; the secret is not.
 
 The adapter only reads the May 2026 timetable and gear tabs, caches the
 validated public projection, and excludes email addresses, contact details,
-spreadsheet-only calculations, and private planning notes.
+spreadsheet-only calculations, and private planning notes. The historical
+program cache uses the Next.js `minutes` profile (one-minute server
+revalidation, five-minute client stale time, one-hour expiry). On a failed
+Sheets read or invalid spreadsheet data, a running server instance serves
+its last successfully validated public program. This fallback is in memory
+only: after a restart, on another instance, or before the first successful
+read, the unavailable state is shown instead. Live spreadsheet reads run at
+request time so invalid source data does not prevent the site from building;
+validation still rejects malformed rows rather than publishing partial data.
+The agenda reader skips its column-heading row and reads through the end of
+the schedule, so adding a performance does not require updating a row limit.

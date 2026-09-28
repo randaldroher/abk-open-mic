@@ -1,8 +1,13 @@
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { getHistoricalProgram } from "@/lib/historical-program-data";
+import ProgramUnavailable from "@/components/program-unavailable";
 
 export default async function GearPage() {
-  const { gear } = await getHistoricalProgram();
+  const program = await getHistoricalProgram();
+  if (!program) {
+    return <ProgramUnavailable />;
+  }
+  const { gear } = program;
   const categories = Map.groupBy(gear, ({ category }) => category);
 
   return (

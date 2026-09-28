@@ -1,7 +1,9 @@
 import "server-only";
 import { cacheLife } from "next/cache";
+import { connection } from "next/server";
 import { google } from "googleapis";
 import { buildHistoricalProgram } from "./historical-program";
+import { withLastKnownGood } from "./last-known-good";
 
 const SPREADSHEET_ID = "17jHvnjnWp5x6lne5SrOMFQBtISrYMeo7o0jethdRKHA";
 const READ_ONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly";
@@ -33,10 +35,10 @@ function serviceAccountCredentials() {
   }
 }
 
-export async function getHistoricalProgram() {
+async function readHistoricalProgram() {
   "use cache";
 
-  cacheLife("hours");
+  cacheLife("minutes");
 
   const auth = new google.auth.GoogleAuth({
     credentials: serviceAccountCredentials(),
@@ -48,7 +50,7 @@ export async function getHistoricalProgram() {
       spreadsheetId: SPREADSHEET_ID,
       ranges: [
         "'Time Table (May 2026)'!A2:I15",
-        "'Time Table (May 2026)'!M95:W114",
+        "'Time Table (May 2026)'!M95:W",
         "'Gear (May 2026)'!B3:G67",
       ],
       majorDimension: "ROWS",
@@ -72,4 +74,11 @@ export async function getHistoricalProgram() {
     scheduleRows: schedule?.values ?? [],
     gearRows: gear?.values ?? [],
   });
+}
+
+const loadHistoricalProgram = withLastKnownGood(readHistoricalProgram);
+
+export async function getHistoricalProgram() {
+  await connection();
+  return loadHistoricalProgram();
 }
