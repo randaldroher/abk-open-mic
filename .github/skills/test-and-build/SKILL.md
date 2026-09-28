@@ -79,15 +79,17 @@ SHEETS_SERVICE_ACCOUNT="${SHEETS:?SHEETS agent secret is required}" npm run star
 ```
 
 Run only one server per port and stop it when finished. With the available
-browser tooling, check `/`, `/schedule`, `/songs`, and `/gear`.
-Check the home brand link, narrow and wide layouts, keyboard navigation,
-and relevant loading/unavailable states. Check the footer's server timestamp,
-client-relative text, timer updates, and freshness after navigation; failures
-must not advance a last-known-good timestamp. Do not add browser
-dependencies: no automated browser suite is configured.
+browser tooling, check `/`, `/past-events`, all three event overview and song
+routes, `/past-events/may-2026/schedule`, `/past-events/may-2026/gear`, and
+the legacy `/schedule`, `/songs`, and `/gear` redirects.
+Check the home brand link, both CTAs, narrow and wide layouts, keyboard
+navigation, and relevant loading/unavailable states. Check event pages'
+server timestamp, client-relative text, timer updates, and freshness after
+navigation; failures must not advance a last-known-good timestamp. Do not add
+browser dependencies: no automated browser suite is configured.
 
 A successful build is not proof that Sheets data loaded: failures can produce
-the unavailable state. Confirm that historical content actually renders.
+the unavailable state. Confirm that approved event content actually renders.
 Check that no credentials, contacts, or draft fields appear in rendered HTML,
 client payloads, console output, or screenshots intended for sharing. Inspect
 only approved public content; do not copy raw responses into reports.

@@ -12,7 +12,7 @@ type Props = {
   params: Promise<{ event: string }>;
 };
 
-export default async function PastEventTemplate({ children, params }: Props) {
+export default async function PastEventLayout({ children, params }: Props) {
   const { event } = await params;
   const pastEvent = getPastEvent(event);
   if (!pastEvent) {
