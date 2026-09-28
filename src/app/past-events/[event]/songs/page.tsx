@@ -57,57 +57,87 @@ async function SongCards({ event }: { event: string }) {
   const songs: EventSong[] = eventData.songs;
 
   return (
-      <Box component="ol" sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" }, listStyle: "none", p: 0, m: 0 }}>
-        {songs.map((song, index) => (
-          <Card component="li" key={`${song.title}-${index}`} variant="outlined" sx={{ minWidth: 0 }}>
-            <CardContent sx={{ p: 3 }}>
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="h3">
-                    <Box component="span" sx={{ color: "primary.main", mr: 1 }}>{index + 1}.</Box>
-                    {song.title}
+    <Box
+      component="ol"
+      sx={{
+        display: 'grid',
+        gap: 2,
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+        listStyle: 'none',
+        p: 0,
+        m: 0,
+      }}
+    >
+      {songs.map((song, index) => (
+        <Card
+          component="li"
+          key={`${song.title}-${index}`}
+          variant="outlined"
+          sx={{ minWidth: 0 }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Stack spacing={2}>
+              <Box>
+                <Typography variant="h3">
+                  <Box component="span" sx={{ color: 'primary.main', mr: 1 }}>
+                    {index + 1}.
+                  </Box>
+                  {song.title}
+                </Typography>
+                {song.originalArtist && (
+                  <Typography color="textSecondary">
+                    Originally by {song.originalArtist}
                   </Typography>
-                  {song.originalArtist && (
-                    <Typography color="text.secondary">Originally by {song.originalArtist}</Typography>
-                  )}
-                </Box>
-                <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-                  {song.performers.flatMap((performerRole) =>
-                    "performers" in performerRole
-                      ? performerRole.performers.map((performer) => (
-                          <Chip key={`${performerRole.role}-${performer}`} label={`${performerRole.role}: ${performer}`} size="small" />
-                        ))
-                      : [(
-                          <Chip
-                            key={`${performerRole.role}-${performerRole.name}`}
-                            label={`${performerRole.role}: ${performerRole.name}`}
-                            size="small"
-                          />
-                        )],
-                  )}
-                </Stack>
-                {"videoEmbedUrl" in song && song.videoEmbedUrl && (
-                  <>
-                    <Typography color="text.secondary" variant="body2">
-                      Song reference video
-                    </Typography>
-                    <Box sx={{ aspectRatio: "16 / 9", borderRadius: 0.5, overflow: "hidden", bgcolor: "background.default" }}>
-                      <iframe
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                        loading="lazy"
-                        referrerPolicy="strict-origin-when-cross-origin"
-                        src={song.videoEmbedUrl}
-                        style={{ border: 0, height: "100%", width: "100%" }}
-                        title={`${song.title} song reference on YouTube`}
-                      />
-                    </Box>
-                  </>
+                )}
+              </Box>
+              <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
+                {song.performers.flatMap((performerRole) =>
+                  'performers' in performerRole
+                    ? performerRole.performers.map((performer) => (
+                        <Chip
+                          key={`${performerRole.role}-${performer}`}
+                          label={`${performerRole.role}: ${performer}`}
+                          size="small"
+                        />
+                      ))
+                    : [
+                        <Chip
+                          key={`${performerRole.role}-${performerRole.name}`}
+                          label={`${performerRole.role}: ${performerRole.name}`}
+                          size="small"
+                        />,
+                      ],
                 )}
               </Stack>
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
+              {'videoEmbedUrl' in song && song.videoEmbedUrl && (
+                <>
+                  <Typography color="textSecondary" variant="body2">
+                    Song reference video
+                  </Typography>
+                  <Box
+                    sx={{
+                      aspectRatio: '16 / 9',
+                      borderRadius: 0.5,
+                      overflow: 'hidden',
+                      bgcolor: 'background.default',
+                    }}
+                  >
+                    <iframe
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      src={song.videoEmbedUrl}
+                      style={{ border: 0, height: '100%', width: '100%' }}
+                      title={`${song.title} song reference on YouTube`}
+                    />
+                  </Box>
+                </>
+              )}
+            </Stack>
+          </CardContent>
+        </Card>
+      ))}
+    </Box>
   );
 }

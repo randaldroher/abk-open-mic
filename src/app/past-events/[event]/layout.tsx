@@ -26,7 +26,16 @@ async function EventFreshness({ event }: { event: string }) {
       ? await getJuly2025Songs()
       : await getDecember2025Songs();
 
-  return data ? <LastUpdated fetchedAt={data.fetchedAt} /> : "Last updated: unavailable";
+  return data ? (
+    <LastUpdated fetchedAt={data.fetchedAt} />
+  ) : (
+    <>
+      Last updated:{' '}
+      <Box component="span" sx={{ color: 'warning.dark' }}>
+        Unavailable
+      </Box>
+    </>
+  );
 }
 
 export default async function PastEventLayout({ children, params }: Props) {
@@ -37,24 +46,30 @@ export default async function PastEventLayout({ children, params }: Props) {
   }
 
   return (
-    <SiteFrame freshness={
-      <Suspense fallback={
-        <Box role="status" aria-label="Loading last updated time">
-          <Skeleton width="min(100%, 360px)" sx={{ mx: "auto" }} />
-        </Box>
-      }>
-        <EventFreshness event={event} />
-      </Suspense>
-    }>
+    <SiteFrame
+      freshness={
+        <Suspense
+          fallback={
+            <Box role="status" aria-label="Loading last updated time">
+              <Skeleton width="min(100%, 360px)" sx={{ mx: 'auto' }} />
+            </Box>
+          }
+        >
+          <EventFreshness event={event} />
+        </Suspense>
+      }
+    >
       <Stack spacing={3}>
         <Box component="header">
-          <PageBreadcrumbs items={[
-            { label: "Home", href: "/" },
-            { label: "Past events", href: "/past-events" },
-            { label: pastEvent.label },
-          ]} />
+          <PageBreadcrumbs
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Past events', href: '/past-events' },
+              { label: pastEvent.label },
+            ]}
+          />
           <Typography variant="h1">ABK Open Mic {pastEvent.label}</Typography>
-          <Typography color="text.secondary" sx={{ mt: 1 }}>
+          <Typography color="textSecondary" sx={{ mt: 1 }}>
             Revisit the music and musicians from {pastEvent.label}.
           </Typography>
         </Box>

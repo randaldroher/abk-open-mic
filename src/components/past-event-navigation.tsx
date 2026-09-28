@@ -8,19 +8,25 @@ export default function PastEventNavigation({ eventSlug }: { eventSlug: string }
   const segment = useSelectedLayoutSegment();
 
   return (
-    <Box component="nav" aria-label="Event navigation" sx={{ borderBottom: 1, borderColor: "divider" }}>
-      <Tabs value={segment === "songs" ? "songs" : "videos"} aria-label="Event sections">
-        {["videos", "songs"].map((tab) => (
+    <Box
+      component="nav"
+      aria-label="Event navigation"
+      sx={{ borderBottom: 1, borderColor: 'divider' }}
+    >
+      <Tabs
+        value={segment === 'songs' ? 'songs' : 'videos'}
+        aria-label="Event sections"
+      >
+        {['videos', 'songs'].map((tab) => (
           <Tab
             key={tab}
             component={Link}
             href={`/past-events/${eventSlug}/${tab}`}
             prefetch={true}
             value={tab}
-            label={tab === "videos" ? "Videos" : "Songs"}
+            label={tab === 'videos' ? 'Videos' : 'Songs'}
             id={`event-${tab}-tab`}
             aria-controls={`event-${tab}-panel`}
-            sx={{ fontWeight: 700 }}
           />
         ))}
       </Tabs>

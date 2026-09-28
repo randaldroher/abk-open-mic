@@ -18,11 +18,13 @@ export default function LastUpdated({ fetchedAt }: { fetchedAt: string }) {
 
   return (
     <>
-      Last updated:{" "}
-      <time dateTime={fetchedAt} title={`Data last fetched successfully: ${fetchedAt}`}>
+      Last updated:{' '}
+      <time
+        dateTime={fetchedAt}
+        title={`Data last fetched successfully: ${fetchedAt}`}
+      >
         {now === null ? fetchedAt : relativeFetchTime(fetchedAt, now)}
       </time>
-      {" · Last successful data fetch"}
     </>
   );
 }
