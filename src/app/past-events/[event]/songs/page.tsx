@@ -46,7 +46,7 @@ export default async function SongsPage({ params }: Props) {
 
   return (
     <Stack spacing={3}>
-      <Box sx={{ p: { xs: 3, sm: 4 }, borderRadius: 1, backgroundImage: "var(--abk-section-gradient)" }}>
+      <Box>
         <PageBreadcrumbs items={[
           { label: "Past events", href: "/past-events" },
           { label: eventLabel, href: `/past-events/${event}` },
