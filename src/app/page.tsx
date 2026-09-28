@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from 'next/image';
 import {
   Box,
   Button,
@@ -45,7 +46,31 @@ export default function Home() {
             },
           }}
         >
-          <Container maxWidth="lg">
+          <Box
+            aria-hidden="true"
+            sx={{
+              position: 'absolute',
+              inset: '0 0 0 auto',
+              width: { xs: '100%', md: '65%' },
+              opacity: { xs: 0.16, md: 0.4 },
+              mixBlendMode: { xs: 'luminosity', md: 'normal' },
+              maskImage: {
+                xs: 'linear-gradient(to bottom, transparent, black 40%, transparent)',
+                md: 'linear-gradient(to right, transparent, black 55%)',
+              },
+              pointerEvents: 'none',
+            }}
+          >
+            <Image
+              src="/abk-open-mic-may-2026.png"
+              alt=""
+              fill
+              loading="eager"
+              sizes="(max-width: 900px) 100vw, 65vw"
+              style={{ objectFit: 'cover', objectPosition: 'center 48%' }}
+            />
+          </Box>
+          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
             <Box sx={{ mb: 1 }}>
               <Typography variant="overline" color="primary">
                 Now taking song suggestions

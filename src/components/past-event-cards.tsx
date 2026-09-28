@@ -1,6 +1,13 @@
 import Link from "next/link";
+import Image from 'next/image';
 import { Box, Card, CardContent, SvgIcon, Typography } from "@mui/material";
 import { PAST_EVENTS } from "@/lib/past-events";
+
+const eventImages = {
+  'may-2026': '/abk-open-mic-may-2026.png',
+  'december-2025': '/abk-open-mic-december-2025.png',
+  'july-2025': '/abk-open-mic-july-2025.png',
+} satisfies Record<(typeof PAST_EVENTS)[number]['slug'], string>;
 
 export default function PastEventCards() {
   return (
@@ -31,23 +38,63 @@ export default function PastEventCards() {
             variant="outlined"
             sx={{
               height: '100%',
+              minHeight: 176,
+              position: 'relative',
+              overflow: 'hidden',
               backgroundImage: 'var(--abk-section-gradient)',
               '&:hover, a:focus-visible > &': {
                 borderColor: 'primary.main',
                 boxShadow: 'var(--abk-neon-glow)',
               },
+              '&:hover .event-card-photo, a:focus-visible .event-card-photo': {
+                opacity: 0.4,
+              },
             }}
           >
-            <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+            <Box
+              className="event-card-photo"
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                opacity: 0.3,
+                maskImage:
+                  'linear-gradient(to right, transparent 5%, black 80%)',
+                transition: 'opacity 200ms ease',
+                pointerEvents: 'none',
+                '@media (prefers-reduced-motion: reduce)': {
+                  transition: 'none',
+                },
+              }}
+            >
+              <Image
+                src={eventImages[slug]}
+                alt=""
+                fill
+                loading={slug === 'may-2026' ? 'eager' : 'lazy'}
+                sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
+                style={{ objectFit: 'cover', objectPosition: 'center' }}
+              />
+            </Box>
+            <CardContent
+              sx={{
+                position: 'relative',
+                minHeight: 176,
+                display: 'flex',
+                alignItems: 'flex-start',
+                p: 3,
+                '&:last-child': { pb: 3 },
+              }}
+            >
               <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: 2,
+                  width: '100%',
                 }}
               >
-                <Box>
+                <Box sx={{ textShadow: '0 0 22px rgba(0, 0, 0, 0.8)' }}>
                   <Typography
                     component="h3"
                     variant="h3"

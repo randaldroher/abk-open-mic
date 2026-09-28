@@ -18,6 +18,14 @@ test("event cards render every archive with decorative Material SVG arrows", () 
     assert.ok(html.includes(label));
     assert.ok(html.includes(theme));
   }
+  for (const image of [
+    'abk-open-mic-may-2026.png',
+    'abk-open-mic-december-2025.png',
+    'abk-open-mic-july-2025.png',
+  ]) {
+    assert.ok(html.includes(image));
+  }
+  assert.equal((html.match(/alt=""/g) ?? []).length, 3);
   assert.equal((html.match(/<svg /g) ?? []).length, 3);
   assert.equal((html.match(/aria-hidden="true"/g) ?? []).length, 3);
   assert.ok(!html.includes("↗"));
