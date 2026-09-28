@@ -34,5 +34,6 @@ revalidation, five-minute client stale time, one-hour expiry). On a failed
 Sheets read or invalid spreadsheet data, a running server instance serves
 its last successfully validated public program. This fallback is in memory
 only: after a restart, on another instance, or before the first successful
-read, the unavailable state is shown instead (or the production build fails
-if the sheet is invalid during prerendering).
+read, the unavailable state is shown instead. Live spreadsheet reads run at
+request time so invalid source data does not prevent the site from building;
+validation still rejects malformed rows rather than publishing partial data.

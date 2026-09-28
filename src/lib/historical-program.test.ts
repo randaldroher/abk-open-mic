@@ -69,4 +69,8 @@ test("rejects invalid schedule data and gear without a category", () => {
     () => buildHistoricalProgram({ ...rows, gearRows: [["", "PA", "Speaker", "Owner", "Yes", ""]] }),
     /Invalid historical program data/,
   );
+  assert.throws(
+    () => buildHistoricalProgram({ ...rows, scheduleRows: [] }),
+    /Invalid historical program data/,
+  );
 });
