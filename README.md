@@ -1,14 +1,16 @@
 # ABK Open Mic Night
 
-A public, read-only Next.js site for an open mic night. It presents a sanitized
-historical preview of the May 2026 performance using a private Google Sheet.
-The site is implemented and reads that sheet live; the next event is not
-configured yet.
+A public, read-only Next.js site for ABK Open Mic. It invites people to join
+the next event and archives the July 2025, December 2025, and May 2026 events
+from approved fields in a private Google Sheet. The signup link points to the
+Future tab, but the website does not read or publish that tab.
 
 ## Pages and documentation
 
-- `/`: historical overview (also reached through the ABK Open Mic brand).
-- `/schedule`, `/songs`, `/gear`: running order, song credits/videos, and equipment.
+- `/`: next-event invitation with signup and Slack calls to action, plus archive cards.
+- `/past-events`: archive index.
+- `/past-events/july-2025`, `/past-events/december-2025`, `/past-events/may-2026`: event archive pages.
+- `/songs`, `/schedule`, `/gear`: redirects to the May 2026 archive routes.
 
 Read the [current architecture](docs/ARCHITECTURE.md) for data, publication, and
 cache boundaries, and the [website update status](docs/WEBSITE_UPDATE_PLAN.md)
@@ -58,35 +60,12 @@ For Vercel, open the project’s **Settings → Environment Variables**, add
 environments, and redeploy. The spreadsheet ID is intentionally stored in the
 server-only adapter; the secret is not.
 
-The adapter only reads selected May 2026 timetable and gear ranges and caches
-the validated public projection. These ranges have no draft/publication flags;
-their projected cells must already be approved for public display. The parser
-omits whole-cell email addresses but is not a general privacy scrubber.
-Keep contacts and private notes out of all projected columns, including gear
-notes. Performer-name consent is confirmed for the historical site.
-The historical
-program is prerendered and refreshed with Next.js ISR using the `minutes`
-profile (one-minute server revalidation, five-minute client stale time,
-one-hour expiry). The first request after
-one minute can still receive the previous version while regeneration runs in
-the background; browser navigation checks the server after its stale time.
-On a failed Sheets read or invalid spreadsheet data, a running server instance serves
-its last successfully validated public program. This fallback is in memory
-only: after a restart, on another instance, or before the first successful
-read, the unavailable state is shown instead. There is no maximum age for
-that fallback. The footer shows “Last updated” as relative time since the last
-successful server fetch, not the spreadsheet's edit time. It keeps the original
-fetch timestamp during failures and displays “unavailable” before a successful
-read. Relative time updates in the browser every 30 seconds without fetching
-the sheet; a page load or navigation still follows the cache policy above.
-Production builds need Sheets access
-to prerender real content; a build can still succeed with unavailable pages,
-so check the rendered result. Validation rejects malformed required fields
-rather than publishing a partially parsed program.
-The agenda reader skips its column-heading row and reads through the end of
-the schedule, so adding a performance does not require updating a row limit.
-Song and gear ranges are still bounded. Do not switch ranges to next-event
-drafts until the architecture's publication decisions are resolved.
-During signup planning, rediscover columns primarily by normalized headers:
-new data may change shape frequently, and historical positions are not a
-contract for future tabs.
+The site reads approved archive fields live from the private spreadsheet and
+caches validated public results. May 2026 still uses selected historical ranges
+for songs, schedule, and gear; July and December 2025 discover approved song
+columns from the header row and then request only those public columns. None of
+these adapters read the Future tab, and there are no draft/publication flags:
+the projected cells must already be approved for public display. The parsers
+omit whole-cell email addresses but are not general privacy scrubbers. Keep
+contacts and private notes out of all projected columns, including gear notes.
+Performer-name consent is confirmed for the historical site.

@@ -2,9 +2,12 @@ import { Box, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
 import { notFound } from "next/navigation";
 import { getMay2026Program } from "@/lib/may-2026-program-data";
 import { getJuly2025Songs, getDecember2025Songs } from "@/lib/past-event-song-data";
+import type { Song as HistoricalSong } from "@/lib/historical-program";
+import type { PastEventSong } from "@/lib/past-event-songs";
 import ProgramUnavailable from "@/components/program-unavailable";
 
 type Props = { params: Promise<{ event: string }> };
+type EventSong = HistoricalSong | (PastEventSong & { videoEmbedUrl?: string | null });
 
 export async function generateMetadata({ params }: Props) {
   const { event } = await params;
@@ -36,7 +39,7 @@ export default async function SongsPage({ params }: Props) {
   if (!eventData) {
     return <ProgramUnavailable />;
   }
-  const songs = eventData.songs;
+  const songs: EventSong[] = eventData.songs;
   const eventLabel = event === "may-2026" ? "May 2026"
     : event === "july-2025" ? "July 2025" : "December 2025";
 

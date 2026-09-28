@@ -41,7 +41,7 @@ async function readPastEventSongs(eventKey: keyof typeof EVENT_SHEETS): Promise<
   const sheets = getSheetsClient();
   const headerResponse = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${quotedTab}!A1:Z1`,
+    range: `${quotedTab}!1:1`,
     majorDimension: "ROWS",
     valueRenderOption: "FORMATTED_VALUE",
   });
