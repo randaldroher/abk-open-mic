@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Box, Button, Card, CardActions, CardContent, Paper, Stack, Typography } from "@mui/material";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import PastEventCards from "@/components/past-event-cards";
 import SiteFrame from "@/components/site-frame";
-import { PAST_EVENTS } from "@/lib/past-events";
 
 const SIGNUP_URL = "https://docs.google.com/spreadsheets/d/17jHvnjnWp5x6lne5SrOMFQBtISrYMeo7o0jethdRKHA/edit#gid=1747009845";
 const SLACK_URL = "https://abk.slack.com/archives/C091Y02RLJC";
@@ -85,24 +85,10 @@ export default function Home() {
           <Box>
             <Typography id="past-events-heading" variant="h2">Past events</Typography>
             <Typography color="text.secondary" sx={{ mt: 1 }}>
-              Explore past ABK Open Mic song lineups and event details.
+              Revisit the music from our past performances.
             </Typography>
           </Box>
-          <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" } }}>
-            {PAST_EVENTS.map(({ slug, label }) => (
-              <Card key={slug} variant="outlined" sx={{ display: "flex", flexDirection: "column", borderTop: 2, borderTopColor: "primary.main" }}>
-                <CardContent sx={{ flex: 1 }}>
-                  <Typography variant="h3">ABK Open Mic — {label}</Typography>
-                  <Typography color="text.secondary" sx={{ mt: 1 }}>
-                    Browse the archived song lineup.
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ px: 2, pb: 2 }}>
-                  <Button href={`/past-events/${slug}`}>View event</Button>
-                </CardActions>
-              </Card>
-            ))}
-          </Box>
+          <PastEventCards />
           <Button href="/past-events" variant="text" sx={{ alignSelf: "flex-start" }}>
             Browse all past events
           </Button>

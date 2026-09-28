@@ -23,7 +23,8 @@ Public browser (MUI presentation)
     -> event-isolated cache / instance-local last-known-good fallback
 ```
 
-The application uses TypeScript, Cache Components (`cacheComponents: true`),
+The application uses TypeScript, Cache Components (`cacheComponents: true`,
+which enables Partial Prerendering in Next.js 16),
 and MUI's App Router cache provider, shared theme, and baseline. Check
 `package.json`, the lockfile, and installed documentation before changing
 framework APIs. Server Components own the reads; credentials and raw responses
@@ -62,8 +63,11 @@ fallbacks are isolated from one another and from May 2026.
 schedule entries, and grouped gear. It skips recognized schedule headings and
 the song signup-closed marker, validates required text, clock-time shapes,
 duration bounds, and gear categories, and rejects an empty songs/schedule/gear
-collection. It preserves source order; it does not validate chronological
-ordering or overlaps. Times are historical clock strings,
+collection. Songs follow the schedule's source order by normalized title,
+using artist credits to disambiguate matches; unmatched songs remain at the
+end in signup order. Operational entries are not added to the song list.
+Schedule and gear preserve source order; the parser does not validate
+chronological ordering or overlaps. Times are historical clock strings,
 with the program labeled `America/Los_Angeles`, not full dated timestamps.
 The title and time zone are currently fixed in the parser.
 
@@ -112,7 +116,7 @@ unavailable state. Do not promise freshness during an outage.
 The cached public result includes `fetchedAt`, assigned only after a successful
 Sheets read and validation. The last-known-good fallback retains this timestamp.
 React request memoization shares the same event result between a page and its
-event template. The homepage and archive index make no Sheets read and have no
+event layout. The homepage and archive index make no Sheets read and have no
 historical freshness indicator. Event pages show their own successful-fetch
 timestamp; “Last updated” means last successful data fetch, not a sheet edit.
 The initial HTML contains an ISO time; after hydration, the client shows
@@ -131,21 +135,33 @@ can render the unavailable state. Verify rendered content as well.
 | --- | --- |
 | `/` | Next-event invitation, Future-tab signup and Slack links, past-event cards |
 | `/past-events` | Static archive index, independent of Sheets availability |
-| `/past-events/july-2025` | July 2025 overview and approved song lineup |
-| `/past-events/december-2025` | December 2025 overview and approved song lineup |
-| `/past-events/may-2026` | May 2026 overview, video placeholder, and lineup |
-| `/past-events/<event>/songs` | Event song lineup; May also retains approved song-reference embeds |
-| `/past-events/may-2026/schedule` | Source-order running order with time, duration, and performer roles |
-| `/past-events/may-2026/gear` | Equipment grouped by category, ownership, sharing, and open needs |
-| `/songs`, `/schedule`, `/gear` | Redirects to the corresponding May 2026 archive pages |
+| `/past-events/<event>` | Redirects to that event's Videos tab |
+| `/past-events/<event>/videos` | Default tab with an event-video placeholder |
+| `/past-events/<event>/songs` | Event song lineup; May is in performance order and retains approved song-reference embeds |
+| `/songs` | Redirects to the May 2026 Songs tab |
+
+Supported event slugs are `july-2025`, `december-2025`, and `may-2026`.
+The schedule and gear pages, including their legacy redirects, have been removed
+and return not found. The May adapter still reads and validates its existing
+schedule and gear ranges; removing these pages does not change that data contract.
 
 The ABK Open Mic brand links home; the footer says “ABK Open Mic” and places an
 event's successful-fetch metadata directly below the site name. Global
 navigation includes Past events.
-Archive pages use functional breadcrumbs to navigate the archive hierarchy.
-Songs, Schedule, and Gear are within the May 2026 event navigation. Event video
-sections show a placeholder before the song lineup until approved URLs are
-supplied. No next-event date or venue is invented. MUI handles responsive
+Each event's App Router layout keeps breadcrumbs, an event title without a dash,
+a subtitle, and Videos/Songs tabs above the child page. Next.js links switch tabs
+without replacing the shared layout, and the selected tab follows the URL.
+The event layout supplies `generateStaticParams` for all three known slugs.
+Titles, breadcrumbs, tabs, and the Videos placeholder are prerendered, not loading
+UI. Sheets reads are isolated behind Suspense in the song cards and footer
+freshness metadata; their fallbacks match the responsive card grid (including
+May's reference-video aspect ratio) and timestamp line, respectively. There is
+no whole-page loading boundary replacing the event shell. Tab links prefetch
+their destination content while the existing data-cache lifetimes remain intact.
+Event videos show a placeholder until approved URLs are supplied; song-reference
+videos remain separately labeled on Songs. Home and archive-index cards share
+a compact month/year design with one link per event and no repeated descriptions.
+No next-event date or venue is invented. MUI handles responsive
 layout and presentation.
 
 ## Verification and operations

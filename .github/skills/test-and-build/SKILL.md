@@ -10,8 +10,7 @@ description: Test, typecheck, lint, build, and browser-check the ABK Open Mic si
 1. Work from the repository root; read `AGENTS.md`, `package.json`, and the
    affected architecture before changing behavior. Use absolute repository
    paths when referring to files.
-2. Use Node.js 22 or later and `npm ci` to install the lockfile. The gear page
-   uses `Map.groupBy`, which Node.js 20 lacks. Do not upgrade dependencies or
+2. Use Node.js 22 or later and `npm ci` to install the lockfile. Do not upgrade dependencies or
    introduce a new test runner just to run checks.
 3. Before editing Next.js code, read the relevant installed docs under
    `node_modules/next/dist/docs/`. Check installed Next.js/MUI versions before
@@ -79,9 +78,11 @@ SHEETS_SERVICE_ACCOUNT="${SHEETS:?SHEETS agent secret is required}" npm run star
 ```
 
 Run only one server per port and stop it when finished. With the available
-browser tooling, check `/`, `/past-events`, all three event overview and song
-routes, `/past-events/may-2026/schedule`, `/past-events/may-2026/gear`, and
-the legacy `/schedule`, `/songs`, and `/gear` redirects.
+browser tooling, check `/`, `/past-events`, and all three events' `/videos` and
+`/songs` routes. Confirm event root URLs redirect to Videos, tab navigation
+preserves the shared header, and `/songs` redirects to May's Songs tab.
+Confirm the removed `/schedule`, `/gear`, `/past-events/may-2026/schedule`,
+and `/past-events/may-2026/gear` routes return not found.
 Check the home brand link, both CTAs, narrow and wide layouts, keyboard
 navigation, and relevant loading/unavailable states. Check event pages'
 server timestamp, client-relative text, timer updates, and freshness after

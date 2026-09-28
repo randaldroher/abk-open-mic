@@ -11,8 +11,9 @@ Next-event signup data is not read or published by the website.
 - Responsive event cards and `/past-events` link to the July 2025,
   December 2025, and May 2026 archives without fetching sheet data.
 - `/past-events/<event>` provides each event overview and song lineup.
-  May 2026 retains its Songs, Schedule, and Gear pages. Legacy `/songs`,
-  `/schedule`, and `/gear` routes redirect to those pages.
+  Event root URLs redirect to Videos by default, and May 2026 keeps Songs
+  and Videos tabs. Legacy `/songs` redirects to May Songs; legacy
+  `/schedule` and `/gear` now return not found.
 - July and December adapters read their current header rows, select only
   recognized song, artist, and performer columns, and maintain isolated
   caches, last-known-good fallbacks, and timestamps. July has no artist
