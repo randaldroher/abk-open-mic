@@ -162,9 +162,9 @@ no whole-page loading boundary replacing the event shell. Tab links prefetch
 their destination content while the existing data-cache lifetimes remain intact.
 Event videos show a placeholder until approved URLs are supplied; song-reference
 videos remain separately labeled on Songs. Home and archive-index cards share a compact month/year title and event-theme
-subtitle with one link per event.
-No next-event date or venue is invented. MUI handles responsive
-layout and presentation.
+subtitle with one link per event. The homepage lists the next show as the evening
+of Sunday, October 25; no venue is claimed. MUI handles responsive layout and
+presentation.
 
 ## Verification and operations
 

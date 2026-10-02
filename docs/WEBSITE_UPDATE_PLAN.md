@@ -30,7 +30,9 @@ redaction exist. Live historical publication is range-based, not flag-based.
 ## Next-event invitation and past events — implemented
 
 - The homepage links to the signup tab in the organizer spreadsheet and the
-  confirmed ABK Open Mic Slack channel. It does not read signup data.
+  confirmed ABK Open Mic Slack channel. It lists the show as the evening of
+  Sunday, October 25, and invites interested people to sign up before choosing
+  a song. It does not read signup data.
 - The responsive homepage cards and `/past-events` index show each event's
   month, year, and theme and link to the July 2025, December 2025, and May 2026
   Videos tabs without depending on Sheets.
@@ -47,7 +49,7 @@ redaction exist. Live historical publication is range-based, not flag-based.
 
 The May archive remains a live view of its historical source, not an immutable
 snapshot. The homepage and archive index remain available through Sheets
-outages. The next-event form, title, date, and venue have not been implemented;
+outages. The next-event form, title, and venue have not been implemented;
 organizers continue to manage signup in Google Sheets.
 
 ## Remaining planning and operations
