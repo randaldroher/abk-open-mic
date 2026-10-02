@@ -6,7 +6,11 @@ import PastEventCards from "../components/past-event-cards";
 import SiteNavigation from "../components/site-navigation";
 import SongCardsSkeleton from "../components/song-cards-skeleton";
 import SiteFrame from "../components/site-frame";
-import { PAST_EVENTS } from "./past-events";
+import {
+  PAST_EVENTS,
+  PAST_EVENT_VIDEOS,
+  getPastEventVideos,
+} from './past-events';
 import { SIGNUP_URL } from "./site-links";
 
 test("event cards render every archive with decorative Material SVG arrows", () => {
@@ -29,6 +33,28 @@ test("event cards render every archive with decorative Material SVG arrows", () 
   assert.equal((html.match(/<svg /g) ?? []).length, 3);
   assert.equal((html.match(/aria-hidden="true"/g) ?? []).length, 3);
   assert.ok(!html.includes("↗"));
+});
+
+test('past event videos match their actual YouTube playlist contents', () => {
+  assert.deepEqual(PAST_EVENT_VIDEOS, [
+    {
+      eventSlug: 'july-2025',
+      videos: [{ videoId: 'nWf3AunfcRU', title: 'Open Mic Jul 2025' }],
+    },
+    {
+      eventSlug: 'december-2025',
+      videos: [
+        { videoId: 'NEzyw08Ax78', title: 'Astrud Gilberto - Fly to the Moon' },
+        { videoId: 'UQZbVKRi-M0', title: 'Rush - Witch Hunt' },
+        {
+          videoId: 'WhQHlQLAU8k',
+          title: 'Vince Guaraldi - Christmas Time is Here',
+        },
+        { videoId: 's6aCWR8zHTk', title: 'What a Mario World - RRThiel' },
+      ],
+    },
+  ]);
+  assert.deepEqual(getPastEventVideos('may-2026'), []);
 });
 
 test("song skeletons match the card grid and only reserve references for May", () => {

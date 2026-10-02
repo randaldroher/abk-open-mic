@@ -42,7 +42,11 @@ redaction exist. Live historical publication is range-based, not flag-based.
   present), and performer-role columns, located by normalized headers on each
   read. Private notes and contact columns are not fetched.
 - Event reads have isolated caches, last-known-good fallbacks, and freshness
-  timestamps. Video sections are placeholders pending approved video URLs.
+  timestamps.
+- July and December Videos tabs embed each individual video from the public
+  playlists. The legacy site swapped their playlist links, so the videos are
+  assigned by the playlists' own titles and contents. May remains a placeholder
+  pending an organizer-approved playlist.
 - The May 2026 adapter is named specifically for that event. Former
   `/songs` redirects to its Songs tab. Former schedule and gear routes return
   not found.
@@ -56,9 +60,9 @@ organizers continue to manage signup in Google Sheets.
 
 1. Confirm next-event title, date, time zone, venue, and other details before
    adding them to public homepage copy.
-2. Supply organizer-approved event video URLs and permission in a future
-   change. Current song-reference links are labeled separately and are not
-   represented as recordings of the performances.
+2. Supply an organizer-approved May 2026 event playlist before adding it.
+  Song-reference links remain separately labeled and are not represented as
+  recordings of the performances.
 3. Resolve any future next-event data display with an explicit publication
    boundary and preview isolation before reading signup-tab content.
 4. Use the [test-and-build skill](../.github/skills/test-and-build/SKILL.md)

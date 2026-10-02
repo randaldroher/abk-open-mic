@@ -138,7 +138,7 @@ can render the unavailable state. Verify rendered content as well.
 | `/` | Next-event invitation, Future-tab signup and Slack links, past-event cards |
 | `/past-events` | Static archive index, independent of Sheets availability |
 | `/past-events/<event>` | Redirects to that event's Videos tab |
-| `/past-events/<event>/videos` | Default tab with an event-video placeholder |
+| `/past-events/<event>/videos` | Individual July and December 2025 videos; May 2026 placeholder |
 | `/past-events/<event>/songs` | Event song lineup; May is in performance order and retains approved song-reference embeds |
 | `/songs` | Redirects to the May 2026 Songs tab |
 
@@ -160,8 +160,12 @@ freshness metadata; their fallbacks match the responsive card grid (including
 May's reference-video aspect ratio) and timestamp line, respectively. There is
 no whole-page loading boundary replacing the event shell. Tab links prefetch
 their destination content while the existing data-cache lifetimes remain intact.
-Event videos show a placeholder until approved URLs are supplied; song-reference
-videos remain separately labeled on Songs. Home and archive-index cards share a compact month/year title and event-theme
+July and December event pages embed each individual video from their publicly
+listed playlists using privacy-enhanced `youtube-nocookie.com` embeds. The
+legacy page swapped the two playlist links, so videos are associated using the
+playlist titles and contents. May event videos remain a placeholder until a
+playlist is supplied; song-reference videos remain separately labeled on Songs.
+Home and archive-index cards share a compact month/year title and event-theme
 subtitle with one link per event. The homepage lists the next show as the evening
 of Sunday, October 25; no venue is claimed. MUI handles responsive layout and
 presentation.
