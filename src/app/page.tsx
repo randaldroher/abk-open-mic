@@ -14,7 +14,7 @@ import { SIGNUP_URL, SLACK_URL } from "@/lib/site-links";
 
 export const metadata: Metadata = {
   title: "Join the next ABK Open Mic",
-  description: "Sign up to perform at the next ABK Open Mic and connect with the community.",
+  description: "Join us for the evening show on Sunday, October 25. Sign up even if you haven't chosen a song yet.",
 };
 
 export default function Home() {
@@ -73,7 +73,7 @@ export default function Home() {
           <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
             <Box sx={{ mb: 1 }}>
               <Typography variant="overline" color="primary">
-                Now taking song suggestions
+                Sunday, October 25 · Evening show
               </Typography>
             </Box>
             <Stack
@@ -91,8 +91,9 @@ export default function Home() {
                     maxWidth: 680,
                   }}
                 >
-                  Sign up to play a song, sing along, or join the conversation
-                  with fellow music makers.
+                  Join us for the evening show on Sunday, October 25. Sign up if
+                  you&apos;re interested, even if you don&apos;t know what
+                  you&apos;d like to play yet.
                 </Typography>
               </Box>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>

@@ -7,7 +7,8 @@ Next-event signup data is not read or published by the website.
 
 - `/` invites colleagues to join the next ABK Open Mic, with the primary CTA
   linking to the confirmed Future tab in the organizer workbook and a secondary
-  CTA to the confirmed Slack channel. No date or venue is invented.
+  CTA to the confirmed Slack channel. The homepage lists the show as the evening
+  of Sunday, October 25; no venue is claimed.
 - Responsive event cards and `/past-events` link to the July 2025,
   December 2025, and May 2026 archives without fetching sheet data.
 - `/past-events/<event>` provides each event overview and song lineup.
@@ -32,8 +33,8 @@ archives.
 ## Remaining decisions
 
 - Add approved event-video URLs and publication permission in a future change.
-- Confirm the next event's title, date, time zone, venue, and other public
-  details before adding them to homepage copy.
+- Confirm the next event's title, time zone, venue, and other public details
+  before adding them to homepage copy.
 - Before any website display of Future-tab data, establish and test an explicit
   publication boundary, keep private participant/contact data separate, and
   decide preview isolation. The current site only links to the signup tab.
