@@ -1,7 +1,13 @@
+'use client';
+
+import { Fragment, useState } from 'react';
 import {
+  Box,
+  Button,
   Card,
   CardContent,
   Chip,
+  Collapse,
   Stack,
   Table,
   TableBody,
@@ -11,12 +17,19 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import type { OctoberSignupPerformer } from '@/lib/october-signup';
+import type {
+  OctoberSignupPerformer,
+  PerformerSongInterest,
+} from '@/lib/october-signup';
+
+type PerformerWithSongs = Omit<OctoberSignupPerformer, 'initials'> & {
+  songs: PerformerSongInterest[];
+};
 
 export default function PerformersTable({
   performers,
 }: {
-  performers: OctoberSignupPerformer[];
+  performers: PerformerWithSongs[];
 }) {
   return (
     <Card component="section" variant="outlined">
@@ -25,7 +38,7 @@ export default function PerformersTable({
       >
         <TableContainer>
           <Table
-            aria-label="Performer names, role interests, and genres"
+            aria-label="Performer names, role interests, genres, and proposed songs"
             size="small"
           >
             <TableHead>
@@ -46,41 +59,100 @@ export default function PerformersTable({
               </TableRow>
             </TableHead>
             <TableBody>
-              {performers.map(({ name, initials, genres, roles }) => (
-                <TableRow key={initials}>
-                  <TableCell component="th" scope="row">
-                    <Typography sx={{ fontWeight: 600 }}>{name}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    {roles.length > 0 ? (
-                      <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
-                        {roles.map((role) => (
-                          <Chip key={role} label={role} size="small" />
-                        ))}
-                      </Stack>
-                    ) : (
-                      <Typography color="textSecondary" variant="body2">
-                        No recognized role preferences listed
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {genres.trim() ? (
-                      <Typography sx={{ whiteSpace: 'pre-wrap' }}>
-                        {genres}
-                      </Typography>
-                    ) : (
-                      <Typography color="textSecondary" variant="body2">
-                        No genres listed
-                      </Typography>
-                    )}
-                  </TableCell>
-                </TableRow>
+              {performers.map((performer, index) => (
+                <PerformerRow
+                  key={`${performer.name}-${index}`}
+                  performer={performer}
+                  detailsId={`performer-songs-${index}`}
+                />
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       </CardContent>
     </Card>
+  );
+}
+
+function PerformerRow({
+  performer,
+  detailsId,
+}: {
+  performer: PerformerWithSongs;
+  detailsId: string;
+}) {
+  const { name, genres, roles, songs } = performer;
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <Fragment>
+      <TableRow>
+        <TableCell component="th" scope="row">
+          <Typography sx={{ fontWeight: 600 }}>{name}</Typography>
+          <Button
+            size="small"
+            aria-controls={detailsId}
+            aria-expanded={expanded}
+            aria-label={`${expanded ? 'Hide' : 'Show'} songs for ${name}`}
+            onClick={() => setExpanded((open) => !open)}
+            sx={{ px: 0 }}
+          >
+            {expanded ? 'Hide songs' : 'Show songs'}
+          </Button>
+        </TableCell>
+        <TableCell>
+          {roles.length > 0 ? (
+            <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
+              {roles.map((role) => (
+                <Chip key={role} label={role} size="small" />
+              ))}
+            </Stack>
+          ) : (
+            <Typography color="textSecondary" variant="body2">
+              No recognized role preferences listed
+            </Typography>
+          )}
+        </TableCell>
+        <TableCell>
+          {genres.trim() ? (
+            <Typography sx={{ whiteSpace: 'pre-wrap' }}>{genres}</Typography>
+          ) : (
+            <Typography color="textSecondary" variant="body2">
+              No genres listed
+            </Typography>
+          )}
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell id={detailsId} colSpan={3} sx={{ p: 0 }}>
+          <Collapse in={expanded} timeout="auto" unmountOnExit>
+            <Box sx={{ p: 2 }}>
+              <Typography sx={{ fontWeight: 600 }}>
+                Interested in
+              </Typography>
+              {songs.length > 0 ? (
+                <Box component="ul" sx={{ mb: 0, pl: 3 }}>
+                  {songs.map(({ title, originalArtist, roles }, index) => (
+                    <Box component="li" key={`${title}-${index}`} sx={{ mb: 1 }}>
+                      <Typography>
+                        {title}
+                        {originalArtist ? ` — ${originalArtist}` : ''}
+                      </Typography>
+                      <Typography color="textSecondary" variant="body2">
+                        {roles.join(', ')}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Typography color="textSecondary" variant="body2">
+                  No song interests listed
+                </Typography>
+              )}
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </Fragment>
   );
 }

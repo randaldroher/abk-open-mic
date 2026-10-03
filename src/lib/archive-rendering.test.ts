@@ -121,28 +121,36 @@ test('event planning navigation uses tabs for songs and performers', () => {
   assert.ok(html.includes('aria-label="Event planning sections"'));
 });
 
-test('performer interests render in one card with a table row per performer', () => {
+test('performer interests render in one card with expandable song rows', () => {
   const html = renderToStaticMarkup(
     createElement(PerformersTable, {
       performers: [
         {
           name: 'Alex Brown',
-          initials: 'RD',
           roles: ['Lead Guitar', 'Keyboard'],
           genres: 'Alt-Rock, K-pop',
+          songs: [
+            {
+              title: 'Proposed song',
+              originalArtist: 'Original artist',
+              roles: ['Lead Guitar'],
+            },
+          ],
         },
         {
           name: 'Jamie Young',
-          initials: 'YM',
           roles: ['Vocal'],
           genres: 'Jazz',
+          songs: [],
         },
       ],
     }),
   );
 
   assert.ok(
-    html.includes('aria-label="Performer names, role interests, and genres"'),
+    html.includes(
+      'aria-label="Performer names, role interests, genres, and proposed songs"',
+    ),
   );
   assert.ok(html.includes('Alex Brown'));
   assert.ok(html.includes('Jamie Young'));
@@ -152,7 +160,13 @@ test('performer interests render in one card with a table row per performer', ()
   assert.ok(html.indexOf('Role interests') < html.indexOf('Genres'));
   assert.ok(html.includes('Alt-Rock, K-pop'));
   assert.equal((html.match(/<section\b/g) ?? []).length, 1);
-  assert.equal((html.match(/<tr/g) ?? []).length, 3);
+  assert.ok(html.includes('aria-controls="performer-songs-0"'));
+  assert.ok(html.includes('id="performer-songs-0"'));
+  assert.ok(html.includes('aria-expanded="false"'));
+  assert.ok(html.includes('aria-label="Show songs for Alex Brown"'));
+  assert.ok(html.includes('Show songs'));
+  assert.ok(!html.includes('Proposed song'));
+  assert.equal((html.match(/<tr/g) ?? []).length, 5);
 });
 
 test('robots excludes all paths from compliant crawlers', () => {

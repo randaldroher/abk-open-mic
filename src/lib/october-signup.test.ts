@@ -7,6 +7,7 @@ import {
   octoberSignupSongColumns,
   projectOctoberSignupPerformers,
   projectOctoberSignupSongs,
+  songsInterestedByPerformer,
   sortPerformersByInitials,
   sortSongsByOriginalArtist,
 } from './october-signup';
@@ -92,15 +93,17 @@ test('projects song interests as names without suggested-by or comments', () => 
         title: 'First song',
         originalArtist: 'Artist One',
         interestedPerformers: [
-          { name: 'Alex Brown', roles: ['Vocal'] },
-          { name: 'Casey Doe', roles: ['Vocal'] },
+          { initials: 'AB', name: 'Alex Brown', roles: ['Vocal'] },
+          { initials: 'CD', name: 'Casey Doe', roles: ['Vocal'] },
         ],
         videoId: null,
       },
       {
         title: 'Second song',
         originalArtist: null,
-        interestedPerformers: [{ name: 'Casey Doe', roles: ['Vocal'] }],
+        interestedPerformers: [
+          { initials: 'CD', name: 'Casey Doe', roles: ['Vocal'] },
+        ],
         videoId: null,
       },
     ],
@@ -225,7 +228,7 @@ test('accepts long alphabetic initials and resolves them in song interests', () 
       [['A song', 'An artist', 'OCKYOUNG']],
       new Map(performers.map(({ initials, name }) => [initials, name])),
     )[0].interestedPerformers,
-    [{ name: 'Occkyoung', roles: ['Vocal'] }],
+    [{ initials: 'OCKYOUNG', name: 'Occkyoung', roles: ['Vocal'] }],
   );
 });
 
@@ -240,7 +243,9 @@ test('uses rich-link YouTube URLs for song references', () => {
       {
         title: 'Song One',
         originalArtist: 'Artist',
-        interestedPerformers: [{ name: 'Alex Brown', roles: ['Vocal'] }],
+        interestedPerformers: [
+          { initials: 'AB', name: 'Alex Brown', roles: ['Vocal'] },
+        ],
         videoId: 'tKjZuykKY1I',
       },
     ],
@@ -258,10 +263,42 @@ test('resolves initials and combines role interests under each consented name', 
       ]),
     )[0].interestedPerformers,
     [
-      { name: 'Alex Brown', roles: ['Vocal', 'Lead Guitar'] },
-      { name: 'Jamie Young', roles: ['Rhythm Guitar'] },
+      {
+        initials: 'RD',
+        name: 'Alex Brown',
+        roles: ['Vocal', 'Lead Guitar'],
+      },
+      { initials: 'YM', name: 'Jamie Young', roles: ['Rhythm Guitar'] },
     ],
   );
+});
+
+test('matches proposed song interests by initials, even when names overlap', () => {
+  const songs = projectOctoberSignupSongs(
+    ['Song', 'Artist', 'Vocals', 'Guitar'],
+    [
+      ['First song', 'Artist One', 'AB', 'CD'],
+      ['Second song', '', 'CD', 'CD'],
+      ['Unclaimed song', 'Artist Two', '', ''],
+    ],
+    new Map([
+      ['AB', 'Same Name'],
+      ['CD', 'Same Name'],
+    ]),
+  );
+
+  assert.deepEqual(songsInterestedByPerformer(songs, 'AB'), [
+    { title: 'First song', originalArtist: 'Artist One', roles: ['Vocal'] },
+  ]);
+  assert.deepEqual(songsInterestedByPerformer(songs, 'CD'), [
+    { title: 'First song', originalArtist: 'Artist One', roles: ['Guitar'] },
+    {
+      title: 'Second song',
+      originalArtist: null,
+      roles: ['Vocal', 'Guitar'],
+    },
+  ]);
+  assert.deepEqual(songsInterestedByPerformer(songs, 'EF'), []);
 });
 
 test('sorts songs by original artist, then title, and puts missing artists last', () => {

@@ -8,8 +8,9 @@ King to participate in the October 2026 ABK Open Mic and archives the July
 approved fields in a private Google Sheet; it is not a frozen snapshot. The
 October 2026 Songs page reads proposed song titles, original-artist credits,
 interested-performer names, and YouTube song references. The Performers page
-shows participant names, recognized self-reported role interests, and entered
-genre text; other private signup fields remain unpublished.
+shows participant names, recognized self-reported role interests, entered
+genre text, and expandable proposed songs of interest; other private signup
+fields remain unpublished.
 
 There are no website accounts, authentication, authorization, database, write
 endpoints, Server Actions, or sign-up forms. Organizers edit Google Sheets
@@ -81,7 +82,8 @@ rich-link chips are read only from the selected YouTube column and embedded
 with `youtube-nocookie.com`. Proposed songs and interest are not a confirmed
 lineup or performance order. The Songs tab sorts by original artist, then song
 title, with missing artist credits last; the Performers tab sorts initials
-alphabetically. Missing, duplicated, reversed, or malformed section markers or
+alphabetically and matches song interests by initials. Missing, duplicated,
+reversed, or malformed section markers or
 headers fail closed. The adapter uses the `minutes` cache profile and
 instance-local last-known-good fallback pattern.
 
@@ -176,7 +178,7 @@ can render the unavailable state. Verify rendered content as well.
 | `/past-events` | Static archive index, independent of Sheets availability |
 | `/event-planning` | Redirects to the Songs tab |
 | `/event-planning/songs` | Proposed October 2026 songs, original-artist credits, resolved interested-performer names, and validated YouTube references; not a finalized lineup |
-| `/event-planning/performers` | October signup names, recognized self-reported role interests, and entered genres; no contact fields |
+| `/event-planning/performers` | October signup names, recognized self-reported role interests, entered genres, and expandable proposed song interests; no contact fields |
 | `/songs`, `/performers` | Legacy redirects to their corresponding Event Planning tabs |
 | `/robots.txt` | Disallows crawling of all paths for compliant crawlers |
 | `/past-events/<event>` | Redirects to that event's Videos tab |
