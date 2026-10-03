@@ -49,11 +49,7 @@ function valuesByColumn(
   });
 }
 
-async function readOctober2026Signup(): Promise<October2026Signup> {
-  'use cache';
-
-  cacheLife('minutes');
-
+async function fetchOctober2026Signup(): Promise<October2026Signup> {
   const sheets = getSheetsClient();
   const quotedTab = `'${TAB.replaceAll("'", "''")}'`;
   const sectionResponse = await sheets.spreadsheets.values.get({
@@ -73,23 +69,19 @@ async function readOctober2026Signup(): Promise<October2026Signup> {
   if (lastPerformerRow < firstPerformerRow) {
     throw new Error('Invalid October signup sections');
   }
-  const [performerHeaderResponse, songHeaderResponse] = await Promise.all([
-    sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${quotedTab}!A${performerHeaderRow}:Z${performerHeaderRow}`,
-      majorDimension: 'ROWS',
-      valueRenderOption: 'FORMATTED_VALUE',
-    }),
-    sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${quotedTab}!A${songHeaderRow}:Z${songHeaderRow}`,
-      majorDimension: 'ROWS',
-      valueRenderOption: 'FORMATTED_VALUE',
-    }),
-  ]);
+  const headerResponse = await sheets.spreadsheets.values.batchGet({
+    spreadsheetId: SPREADSHEET_ID,
+    ranges: [
+      `${quotedTab}!A${performerHeaderRow}:Z${performerHeaderRow}`,
+      `${quotedTab}!A${songHeaderRow}:Z${songHeaderRow}`,
+    ],
+    majorDimension: 'ROWS',
+    valueRenderOption: 'FORMATTED_VALUE',
+  });
   const performerHeaders =
-    performerHeaderResponse.data.values?.[0]?.map(String) ?? [];
-  const songHeaders = songHeaderResponse.data.values?.[0]?.map(String) ?? [];
+    headerResponse.data.valueRanges?.[0]?.values?.[0]?.map(String) ?? [];
+  const songHeaders =
+    headerResponse.data.valueRanges?.[1]?.values?.[0]?.map(String) ?? [];
   const performerColumns = octoberSignupPerformerColumns(performerHeaders);
   const songColumns = octoberSignupSongColumns(songHeaders);
   const performerPublicColumns = [
@@ -116,36 +108,33 @@ async function readOctober2026Signup(): Promise<October2026Signup> {
     const letter = columnLetter(column);
     return `${quotedTab}!${letter}${firstSongRow}:${letter}`;
   });
-  const [performerRowsResponse, songRowsResponse, videoChipResponse] =
-    await Promise.all([
-      sheets.spreadsheets.values.batchGet({
-        spreadsheetId: SPREADSHEET_ID,
-        ranges: performerRanges,
-        majorDimension: 'ROWS',
-        valueRenderOption: 'FORMATTED_VALUE',
-      }),
-      sheets.spreadsheets.values.batchGet({
-        spreadsheetId: SPREADSHEET_ID,
-        ranges: songRanges,
-        majorDimension: 'ROWS',
-        valueRenderOption: 'FORMATTED_VALUE',
-      }),
-      songColumns.video === null
-        ? Promise.resolve(null)
-        : sheets.spreadsheets.get({
-            spreadsheetId: SPREADSHEET_ID,
-            ranges: [
-              `${quotedTab}!${columnLetter(songColumns.video)}${firstSongRow}:${columnLetter(songColumns.video)}`,
-            ],
-            includeGridData: true,
-            fields:
-              'sheets(data(rowData(values(chipRuns(chip(richLinkProperties(uri)))))))',
-          }),
-    ]);
+  const publicRanges = [...performerRanges, ...songRanges];
+  const [publicRowsResponse, videoChipResponse] = await Promise.all([
+    sheets.spreadsheets.values.batchGet({
+      spreadsheetId: SPREADSHEET_ID,
+      ranges: publicRanges,
+      majorDimension: 'ROWS',
+      valueRenderOption: 'FORMATTED_VALUE',
+    }),
+    songColumns.video === null
+      ? Promise.resolve(null)
+      : sheets.spreadsheets.get({
+          spreadsheetId: SPREADSHEET_ID,
+          ranges: [
+            `${quotedTab}!${columnLetter(songColumns.video)}${firstSongRow}:${columnLetter(songColumns.video)}`,
+          ],
+          includeGridData: true,
+          fields:
+            'sheets(data(rowData(values(chipRuns(chip(richLinkProperties(uri)))))))',
+        }),
+  ]);
 
-  const performerColumnValues =
-    performerRowsResponse.data.valueRanges?.map(({ values }) => values ?? []) ??
-    [];
+  const publicColumnValues =
+    publicRowsResponse.data.valueRanges?.map(({ values }) => values ?? []) ?? [];
+  const performerColumnValues = publicColumnValues.slice(
+    0,
+    performerRanges.length,
+  );
   const performerRows = valuesByColumn(
     performerPublicColumns,
     performerColumnValues,
@@ -160,8 +149,7 @@ async function readOctober2026Signup(): Promise<October2026Signup> {
     performers.map(({ initials, name }) => [initials, name]),
   );
 
-  const songColumnValues =
-    songRowsResponse.data.valueRanges?.map(({ values }) => values ?? []) ?? [];
+  const songColumnValues = publicColumnValues.slice(performerRanges.length);
   const songRowCount = Math.max(
     0,
     ...songColumnValues.map((values) => values.length),
@@ -191,6 +179,18 @@ async function readOctober2026Signup(): Promise<October2026Signup> {
     songs,
     performers,
   };
+}
+
+async function readOctober2026Signup(): Promise<October2026Signup | null> {
+  'use cache';
+
+  cacheLife('seconds');
+
+  try {
+    return await fetchOctober2026Signup();
+  } catch {
+    return null;
+  }
 }
 
 export const getOctober2026Signup = cache(

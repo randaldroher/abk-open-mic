@@ -31,11 +31,7 @@ function columnLetter(index: number): string {
   return column;
 }
 
-async function readPastEventSongs(eventKey: keyof typeof EVENT_SHEETS): Promise<PastEventSongs> {
-  "use cache";
-
-  cacheLife("minutes");
-
+async function fetchPastEventSongs(eventKey: keyof typeof EVENT_SHEETS): Promise<PastEventSongs> {
   const { tab, title } = EVENT_SHEETS[eventKey];
   const quotedTab = `'${tab.replaceAll("'", "''")}'`;
   const sheets = getSheetsClient();
@@ -64,6 +60,20 @@ async function readPastEventSongs(eventKey: keyof typeof EVENT_SHEETS): Promise<
   });
   const songs = projectPastEventSongs(headers, rows);
   return { eventTitle: title, fetchedAt: new Date().toISOString(), songs };
+}
+
+async function readPastEventSongs(
+  eventKey: keyof typeof EVENT_SHEETS,
+): Promise<PastEventSongs | null> {
+  "use cache";
+
+  cacheLife("minutes");
+
+  try {
+    return await fetchPastEventSongs(eventKey);
+  } catch {
+    return null;
+  }
 }
 
 function createLoader(eventKey: keyof typeof EVENT_SHEETS) {

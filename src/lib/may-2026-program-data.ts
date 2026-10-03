@@ -5,11 +5,7 @@ import { buildHistoricalProgram } from "./historical-program";
 import { getSheetsClient, SPREADSHEET_ID } from "./google-sheets";
 import { withLastKnownGood } from "./last-known-good";
 
-async function readMay2026Program() {
-  "use cache";
-
-  cacheLife("minutes");
-
+async function fetchMay2026Program() {
   const sheets = getSheetsClient();
   const [rowsResponse, linksResponse] = await Promise.all([
     sheets.spreadsheets.values.batchGet({
@@ -41,6 +37,18 @@ async function readMay2026Program() {
     gearRows: gear?.values ?? [],
   });
   return { ...program, fetchedAt: new Date().toISOString() };
+}
+
+async function readMay2026Program() {
+  "use cache";
+
+  cacheLife("minutes");
+
+  try {
+    return await fetchMay2026Program();
+  } catch {
+    return null;
+  }
 }
 
 const loadMay2026Program = withLastKnownGood(readMay2026Program);
