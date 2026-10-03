@@ -128,7 +128,7 @@ function PerformerRow({
           <Collapse id={detailsId} in={expanded} timeout="auto" unmountOnExit>
             <Box sx={{ p: 2 }}>
               <Typography sx={{ fontWeight: 600 }}>
-                Proposed songs of interest
+                Interested in
               </Typography>
               {songs.length > 0 ? (
                 <Box component="ul" sx={{ mb: 0, pl: 3 }}>
