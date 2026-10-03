@@ -1,3 +1,5 @@
+import { createPerformerNameFormatter } from './performer-names';
+
 export type PerformerRole = {
   role: string;
   performers: string[];
@@ -235,11 +237,31 @@ export function buildHistoricalProgram({
     throw new Error("Invalid historical program data");
   }
 
+  const displayName = createPerformerNameFormatter(
+    [...songs, ...schedule].flatMap((entry) =>
+      entry.performers.flatMap(({ performers }) => performers),
+    ),
+  );
+  const formatPerformerRoles = (roles: PerformerRole[]) =>
+    roles.map((role) => ({
+      ...role,
+      performers: role.performers.map(displayName),
+    }));
+
   return {
     title: "ABK Open Mic May 2026",
     timeZone: "America/Los_Angeles",
-    songs: songsInPerformanceOrder(songs, schedule),
-    schedule,
+    songs: songsInPerformanceOrder(
+      songs.map((song) => ({
+        ...song,
+        performers: formatPerformerRoles(song.performers),
+      })),
+      schedule,
+    ),
+    schedule: schedule.map((entry) => ({
+      ...entry,
+      performers: formatPerformerRoles(entry.performers),
+    })),
     gear,
   };
 }

@@ -1,3 +1,5 @@
+import { createPerformerNameFormatter } from './performer-names';
+
 export type PastEventSong = {
   title: string;
   originalArtist: string | null;
@@ -84,5 +86,15 @@ export function projectPastEventSongs(headers: string[], rows: string[][]): Past
   if (songs.length === 0) {
     throw new Error("Invalid past event song data");
   }
-  return songs;
+
+  const displayName = createPerformerNameFormatter(
+    songs.flatMap((song) => song.performers.map(({ name }) => name)),
+  );
+  return songs.map((song) => ({
+    ...song,
+    performers: song.performers.map((performer) => ({
+      ...performer,
+      name: displayName(performer.name),
+    })),
+  }));
 }
