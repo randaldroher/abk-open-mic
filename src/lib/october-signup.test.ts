@@ -154,18 +154,31 @@ test('projects names, initials, recognized roles, and entered genres only', () =
     ]),
     [
       {
-        name: 'Alex Brown',
+        name: 'Alex',
         initials: 'RD',
         roles: ['Lead Guitar', 'Rhythm Guitar'],
         genres: 'Alt-Rock, K-pop / shoegaze',
       },
       {
-        name: 'Jamie Young',
+        name: 'Jamie',
         initials: 'KL',
         roles: ['Vocal', 'Keyboard'],
         genres: 'Jazz',
       },
     ],
+  );
+});
+
+test('adds last initials to October performers who share a first name', () => {
+  assert.deepEqual(
+    projectOctoberSignupPerformers(
+      ['Name', 'Initials', 'Roles', 'Genres'],
+      [
+        ['Alex Brown', 'AB', 'Guitar', 'Rock'],
+        ['Alex Jones', 'AJ', 'Vocal', 'Jazz'],
+      ],
+    ).map(({ name }) => name),
+    ['Alex B.', 'Alex J.'],
   );
 });
 
@@ -178,7 +191,7 @@ test('omits name-like values from the initials column and recognizes only valid 
         ['alex@example.com', 'AB', 'Vocal', 'Jazz'],
       ],
     ),
-    [{ name: 'Alex Brown', initials: 'RD', roles: ['Guitar'], genres: 'Rock' }],
+    [{ name: 'Alex', initials: 'RD', roles: ['Guitar'], genres: 'Rock' }],
   );
   assert.equal(
     getYouTubeVideoId(

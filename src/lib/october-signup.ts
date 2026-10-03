@@ -1,3 +1,5 @@
+import { createPerformerNameFormatter } from './performer-names';
+
 export type OctoberSignupSong = {
   title: string;
   originalArtist: string | null;
@@ -331,7 +333,14 @@ export function projectOctoberSignupPerformers(
   if (performers.length === 0) {
     throw new Error('Invalid October performer data');
   }
-  return performers;
+
+  const displayName = createPerformerNameFormatter(
+    performers.map(({ name }) => name),
+  );
+  return performers.map((performer) => ({
+    ...performer,
+    name: displayName(performer.name),
+  }));
 }
 
 export function getYouTubeVideoId(value: string): string | null {
