@@ -3,8 +3,14 @@ import { createPerformerNameFormatter } from './performer-names';
 export type OctoberSignupSong = {
   title: string;
   originalArtist: string | null;
-  interestedPerformers: Array<{ name: string; roles: string[] }>;
+  interestedPerformers: Array<{ initials: string; name: string; roles: string[] }>;
   videoId: string | null;
+};
+
+export type PerformerSongInterest = {
+  title: string;
+  originalArtist: string | null;
+  roles: string[];
 };
 
 export type OctoberSignupPerformer = {
@@ -47,6 +53,18 @@ export function sortPerformersByInitials(
   return [...performers].sort((left, right) =>
     compareAlphabetically(left.initials, right.initials),
   );
+}
+
+export function songsInterestedByPerformer(
+  songs: OctoberSignupSong[],
+  initials: string,
+): PerformerSongInterest[] {
+  return songs.flatMap(({ title, originalArtist, interestedPerformers }) => {
+    const interest = interestedPerformers.find(
+      (performer) => performer.initials === initials,
+    );
+    return interest ? [{ title, originalArtist, roles: interest.roles }] : [];
+  });
 }
 
 const SONG_HEADERS = ['song', 'song title', 'title'];
@@ -201,7 +219,7 @@ export function projectOctoberSignupSongs(
 
     const interestsByInitials = new Map<
       string,
-      { name: string; roles: Set<string> }
+      { initials: string; name: string; roles: Set<string> }
     >();
     for (const { column, role } of columns.roles) {
       const seen = new Set<string>();
@@ -218,6 +236,7 @@ export function projectOctoberSignupSongs(
         }
         seen.add(initials);
         const interest = interestsByInitials.get(initials) ?? {
+          initials,
           name,
           roles: new Set<string>(),
         };
@@ -226,7 +245,7 @@ export function projectOctoberSignupSongs(
       }
     }
     const interestedPerformers = [...interestsByInitials.values()].map(
-      ({ name, roles }) => ({ name, roles: [...roles] }),
+      ({ initials, name, roles }) => ({ initials, name, roles: [...roles] }),
     );
     const videoId =
       columns.video === null
