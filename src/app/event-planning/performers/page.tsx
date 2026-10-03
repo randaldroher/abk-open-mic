@@ -12,15 +12,15 @@ import {
 export const metadata: Metadata = {
   title: 'Performers',
   description:
-    'Performer names, genres, and role interests for the October 2026 ABK Open Mic.',
+    'Performer names, genres, role interests, and proposed songs for the October 2026 ABK Open Mic.',
 };
 
 export default function PerformersPage() {
   return (
     <Stack spacing={3}>
       <Typography color="textSecondary">
-        Performer names, entered genres, and self-reported role interests. This
-        is not a confirmed lineup.
+        Performer names, entered genres, self-reported role interests, and
+        proposed songs of interest. This is not a confirmed lineup.
       </Typography>
       <Suspense fallback={<PerformerSkeleton />}>
         <PerformerList />
