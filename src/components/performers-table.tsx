@@ -124,8 +124,8 @@ function PerformerRow({
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell colSpan={3} sx={{ p: 0 }}>
-          <Collapse id={detailsId} in={expanded} timeout="auto" unmountOnExit>
+        <TableCell id={detailsId} colSpan={3} sx={{ p: 0 }}>
+          <Collapse in={expanded} timeout="auto" unmountOnExit>
             <Box sx={{ p: 2 }}>
               <Typography sx={{ fontWeight: 600 }}>
                 Interested in
