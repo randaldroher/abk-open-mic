@@ -32,7 +32,20 @@ redaction exist. Live historical publication is range-based, not flag-based.
 - The homepage links to the signup tab in the organizer spreadsheet and the
   confirmed ABK Open Mic Slack channel. It lists the show as the evening of
   Sunday, October 25, and invites interested people to sign up before choosing
-  a song. It does not read signup data.
+  a song.
+- `/event-planning/songs` lists proposed song titles, artist credits, matched
+  performer names by role, and validated YouTube references from the October
+  signup tab. Header names are normalized on read.
+- `/event-planning/performers` lists consented performer names, recognized
+  self-reported role interests, and entered Genres text as written. Contacts,
+  availability, notes, comments, and suggested-by fields are not fetched.
+  Signup interest is not a confirmed lineup.
+- `/robots.txt` disallows crawling by compliant search bots; already-known URLs
+  may remain indexed until the search engine removes them.
+- The homepage has a dedicated Event Planning section with one card for each
+  tab; these links are outside the hero. `/event-planning` opens Songs by
+  default, and legacy `/songs` and `/performers` redirect to the new tabs. The
+  May archive remains available at `/past-events/may-2026/songs`.
 - The responsive homepage cards and `/past-events` index show each event's
   month, year, and theme and link to the July 2025, December 2025, and May 2026
   Videos tabs without depending on Sheets.
@@ -47,14 +60,14 @@ redaction exist. Live historical publication is range-based, not flag-based.
   playlists. The legacy site swapped their playlist links, so the videos are
   assigned by the playlists' own titles and contents. May remains a placeholder
   pending an organizer-approved playlist.
-- The May 2026 adapter is named specifically for that event. Former
-  `/songs` redirects to its Songs tab. Former schedule and gear routes return
-  not found.
+- The May 2026 adapter is named specifically for that event. May Songs remains at
+  `/past-events/may-2026/songs`. Former schedule and gear routes return not
+  found.
 
 The May archive remains a live view of its historical source, not an immutable
 snapshot. The homepage and archive index remain available through Sheets
-outages. The next-event form, title, and venue have not been implemented;
-organizers continue to manage signup in Google Sheets.
+outages. There is no website signup form; organizers continue to manage signup
+in Google Sheets. No venue is claimed on the site.
 
 ## Remaining planning and operations
 
@@ -63,8 +76,11 @@ organizers continue to manage signup in Google Sheets.
 2. Supply an organizer-approved May 2026 event playlist before adding it.
   Song-reference links remain separately labeled and are not represented as
   recordings of the performances.
-3. Resolve any future next-event data display with an explicit publication
-   boundary and preview isolation before reading signup-tab content.
+3. Keep contacts, notes, comments, suggested-by values, and other unapproved
+  signup fields private. Names are public only with the participant consent
+  confirmed for this October projection. Names/roles/genres are interests, not
+  a confirmed lineup. Keep preview isolation explicit before connecting any
+  additional planning data.
 4. Use the [test-and-build skill](../.github/skills/test-and-build/SKILL.md)
    for release checks and browser verification. Hosting and participant access
    remain operational settings.

@@ -1,6 +1,6 @@
 'use client';
 
-import { SIGNUP_URL, SLACK_URL } from '@/lib/site-links';
+import { SIGNUP_URL } from '@/lib/site-links';
 import {
   AppBar,
   Box,
@@ -11,7 +11,10 @@ import {
 } from '@mui/material';
 import Link from 'next/link';
 
-const navigation = [{ label: 'Past events', href: '/past-events' }];
+const navigation = [
+  { label: 'Event planning', href: '/event-planning' },
+  { label: 'Past events', href: '/past-events' },
+];
 
 export default function SiteNavigation() {
   return (
@@ -64,21 +67,6 @@ export default function SiteNavigation() {
               {label}
             </Button>
           ))}
-          <Button
-            component="a"
-            href={SLACK_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="text"
-            color="inherit"
-            sx={{
-              px: { xs: 0.5, sm: 1 },
-              whiteSpace: 'nowrap',
-              display: { xs: 'none', sm: 'inline-flex' },
-            }}
-          >
-            Slack
-          </Button>
           <Button
             component="a"
             href={SIGNUP_URL}

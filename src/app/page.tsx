@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import PastEventCards from "@/components/past-event-cards";
+import EventPlanningCards from '@/components/event-planning-cards';
 import SiteFrame from "@/components/site-frame";
 import { SIGNUP_URL, SLACK_URL } from "@/lib/site-links";
 
@@ -126,6 +127,19 @@ export default function Home() {
       }
     >
       <Stack spacing={10}>
+        <Box component="section" aria-labelledby="event-planning-heading">
+          <Stack spacing={2}>
+            <Box>
+              <Typography id="event-planning-heading" variant="h2">
+                Event planning
+              </Typography>
+              <Typography color="textSecondary" sx={{ mt: 1 }}>
+                Explore proposed songs and performer interests for October 2026.
+              </Typography>
+            </Box>
+            <EventPlanningCards />
+          </Stack>
+        </Box>
         <Box component="section" aria-labelledby="past-events-heading">
           <Stack spacing={2}>
             <Box>

@@ -3,10 +3,13 @@
 ## Current scope
 
 The public, read-only site invites colleagues from Activision, Blizzard, and
-King to participate in the next ABK Open Mic and archives the July 2025,
-December 2025, and May 2026 events. Archive data is read live from approved
-fields in a private Google Sheet; it is not a frozen snapshot. The signup link
-points to the Future tab, but the website does not read or publish its contents.
+King to participate in the October 2026 ABK Open Mic and archives the July
+2025, December 2025, and May 2026 events. Archive data is read live from
+approved fields in a private Google Sheet; it is not a frozen snapshot. The
+October 2026 Songs page reads proposed song titles, original-artist credits,
+interested-performer names, and YouTube song references. The Performers page
+shows participant names, recognized self-reported role interests, and entered
+genre text; other private signup fields remain unpublished.
 
 There are no website accounts, authentication, authorization, database, write
 endpoints, Server Actions, or sign-up forms. Organizers edit Google Sheets
@@ -59,6 +62,23 @@ unassigned. Missing or malformed song tables are unavailable rather than
 partially published. These event-specific reads and their last-known-good
 fallbacks are isolated from one another and from May 2026.
 
+The October 2026 signup adapter reads only the participant `Name`, `Initials`,
+`Roles`, and `Genres` columns below the header in row 3, and the song table's
+`Song`, `Orginal Artist` (the current spelling), recognized role-interest, and
+`YouTube Link` columns below the header in row 17. It never fetches contact
+fields, practice availability, notes, song `Suggested By`, or comments. Song
+role-interest cells are projected only when their tokens match participant
+initials, then display the corresponding consented name. Performer-page roles
+are limited to recognized role labels; initials must match a short ASCII
+format. Genre text is displayed as entered, without taxonomy normalization.
+YouTube video IDs are accepted only from recognized YouTube URLs;
+rich-link chips are read only from the selected YouTube column and embedded
+with `youtube-nocookie.com`. Proposed songs and interest are not a confirmed
+lineup or performance order. The Songs tab sorts by original artist, then song
+title, with missing artist credits last; the Performers tab sorts initials
+alphabetically. A moved or malformed header fails closed. The adapter uses the
+`minutes` cache profile and instance-local last-known-good fallback pattern.
+
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
 schedule entries, and grouped gear. It skips recognized schedule headings and
 the song signup-closed marker, validates required text, clock-time shapes,
@@ -77,8 +97,12 @@ Gear retains sharing availability and tentative/open items.
 ## Publication and privacy
 
 Publication of the July and December 2025 event song lineups has been approved,
-as has the existing May 2026 historical site. This is not permission to publish
-contact details, private planning notes, or new photos.
+as has the existing May 2026 historical site. The October 2026 request confirms
+participant consent for public display of names and authorizes a limited
+projection of self-reported role interests and entered genre text, proposed
+song titles and original-artist credits, resolved interested-performer names
+on songs, and recognized YouTube song references. Contacts, private planning
+notes, and new photos are not authorized.
 
 **The May 2026 adapter has no `published` flag.** Its
 publication boundary is the selected historical ranges and projected columns.
@@ -89,8 +113,12 @@ Do not describe inspection or parsing as automatic anonymization.
 
 The 2025 adapters publish only song titles, available original-artist credits,
 and assigned performers in recognized role columns. Contact and note columns
-are not fetched for those archives. The next-event signup tab is linked to
-directly but is never read by the site.
+are not fetched for those archives. The October signup link opens the signup
+tab. The website reads only names, initials, role preferences, and genres for
+the performers page, and song titles, original-artist credits, recognized
+role-interest columns, and YouTube links for the songs page. Contact data,
+availability, suggested-by values, and all notes/comments remain private and
+are not fetched.
 
 Keep the spreadsheet private and grant the service account Viewer access.
 Use only `https://www.googleapis.com/auth/spreadsheets.readonly`. On a local
@@ -119,8 +147,9 @@ The cached public result includes `fetchedAt`, assigned only after a successful
 Sheets read and validation. The last-known-good fallback retains this timestamp.
 React request memoization shares the same event result between a page and its
 event layout. The homepage and archive index make no Sheets read and have no
-historical freshness indicator. Event pages show their own successful-fetch
-timestamp; “Last updated” means last successful data fetch, not a sheet edit.
+historical freshness indicator. Event pages and the October proposed-songs page
+show their own successful-fetch timestamp; “Last updated” means last successful
+data fetch, not a sheet edit.
 The initial HTML contains an ISO time; after hydration, the client shows
 relative minutes/hours/days and refreshes that label every 30 seconds. This
 timer does not poll Sheets or refresh page data. Without a successful result,
@@ -135,12 +164,16 @@ can render the unavailable state. Verify rendered content as well.
 
 | Route | Current behavior |
 | --- | --- |
-| `/` | Next-event invitation, Future-tab signup and Slack links, past-event cards |
+| `/` | October 2026 invitation with signup and Slack links, Event Planning cards for Songs and Performers, and past-event cards |
 | `/past-events` | Static archive index, independent of Sheets availability |
+| `/event-planning` | Redirects to the Songs tab |
+| `/event-planning/songs` | Proposed October 2026 songs, original-artist credits, resolved interested-performer names, and validated YouTube references; not a finalized lineup |
+| `/event-planning/performers` | October signup names, recognized self-reported role interests, and entered genres; no contact fields |
+| `/songs`, `/performers` | Legacy redirects to their corresponding Event Planning tabs |
+| `/robots.txt` | Disallows crawling of all paths for compliant crawlers |
 | `/past-events/<event>` | Redirects to that event's Videos tab |
 | `/past-events/<event>/videos` | Individual July and December 2025 videos; May 2026 placeholder |
 | `/past-events/<event>/songs` | Event song lineup; May is in performance order and retains approved song-reference embeds |
-| `/songs` | Redirects to the May 2026 Songs tab |
 
 Supported event slugs are `july-2025`, `december-2025`, and `may-2026`.
 The schedule and gear pages, including their legacy redirects, have been removed
@@ -150,6 +183,10 @@ schedule and gear ranges; removing these pages does not change that data contrac
 The ABK Open Mic brand links home; the footer says “ABK Open Mic” and places an
 event's successful-fetch metadata directly below the site name. Global
 navigation includes Past events.
+The Event Planning layout keeps its shared heading, subtitle, Songs/Performers
+tabs, and last-successful-fetch metadata above both child pages. Its tab bar
+uses the same MUI Tabs/Tab interaction and selected-segment behavior as the
+past-event Videos/Songs tabs.
 Each event's App Router layout keeps breadcrumbs, an event title without a dash,
 a subtitle, and Videos/Songs tabs above the child page. Next.js links switch tabs
 without replacing the shared layout, and the selected tab follows the URL.
@@ -186,18 +223,25 @@ preview isolation, API access, and quota monitoring are operational settings,
 not guarantees provided by this repository. Preview builds currently use the
 same hard-coded historical sheet; separate preview data is not implemented.
 
-## Decisions before using next-event data
+## Next-event publication boundary and remaining decisions
 
-1. Confirm the next event's title, date, time zone, venue, organizers, and source tabs.
-2. Agree on public fields, performer consent, approved media, and retention.
-   Keep contacts and private planning separate from public inputs.
-3. Choose an explicit draft/publication boundary and test it before connecting
-   any next-event ranges.
-4. Decide whether to retain the historical view and how event selection and
+1. The October pages use a narrow, header-mapped projection of consented names,
+   initials, entered genres, recognized role interests, proposed songs, and
+   validated YouTube references. Interest is not a confirmed program or
+   performer assignment; no venue is claimed.
+2. Keep contacts and all other private signup fields out of the public
+   projection. Any expansion beyond the approved name, initials, roles, genres,
+   songs, and video fields needs a separate publication decision.
+3. Decide whether to retain the historical view and how event selection and
    preview isolation should work.
-5. Agree on refresh delay and outage/stale-data handling; event freshness
+4. Agree on refresh delay and outage/stale-data handling; event freshness
    reports fetch age, not the source's edit time.
-6. Confirm production/preview access and browser checks before switching.
+5. Confirm production/preview access and browser checks before connecting any
+   additional next-event data.
+
+The root `robots.txt` disallows crawling by compliant bots. This is a crawl
+preference, not access control or a guarantee that URLs already known to a
+search engine will disappear from its index.
 
 Use the [spreadsheet inspection skill](../.github/skills/inspect-spreadsheet/SKILL.md)
 to gather facts read-only. Discovery never authorizes publication or a sheet
