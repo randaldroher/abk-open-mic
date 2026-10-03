@@ -4,7 +4,10 @@ import { Suspense } from 'react';
 import ProgramUnavailable from '@/components/program-unavailable';
 import PerformersTable from '@/components/performers-table';
 import { getOctober2026Signup } from '@/lib/october-2026-signup-data';
-import { sortPerformersByInitials } from '@/lib/october-signup';
+import {
+  songsInterestedByPerformer,
+  sortPerformersByInitials,
+} from '@/lib/october-signup';
 
 export const metadata: Metadata = {
   title: 'Performers',
@@ -47,6 +50,11 @@ async function PerformerList() {
   }
 
   return (
-    <PerformersTable performers={sortPerformersByInitials(data.performers)} />
+    <PerformersTable
+      performers={sortPerformersByInitials(data.performers).map((performer) => ({
+        ...performer,
+        songs: songsInterestedByPerformer(data.songs, performer.initials),
+      }))}
+    />
   );
 }
