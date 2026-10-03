@@ -97,6 +97,31 @@ export function normalizeSignupHeader(value: string): string {
   return value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
+export function octoberSignupSectionRows(firstColumn: string[]): {
+  performers: number;
+  songs: number;
+} {
+  const markerRows = new Map<string, number[]>();
+  firstColumn.forEach((cell, index) => {
+    const marker = normalizeSignupHeader(cell);
+    if (marker === 'performers' || marker === 'songs') {
+      markerRows.set(marker, [...(markerRows.get(marker) ?? []), index + 1]);
+    }
+  });
+
+  const performerRows = markerRows.get('performers') ?? [];
+  const songRows = markerRows.get('songs') ?? [];
+  if (
+    performerRows.length !== 1 ||
+    songRows.length !== 1 ||
+    songRows[0] <= performerRows[0]
+  ) {
+    throw new Error('Invalid October signup sections');
+  }
+
+  return { performers: performerRows[0], songs: songRows[0] };
+}
+
 function findUniqueColumn(
   headers: string[],
   aliases: string[],

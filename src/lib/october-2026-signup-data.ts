@@ -6,6 +6,7 @@ import { withLastKnownGood } from './last-known-good';
 import {
   getYouTubeVideoId,
   octoberSignupPerformerColumns,
+  octoberSignupSectionRows,
   octoberSignupSongColumns,
   projectOctoberSignupPerformers,
   projectOctoberSignupSongs,
@@ -21,10 +22,6 @@ export type October2026Signup = {
 };
 
 const TAB = 'Sign Up (October 2026)';
-const PERFORMER_HEADER_ROW = 3;
-const FIRST_PERFORMER_ROW = PERFORMER_HEADER_ROW + 1;
-const SONG_HEADER_ROW = 17;
-const FIRST_SONG_ROW = SONG_HEADER_ROW + 1;
 
 function columnLetter(index: number): string {
   let value = index + 1;
@@ -59,16 +56,33 @@ async function readOctober2026Signup(): Promise<October2026Signup> {
 
   const sheets = getSheetsClient();
   const quotedTab = `'${TAB.replaceAll("'", "''")}'`;
+  const sectionResponse = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${quotedTab}!A1:A`,
+    majorDimension: 'ROWS',
+    valueRenderOption: 'FORMATTED_VALUE',
+  });
+  const sectionRows = octoberSignupSectionRows(
+    (sectionResponse.data.values ?? []).map((row) => String(row[0] ?? '')),
+  );
+  const performerHeaderRow = sectionRows.performers + 1;
+  const songHeaderRow = sectionRows.songs + 1;
+  const firstPerformerRow = performerHeaderRow + 1;
+  const firstSongRow = songHeaderRow + 1;
+  const lastPerformerRow = sectionRows.songs - 1;
+  if (lastPerformerRow < firstPerformerRow) {
+    throw new Error('Invalid October signup sections');
+  }
   const [performerHeaderResponse, songHeaderResponse] = await Promise.all([
     sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${quotedTab}!A${PERFORMER_HEADER_ROW}:Z${PERFORMER_HEADER_ROW}`,
+      range: `${quotedTab}!A${performerHeaderRow}:Z${performerHeaderRow}`,
       majorDimension: 'ROWS',
       valueRenderOption: 'FORMATTED_VALUE',
     }),
     sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${quotedTab}!A${SONG_HEADER_ROW}:Z${SONG_HEADER_ROW}`,
+      range: `${quotedTab}!A${songHeaderRow}:Z${songHeaderRow}`,
       majorDimension: 'ROWS',
       valueRenderOption: 'FORMATTED_VALUE',
     }),
@@ -96,11 +110,11 @@ async function readOctober2026Signup(): Promise<October2026Signup> {
   ];
   const performerRanges = performerPublicColumns.map((column) => {
     const letter = columnLetter(column);
-    return `${quotedTab}!${letter}${FIRST_PERFORMER_ROW}:${letter}${SONG_HEADER_ROW - 1}`;
+    return `${quotedTab}!${letter}${firstPerformerRow}:${letter}${lastPerformerRow}`;
   });
   const songRanges = songPublicColumns.map((column) => {
     const letter = columnLetter(column);
-    return `${quotedTab}!${letter}${FIRST_SONG_ROW}:${letter}`;
+    return `${quotedTab}!${letter}${firstSongRow}:${letter}`;
   });
   const [performerRowsResponse, songRowsResponse, videoChipResponse] =
     await Promise.all([
@@ -121,7 +135,7 @@ async function readOctober2026Signup(): Promise<October2026Signup> {
         : sheets.spreadsheets.get({
             spreadsheetId: SPREADSHEET_ID,
             ranges: [
-              `${quotedTab}!${columnLetter(songColumns.video)}${FIRST_SONG_ROW}:${columnLetter(songColumns.video)}`,
+              `${quotedTab}!${columnLetter(songColumns.video)}${firstSongRow}:${columnLetter(songColumns.video)}`,
             ],
             includeGridData: true,
             fields:
@@ -135,7 +149,7 @@ async function readOctober2026Signup(): Promise<October2026Signup> {
   const performerRows = valuesByColumn(
     performerPublicColumns,
     performerColumnValues,
-    SONG_HEADER_ROW - FIRST_PERFORMER_ROW,
+    lastPerformerRow - firstPerformerRow + 1,
     performerHeaders.length,
   );
   const performers = projectOctoberSignupPerformers(
