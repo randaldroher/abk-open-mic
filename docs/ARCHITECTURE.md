@@ -62,11 +62,14 @@ unassigned. Missing or malformed song tables are unavailable rather than
 partially published. These event-specific reads and their last-known-good
 fallbacks are isolated from one another and from May 2026.
 
-The October 2026 signup adapter reads only the participant `Name`, `Initials`,
-`Roles`, and `Genres` columns below the header in row 3, and the song table's
-`Song`, `Orginal Artist` (the current spelling), recognized role-interest, and
-`YouTube Link` columns below the header in row 17. It never fetches contact
-fields, practice availability, notes, song `Suggested By`, or comments. Song
+The October 2026 signup adapter scans only column A for the normalized
+`Performers` and `Songs` section markers. The header row follows each marker;
+performer entries run from below the Performers header up to the Songs marker,
+and song entries run from below the Songs header to the end of the tab. It reads
+only the participant `Name`, `Initials`, `Roles`, and `Genres` columns, and the
+song table's `Song`, `Orginal Artist` (the current spelling), recognized
+role-interest, and `YouTube Link` columns. It never fetches contact fields,
+practice availability, notes, song `Suggested By`, or comments. Song
 role-interest cells are projected only when their tokens match participant
 initials, then display the corresponding consented name. Performer-page roles
 are limited to recognized role labels; initials must match a short ASCII
@@ -76,8 +79,9 @@ rich-link chips are read only from the selected YouTube column and embedded
 with `youtube-nocookie.com`. Proposed songs and interest are not a confirmed
 lineup or performance order. The Songs tab sorts by original artist, then song
 title, with missing artist credits last; the Performers tab sorts initials
-alphabetically. A moved or malformed header fails closed. The adapter uses the
-`minutes` cache profile and instance-local last-known-good fallback pattern.
+alphabetically. Missing, duplicated, reversed, or malformed section markers or
+headers fail closed. The adapter uses the `minutes` cache profile and
+instance-local last-known-good fallback pattern.
 
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
 schedule entries, and grouped gear. It skips recognized schedule headings and

@@ -3,12 +3,41 @@ import test from 'node:test';
 import {
   getYouTubeVideoId,
   octoberSignupPerformerColumns,
+  octoberSignupSectionRows,
   octoberSignupSongColumns,
   projectOctoberSignupPerformers,
   projectOctoberSignupSongs,
   sortPerformersByInitials,
   sortSongsByOriginalArtist,
 } from './october-signup';
+
+test('locates signup sections by their normalized marker cells', () => {
+  assert.deepEqual(
+    octoberSignupSectionRows([
+      '',
+      ' Performers ',
+      'Name',
+      'Added performer row',
+      '',
+      '  SONGS\n',
+      'Song',
+    ]),
+    { performers: 2, songs: 6 },
+  );
+});
+
+test('fails closed when signup section markers are missing, duplicated, or reversed', () => {
+  for (const firstColumn of [
+    ['Performers'],
+    ['Performers', 'Songs', 'Songs'],
+    ['Songs', 'Performers'],
+  ]) {
+    assert.throws(
+      () => octoberSignupSectionRows(firstColumn),
+      /Invalid October signup sections/,
+    );
+  }
+});
 
 test("maps October signup songs from normalized headers, including the sheet's artist typo", () => {
   assert.deepEqual(
