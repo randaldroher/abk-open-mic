@@ -60,11 +60,21 @@ export default function SiteNavigation() {
               component={Link}
               href={href}
               key={href}
+              aria-label={label}
               variant="text"
               color="inherit"
               sx={{ px: { xs: 0.5, sm: 1 }, whiteSpace: 'nowrap' }}
             >
-              {label}
+              {label === 'Event planning' ? (
+                <>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                    Event{' '}
+                  </Box>
+                  Planning
+                </>
+              ) : (
+                label
+              )}
             </Button>
           ))}
           <Button
