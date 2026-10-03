@@ -164,6 +164,7 @@ test('performer interests render in one card with expandable song rows', () => {
   assert.equal((html.match(/<section\b/g) ?? []).length, 1);
   assert.ok(html.includes('aria-controls="performer-songs-RD"'));
   assert.ok(html.includes('aria-expanded="false"'));
+  assert.ok(html.includes('aria-label="Show songs for Alex Brown"'));
   assert.ok(html.includes('Show songs'));
   assert.ok(!html.includes('Proposed song'));
   assert.equal((html.match(/<tr/g) ?? []).length, 5);

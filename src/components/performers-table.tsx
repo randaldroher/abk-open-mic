@@ -84,6 +84,7 @@ function PerformerRow({ performer }: { performer: PerformerWithSongs }) {
             size="small"
             aria-controls={detailsId}
             aria-expanded={expanded}
+            aria-label={`${expanded ? 'Hide' : 'Show'} songs for ${name}`}
             onClick={() => setExpanded((open) => !open)}
             sx={{ px: 0 }}
           >
