@@ -153,6 +153,10 @@ unavailable state. Do not promise freshness during an outage.
 
 The cached public result includes `fetchedAt`, assigned only after a successful
 Sheets read and validation. The last-known-good fallback retains this timestamp.
+Failed refreshes return a cached unavailable result, so an outage does not cause
+every page request to retry Google Sheets before the one-minute revalidation
+interval. The October adapter batches its two header reads and all selected
+public value ranges to minimize API requests without fetching private columns.
 React request memoization shares the same event result between a page and its
 event layout. The homepage and archive index make no Sheets read and have no
 historical freshness indicator. Event pages and the October proposed-songs page

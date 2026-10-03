@@ -28,6 +28,16 @@ test("returns unavailable when no successful result is available", async () => {
   assert.equal(await load(), null);
 });
 
+test("retains the last successful result when a cached read returns null", async () => {
+  const first = { fetchedAt: "2026-05-01T18:00:00.000Z", title: "Program" };
+  let result: typeof first | null = first;
+  const load = withLastKnownGood(async () => result);
+
+  assert.equal(await load(), first);
+  result = null;
+  assert.equal(await load(), first);
+});
+
 test("preserves the successful fetch timestamp through failures until recovery", async () => {
   const first = { fetchedAt: "2026-05-01T18:00:00.000Z", title: "First program" };
   const next = { fetchedAt: "2026-05-01T18:10:00.000Z", title: "Updated program" };
