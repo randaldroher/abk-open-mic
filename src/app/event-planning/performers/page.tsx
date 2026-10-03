@@ -51,10 +51,14 @@ async function PerformerList() {
 
   return (
     <PerformersTable
-      performers={sortPerformersByInitials(data.performers).map((performer) => ({
-        ...performer,
-        songs: songsInterestedByPerformer(data.songs, performer.initials),
-      }))}
+      performers={sortPerformersByInitials(data.performers).map(
+        ({ name, genres, roles, initials }) => ({
+          name,
+          genres,
+          roles,
+          songs: songsInterestedByPerformer(data.songs, initials),
+        }),
+      )}
     />
   );
 }

@@ -22,7 +22,7 @@ import type {
   PerformerSongInterest,
 } from '@/lib/october-signup';
 
-type PerformerWithSongs = OctoberSignupPerformer & {
+type PerformerWithSongs = Omit<OctoberSignupPerformer, 'initials'> & {
   songs: PerformerSongInterest[];
 };
 
@@ -59,8 +59,12 @@ export default function PerformersTable({
               </TableRow>
             </TableHead>
             <TableBody>
-              {performers.map((performer) => (
-                <PerformerRow key={performer.initials} performer={performer} />
+              {performers.map((performer, index) => (
+                <PerformerRow
+                  key={`${performer.name}-${index}`}
+                  performer={performer}
+                  detailsId={`performer-songs-${index}`}
+                />
               ))}
             </TableBody>
           </Table>
@@ -70,10 +74,15 @@ export default function PerformersTable({
   );
 }
 
-function PerformerRow({ performer }: { performer: PerformerWithSongs }) {
-  const { name, initials, genres, roles, songs } = performer;
+function PerformerRow({
+  performer,
+  detailsId,
+}: {
+  performer: PerformerWithSongs;
+  detailsId: string;
+}) {
+  const { name, genres, roles, songs } = performer;
   const [expanded, setExpanded] = useState(false);
-  const detailsId = `performer-songs-${initials}`;
 
   return (
     <Fragment>

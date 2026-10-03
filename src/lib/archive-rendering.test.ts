@@ -127,7 +127,6 @@ test('performer interests render in one card with expandable song rows', () => {
       performers: [
         {
           name: 'Alex Brown',
-          initials: 'RD',
           roles: ['Lead Guitar', 'Keyboard'],
           genres: 'Alt-Rock, K-pop',
           songs: [
@@ -140,7 +139,6 @@ test('performer interests render in one card with expandable song rows', () => {
         },
         {
           name: 'Jamie Young',
-          initials: 'YM',
           roles: ['Vocal'],
           genres: 'Jazz',
           songs: [],
@@ -162,7 +160,7 @@ test('performer interests render in one card with expandable song rows', () => {
   assert.ok(html.indexOf('Role interests') < html.indexOf('Genres'));
   assert.ok(html.includes('Alt-Rock, K-pop'));
   assert.equal((html.match(/<section\b/g) ?? []).length, 1);
-  assert.ok(html.includes('aria-controls="performer-songs-RD"'));
+  assert.ok(html.includes('aria-controls="performer-songs-0"'));
   assert.ok(html.includes('aria-expanded="false"'));
   assert.ok(html.includes('aria-label="Show songs for Alex Brown"'));
   assert.ok(html.includes('Show songs'));
