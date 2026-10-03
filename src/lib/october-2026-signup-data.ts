@@ -184,7 +184,7 @@ async function fetchOctober2026Signup(): Promise<October2026Signup> {
 async function readOctober2026Signup(): Promise<October2026Signup | null> {
   'use cache';
 
-  cacheLife('minutes');
+  cacheLife('seconds');
 
   try {
     return await fetchOctober2026Signup();

@@ -82,7 +82,7 @@ with `youtube-nocookie.com`. Proposed songs and interest are not a confirmed
 lineup or performance order. The Songs tab sorts by original artist, then song
 title, with missing artist credits last; the Performers tab sorts initials
 alphabetically. Missing, duplicated, reversed, or malformed section markers or
-headers fail closed. The adapter uses the `minutes` cache profile and
+headers fail closed. The adapter uses the `seconds` cache profile and
 instance-local last-known-good fallback pattern.
 
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
@@ -144,6 +144,9 @@ The May server adapter caches the validated public program with `use cache` and
 stale time, and one-hour expiry. Refresh is request-driven; the first request
 after the revalidation interval may receive the previous result while a
 background refresh runs. This is not an immediate-publishing guarantee.
+The October signup adapter uses `cacheLife("seconds")`: one-second server
+revalidation, 30-second client stale time, and one-minute expiry. Historical
+event adapters remain on the `minutes` profile.
 
 Each event uses `withLastKnownGood` to keep a best-effort in-memory copy per running instance.
 If a read or validation fails, that instance can return its last successful
@@ -154,9 +157,9 @@ unavailable state. Do not promise freshness during an outage.
 The cached public result includes `fetchedAt`, assigned only after a successful
 Sheets read and validation. The last-known-good fallback retains this timestamp.
 Failed refreshes return a cached unavailable result, so an outage does not cause
-every page request to retry Google Sheets before the one-minute revalidation
-interval. The October adapter batches its two header reads and all selected
-public value ranges to minimize API requests without fetching private columns.
+every page request to retry Google Sheets before the configured revalidation
+interval. The October adapter batches its two header reads and all selected public
+value ranges to minimize API requests without fetching private columns.
 React request memoization shares the same event result between a page and its
 event layout. The homepage and archive index make no Sheets read and have no
 historical freshness indicator. Event pages and the October proposed-songs page
