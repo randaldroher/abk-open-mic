@@ -104,7 +104,8 @@ test('site navigation links to event planning and past events without Slack', ()
   const html = renderToStaticMarkup(createElement(SiteNavigation));
 
   assert.ok(html.includes('href="/event-planning"'));
-  assert.ok(html.includes('>Event planning</a>'));
+  assert.ok(html.includes('aria-label="Event planning"'));
+  assert.ok(html.includes('Event </span>Planning</a>'));
   assert.ok(html.includes('href="/past-events"'));
   assert.ok(!html.includes('>Slack</a>'));
   assert.ok(html.includes(`href="${SIGNUP_URL.replaceAll('&', '&amp;')}"`));
