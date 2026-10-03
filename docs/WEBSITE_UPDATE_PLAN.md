@@ -37,7 +37,8 @@ redaction exist. Live historical publication is range-based, not flag-based.
   performer names by role, and validated YouTube references from the October
   signup tab. Header names are normalized on read.
 - `/event-planning/performers` lists consented performer names, recognized
-  self-reported role interests, and entered Genres text as written. Contacts,
+  self-reported role interests, and entered Genres text as written. Expandable
+  rows show proposed songs of interest, matched by participant initials. Contacts,
   availability, notes, comments, and suggested-by fields are not fetched.
   Signup interest is not a confirmed lineup.
 - `/robots.txt` disallows crawling by compliant search bots; already-known URLs
