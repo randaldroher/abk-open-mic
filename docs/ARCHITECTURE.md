@@ -61,6 +61,8 @@ projection excludes other columns and treats the `<Open>` performer marker as
 unassigned. Missing or malformed song tables are unavailable rather than
 partially published. These event-specific reads and their last-known-good
 fallbacks are isolated from one another and from May 2026.
+Public song lineups show performers by first name, adding the last initial when
+multiple performers in the event share that first name.
 
 The October 2026 signup adapter scans only column A for the normalized
 `Performers` and `Songs` section markers. The header row follows each marker;
@@ -123,6 +125,8 @@ the performers page, and song titles, original-artist credits, recognized
 role-interest columns, and YouTube links for the songs page. Contact data,
 availability, suggested-by values, and all notes/comments remain private and
 are not fetched.
+Public performer names use first names, adding the last initial only when the
+event roster contains multiple performers with the same first name.
 
 Keep the spreadsheet private and grant the service account Viewer access.
 Use only `https://www.googleapis.com/auth/spreadsheets.readonly`. On a local

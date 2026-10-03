@@ -43,7 +43,7 @@ test("orders songs by schedule source order without adding operational entries o
     title: "Opening",
     originalArtist: "Artist",
     durationMinutes: 3,
-    performers: [{ role: "Vocal", performers: ["Opening singer"] }],
+    performers: [{ role: "Vocal", performers: ["Opening"] }],
   });
   assert.deepEqual(input, original);
 });
@@ -87,7 +87,7 @@ test("matches normalized titles while retaining song metadata and references", (
     performers: [
       { role: "Vocal", performers: ["Singer"] },
       { role: "Guitar", performers: ["Guitar"] },
-      { role: "Guitar 2", performers: ["Second Guitar"] },
+      { role: "Guitar 2", performers: ["Second"] },
       { role: "Bass", performers: ["Bass"] },
       { role: "Keyboard", performers: ["Keys"] },
       { role: "Drums", performers: ["Drummer"] },
@@ -117,8 +117,27 @@ test("disambiguates duplicate song titles using normalized original artists", ()
     "Second   Artist", "First Artist", "Unscheduled Artist",
   ]);
   assert.deepEqual(program.songs.map((song) => song.performers[0].performers[0]), [
-    "Second singer", "First singer", "Unscheduled singer",
+    "Second", "First", "Unscheduled",
   ]);
+});
+
+test("disambiguates repeated first names across the May event roster", () => {
+  const program = buildHistoricalProgram({
+    ...rows,
+    songsRows: [
+      ["First song", "Artist", "Alex Brown"],
+      ["Second song", "Artist", "Alex Jones"],
+    ],
+    scheduleRows: [
+      ["6:00", "First song", "Artist", "3", "6:03", "Alex Brown"],
+      ["6:03", "Second song", "Artist", "3", "6:06", "Alex Jones"],
+    ],
+  });
+
+  assert.deepEqual(
+    program.songs.map((song) => song.performers[0]?.performers[0]),
+    ["Alex B.", "Alex J."],
+  );
 });
 
 test("keeps signup order for duplicate titles when schedule artist matches none", () => {

@@ -26,6 +26,21 @@ test("projects only header-selected public song fields in source order", () => {
   ]);
 });
 
+test("adds last initials when event performers share a first name", () => {
+  const songs = projectPastEventSongs(
+    ["Song", "Vocal", "Guitar"],
+    [
+      ["First song", "Alex Brown", "Jamie Young"],
+      ["Second song", "Alex Jones", ""],
+    ],
+  );
+
+  assert.deepEqual(
+    songs.map(({ performers }) => performers.map(({ name }) => name)),
+    [["Alex B.", "Jamie"], ["Alex J."]],
+  );
+});
+
 test("supports an event tab without an artist column and normalizes header spacing", () => {
   assert.deepEqual(
     projectPastEventSongs([" Song ", "Additional\nInstruments"], [["Title", "Cello"]]),
