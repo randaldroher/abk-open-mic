@@ -89,7 +89,7 @@ function PerformerRow({
 
   return (
     <Fragment>
-      <TableRow>
+      <TableRow sx={isLast ? { '& > *': { borderBottom: 0 } } : undefined}>
         <TableCell component="th" scope="row">
           <Typography sx={{ fontWeight: 600 }}>{name}</Typography>
           <Button
