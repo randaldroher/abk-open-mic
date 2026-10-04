@@ -64,6 +64,7 @@ export default function PerformersTable({
                   key={`${performer.name}-${index}`}
                   performer={performer}
                   detailsId={`performer-songs-${index}`}
+                  isLast={index === performers.length - 1}
                 />
               ))}
             </TableBody>
@@ -77,9 +78,11 @@ export default function PerformersTable({
 function PerformerRow({
   performer,
   detailsId,
+  isLast,
 }: {
   performer: PerformerWithSongs;
   detailsId: string;
+  isLast: boolean;
 }) {
   const { name, genres, roles, songs } = performer;
   const [expanded, setExpanded] = useState(false);
@@ -124,7 +127,11 @@ function PerformerRow({
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell id={detailsId} colSpan={3} sx={{ p: 0 }}>
+        <TableCell
+          id={detailsId}
+          colSpan={3}
+          sx={{ p: 0, ...(isLast && { borderBottom: 0 }) }}
+        >
           <Collapse in={expanded} timeout="auto" unmountOnExit>
             <Box sx={{ p: 2 }}>
               <Typography sx={{ fontWeight: 600 }}>
