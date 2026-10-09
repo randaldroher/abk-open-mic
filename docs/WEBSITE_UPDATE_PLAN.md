@@ -33,18 +33,26 @@ redaction exist. Live historical publication is range-based, not flag-based.
   confirmed ABK Open Mic Slack channel. It lists the show as the evening of
   Sunday, October 25, and invites interested people to sign up before choosing
   a song.
+- `/event-planning/set-list` is the first/default planning tab and shows the
+  October timetable's song, original artist, and recognized role columns in a
+  responsive sortable table. Practice, Link, and Comments are excluded from
+  reads. Initials resolve to public first names. Blue “Nice to have” and magenta
+  “Needed!” chips share performer/count tooltips with the Songs page.
 - `/event-planning/songs` lists proposed song titles, artist credits, matched
   performer names by role, and validated YouTube references from the October
-  signup tab. Header names are normalized on read.
+  signup tab. Header names are normalized on read. Cards are unnumbered and have
+  stable song/artist anchors for timetable links, including timetable-only
+  songs and outstanding-role chips.
 - `/event-planning/performers` lists consented performer names, recognized
   self-reported role interests, and entered Genres text as written. Expandable
-  rows show proposed songs of interest, matched by participant initials. Contacts,
+  rows show set-list assignments (with unique assigned-song counts on the
+  expand links) separately from proposed interests, matched by participant initials. Contacts,
   availability, notes, comments, and suggested-by fields are not fetched.
   Signup interest is not a confirmed lineup.
 - `/robots.txt` disallows crawling by compliant search bots; already-known URLs
   may remain indexed until the search engine removes them.
 - The homepage has a dedicated Event Planning section with one card for each
-  tab; these links are outside the hero. `/event-planning` opens Songs by
+  tab; these links are outside the hero. `/event-planning` opens Set List by
   default, and legacy `/songs` and `/performers` redirect to the new tabs. The
   May archive remains available at `/past-events/may-2026/songs`.
 - The responsive homepage cards and `/past-events` index show each event's

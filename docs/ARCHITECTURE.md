@@ -9,7 +9,10 @@ approved fields in a private Google Sheet; it is not a frozen snapshot. The
 October 2026 Songs page reads proposed song titles, original-artist credits,
 interested-performer names, and YouTube song references. The Performers page
 shows participant names, recognized self-reported role interests, entered
-genre text, and expandable proposed songs of interest; other private signup
+genre text, and expandable proposed songs of interest and set-list assignments.
+The Set List page publishes song titles, artist credits, recognized role
+assignments, and the reviewed “Nice to have” / “Needed!” markers from the October
+timetable; other private signup
 fields remain unpublished.
 
 There are no website accounts, authentication, authorization, database, write
@@ -87,6 +90,25 @@ reversed, or malformed section markers or headers fail closed. The adapter uses
 the `seconds` cache profile and
 instance-local last-known-good fallback pattern.
 
+The October timetable adapter discovers normalized headers in row 1 of
+`Time Table (October 2026)` and reads only Song, Original Artist, and recognized
+performer-role columns. The song table ends at its first blank song row.
+Practice, Link, and Comments columns are not fetched. Assignments resolve
+against signup initials to the same public first-name roster. Only recognized
+need markers (including the reviewed `Nice to have (strings)` qualifier) are
+published; unmatched initials and other role-cell prose are not displayed.
+Set List sorts by original artist by default, with sortable song and role
+headers; sorting does not indicate performance order. Shared blue/magenta role
+chips on Set List and Songs show eligible role-interest performers and their
+unique assigned-song counts in tooltips. Guitar role interests are considered
+across guitar parts, and Additional Instruments uses Other Role interests.
+Songs uses stable title/artist anchors and includes timetable-only songs so
+set-list links have destinations. Performer expansion distinguishes assignments
+from proposed interests; its count includes only unique set-list songs.
+The timetable has its own `seconds` cache and instance-local fallback. An
+unavailable timetable does not hide signup data, and the planning freshness
+timestamp is the older successful fetch when both sources are available.
+
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
 schedule entries, and grouped gear. It skips recognized schedule headings and
 the song signup-closed marker, validates required text, clock-time shapes,
@@ -110,7 +132,9 @@ participant consent for public display of names and authorizes a limited
 projection of self-reported role interests and entered genre text, proposed
 song titles and original-artist credits, resolved interested-performer names
 on songs, and recognized YouTube song references. Contacts, private planning
-notes, and new photos are not authorized.
+notes, and new photos are not authorized. The Set List request additionally
+authorizes the narrow October timetable projection described above, not
+practice details, links, or comments.
 
 **The May 2026 adapter has no `published` flag.** Its
 publication boundary is the selected historical ranges and projected columns.
@@ -123,8 +147,9 @@ The 2025 adapters publish only song titles, available original-artist credits,
 and assigned performers in recognized role columns. Contact and note columns
 are not fetched for those archives. The October signup link opens the signup
 tab. The website reads only names, initials, role preferences, and genres for
-the performers page, and song titles, original-artist credits, recognized
-role-interest columns, and YouTube links for the songs page. Contact data,
+the performers page, song titles, original-artist credits, recognized
+role-interest columns, and YouTube links for the songs page, plus the selected
+October timetable song/artist/role columns. Contact data,
 availability, suggested-by values, and all notes/comments remain private and
 are not fetched.
 Public performer names use first names, adding the last initial only when the
@@ -181,11 +206,12 @@ can render the unavailable state. Verify rendered content as well.
 
 | Route | Current behavior |
 | --- | --- |
-| `/` | October 2026 invitation with signup and Slack links, Event Planning cards for Songs and Performers, and past-event cards |
+| `/` | October 2026 invitation with signup and Slack links, Event Planning cards for Set List, Songs, and Performers, and past-event cards |
 | `/past-events` | Static archive index, independent of Sheets availability |
-| `/event-planning` | Redirects to the Songs tab |
+| `/event-planning` | Redirects to the first/default Set List tab |
+| `/event-planning/set-list` | Sortable October timetable song/artist/role table with resolved names and role-need chips |
 | `/event-planning/songs` | Proposed October 2026 songs, original-artist credits, resolved interested-performer names, and validated YouTube references; not a finalized lineup |
-| `/event-planning/performers` | October signup names, recognized self-reported role interests, entered genres, and expandable proposed song interests; no contact fields |
+| `/event-planning/performers` | October signup names, recognized self-reported role interests, entered genres, expandable set-list assignments and proposed song interests; no contact fields |
 | `/songs`, `/performers` | Legacy redirects to their corresponding Event Planning tabs |
 | `/robots.txt` | Disallows crawling of all paths for compliant crawlers |
 | `/past-events/<event>` | Redirects to that event's Videos tab |
@@ -200,8 +226,8 @@ schedule and gear ranges; removing these pages does not change that data contrac
 The ABK Open Mic brand links home; the footer says “ABK Open Mic” and places an
 event's successful-fetch metadata directly below the site name. Global
 navigation includes Past events.
-The Event Planning layout keeps its shared heading, subtitle, Songs/Performers
-tabs, and last-successful-fetch metadata above both child pages. Its tab bar
+The Event Planning layout keeps its shared heading, subtitle, Set List/Songs/Performers
+tabs, and last-successful-fetch metadata above all three child pages. Its tab bar
 uses the same MUI Tabs/Tab interaction and selected-segment behavior as the
 past-event Videos/Songs tabs.
 Each event's App Router layout keeps breadcrumbs, an event title without a dash,
@@ -244,8 +270,9 @@ same hard-coded historical sheet; separate preview data is not implemented.
 
 1. The October pages use a narrow, header-mapped projection of consented names,
    initials, entered genres, recognized role interests, proposed songs, and
-   validated YouTube references. Interest is not a confirmed program or
-   performer assignment; no venue is claimed.
+   validated YouTube references. The timetable's selected song, artist, role
+   assignment, and need-marker columns are also approved by the Set List request.
+   Signup interest remains distinct from timetable assignments; no venue is claimed.
 2. Keep contacts and all other private signup fields out of the public
    projection. Any expansion beyond the approved name, initials, roles, genres,
    songs, and video fields needs a separate publication decision.

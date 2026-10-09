@@ -3,6 +3,11 @@ import { Box, Card, CardContent, SvgIcon, Typography } from '@mui/material';
 
 const PLANNING_PAGES = [
   {
+    slug: 'set-list',
+    title: 'Set List',
+    description: 'Explore song assignments and roles that still need performers.',
+  },
+  {
     slug: 'songs',
     title: 'Songs',
     description:
@@ -21,7 +26,7 @@ export default function EventPlanningCards() {
       sx={{
         display: 'grid',
         gap: 3,
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
       }}
     >
       {PLANNING_PAGES.map(({ slug, title, description }) => (

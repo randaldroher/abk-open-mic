@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { useSelectedLayoutSegment } from 'next/navigation';
 import { Box, Tab, Tabs } from '@mui/material';
 
-const PLANNING_TABS = ['songs', 'performers'] as const;
+const PLANNING_TABS = [
+  { slug: 'set-list', label: 'Set List' },
+  { slug: 'songs', label: 'Songs' },
+  { slug: 'performers', label: 'Performers' },
+] as const;
 
 export default function EventPlanningNavigation() {
   const segment = useSelectedLayoutSegment();
@@ -16,19 +20,23 @@ export default function EventPlanningNavigation() {
       sx={{ borderBottom: 1, borderColor: 'divider' }}
     >
       <Tabs
-        value={segment === 'performers' ? 'performers' : 'songs'}
+        value={
+          PLANNING_TABS.some(({ slug }) => slug === segment) ? segment : 'set-list'
+        }
         aria-label="Event planning sections"
+        variant="scrollable"
+        scrollButtons="auto"
       >
-        {PLANNING_TABS.map((tab) => (
+        {PLANNING_TABS.map(({ slug, label }) => (
           <Tab
-            key={tab}
+            key={slug}
             component={Link}
-            href={`/event-planning/${tab}`}
+            href={`/event-planning/${slug}`}
             prefetch={true}
-            value={tab}
-            label={tab === 'songs' ? 'Songs' : 'Performers'}
-            id={`event-planning-${tab}-tab`}
-            aria-controls={`event-planning-${tab}-panel`}
+            value={slug}
+            label={label}
+            id={`event-planning-${slug}-tab`}
+            aria-controls={`event-planning-${slug}-panel`}
           />
         ))}
       </Tabs>
