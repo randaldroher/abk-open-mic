@@ -156,6 +156,7 @@ export default function SetListTable({
                               ))}
                               {assignment.status && (
                                 <RoleNeedChip
+                                  variant="link"
                                   role={assignment.role}
                                   status={assignment.status}
                                   detail={assignment.detail}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Chip, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, Link, Tooltip, Typography } from '@mui/material';
 
 export default function RoleNeedChip({
   role,
@@ -9,6 +9,7 @@ export default function RoleNeedChip({
   candidates,
   includeRole = false,
   displayLabel,
+  variant = 'chip',
 }: {
   role: string;
   status: 'nice-to-have' | 'needed';
@@ -16,12 +17,26 @@ export default function RoleNeedChip({
   candidates: Array<{ initials: string; name: string; count: number }>;
   includeRole?: boolean;
   displayLabel?: string;
+  variant?: 'link' | 'chip';
 }) {
   const label = status === 'needed' ? 'Needed!' : 'Nice to have';
   const instrument = role === 'Additional Instruments' && status === 'nice-to-have'
     ? detail
     : null;
   const displayRole = instrument || role;
+  const text = displayLabel ?? (includeRole || instrument ? `${displayRole}: ${label}` : label);
+  const sharedProps = {
+    color: status === 'needed' ? 'secondary' as const : 'primary' as const,
+    tabIndex: 0,
+    'aria-label': includeRole || instrument ? undefined : `${role}: ${label}`,
+    sx: {
+      '&:focus-visible': {
+        outline: '2px solid',
+        outlineColor: 'text.primary',
+        outlineOffset: 3,
+      },
+    },
+  };
 
   return (
     <Tooltip
@@ -49,20 +64,19 @@ export default function RoleNeedChip({
         </Box>
       }
     >
-      <Chip
-        label={displayLabel ?? (includeRole || instrument ? `${displayRole}: ${label}` : label)}
-        color={status === 'needed' ? 'secondary' : 'primary'}
-        size="small"
-        tabIndex={0}
-        aria-label={includeRole || instrument ? undefined : `${role}: ${label}`}
-        sx={{
-          '&:focus-visible': {
-            outline: '2px solid',
-            outlineColor: 'text.primary',
-            outlineOffset: 3,
-          },
-        }}
-      />
+      {variant === 'link' ? (
+        <Link
+          {...sharedProps}
+          component="span"
+          variant="body2"
+          underline="none"
+          sx={{ ...sharedProps.sx, fontWeight: 700 }}
+        >
+          {text}
+        </Link>
+      ) : (
+        <Chip {...sharedProps} label={text} size="small" />
+      )}
     </Tooltip>
   );
 }

@@ -65,10 +65,13 @@ test('set list combines guitar parts into one column without losing assignments 
   assert.ok(rows[1].includes('aria-label="Lead Guitar: Needed!"'));
   assert.ok(rows[2].includes('Lead: Alex'));
   assert.ok(rows[2].includes('>Rhythm: Needed!</span>'));
+  assert.ok(!html.includes('MuiChip-root'));
+  assert.ok(rows[1].includes('MuiLink-root'));
+  assert.ok(html.includes('font-weight:700'));
   assert.equal(JSON.stringify(setList), original);
 });
 
-test('instrument-qualified need chips use the same label in Set List and Songs', () => {
+test('instrument-qualified needs use the same label in Set List links and Songs chips', () => {
   const setList = {
     ...projectOctoberSetList(
       ['Song', 'Artist', 'Additional Instruments'],
@@ -88,6 +91,36 @@ test('instrument-qualified need chips use the same label in Set List and Songs',
   for (const html of [table, songChip]) {
     assert.ok(html.includes('Strings: Nice to have'));
     assert.ok(!html.includes('Additional Instruments: Nice to have'));
+  }
+  assert.ok(!table.includes('MuiChip-root'));
+  assert.ok(songChip.includes('MuiChip-root'));
+});
+
+test('role-need link and chip variants preserve colors, labels, and keyboard focus', () => {
+  for (const variant of ['link', 'chip'] as const) {
+    for (const status of ['nice-to-have', 'needed'] as const) {
+      const html = renderToStaticMarkup(
+        ThemeProvider({
+          children: createElement(RoleNeedChip, { variant, role: 'Vocal', status, candidates: [] }),
+        }),
+      );
+      const label = status === 'needed' ? 'Needed!' : 'Nice to have';
+      const color = status === 'needed' ? 'secondary' : 'primary';
+      assert.ok(html.includes(`aria-label="Vocal: ${label}"`));
+      assert.ok(html.includes('tabindex="0"'));
+      assert.ok(html.includes(':focus-visible'));
+      if (variant === 'link') {
+        assert.ok(html.includes('MuiLink-root'));
+        assert.ok(!html.includes('MuiChip-root'));
+        assert.ok(html.includes(`color:var(--mui-palette-${color}-main)`));
+        assert.ok(html.includes('font-weight:700'));
+        assert.ok(html.includes('text-decoration:none'));
+        assert.ok(!html.includes('<a'));
+      } else {
+        assert.ok(html.includes('MuiChip-root'));
+        assert.ok(html.includes(`MuiChip-color${color[0].toUpperCase()}${color.slice(1)}`));
+      }
+    }
   }
 });
 
