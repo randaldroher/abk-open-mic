@@ -21,6 +21,48 @@ import {
 } from './past-events';
 import { SIGNUP_URL } from "./site-links";
 
+test('set list combines guitar parts into one column without losing assignments or needs', () => {
+  const performers = [
+    { initials: 'AB', name: 'Alex', roles: ['Guitar'], genres: '' },
+    { initials: 'CD', name: 'Casey', roles: ['Guitar'], genres: '' },
+  ];
+  const setList = {
+    ...projectOctoberSetList(
+      ['Song', 'Artist', 'Lead Guitar', 'Bass', 'Rhythm Guitar'],
+      [
+        ['Both assigned', 'Artist', 'AB', '', 'CD'],
+        ['Both needed', 'Artist', 'Needed!', '', 'Nice to have'],
+        ['Mixed', 'Artist', 'AB', '', 'Needed!'],
+      ],
+      performers,
+    ),
+    fetchedAt: '2026-10-09T00:00:00Z',
+  };
+  const original = JSON.stringify(setList);
+  const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers }));
+  const header = html.match(/<thead[\s\S]*?<\/thead>/)?.[0] ?? '';
+  assert.equal((header.match(/scope="col"/g) ?? []).length, 4);
+  assert.ok(header.includes('Guitar'));
+  assert.ok(!header.includes('Lead Guitar'));
+  assert.ok(!header.includes('Rhythm Guitar'));
+  const rows = html.match(/<tbody[\s\S]*?<\/tbody>/)?.[0].match(/<tr[\s\S]*?<\/tr>/g) ?? [];
+  assert.equal(rows.length, 3);
+  for (const row of rows) {
+    const cells = row.match(/<td[\s\S]*?<\/td>/g) ?? [];
+    assert.equal(cells.length, 3);
+    const guitar = cells[1];
+    assert.ok(guitar.includes('Lead Guitar'));
+    assert.ok(guitar.includes('Rhythm Guitar'));
+  }
+  assert.ok(rows[0].includes('Alex'));
+  assert.ok(rows[0].includes('Casey'));
+  assert.ok(rows[1].includes('Lead Guitar: Needed!'));
+  assert.ok(rows[1].includes('Rhythm Guitar: Nice to have'));
+  assert.ok(rows[2].includes('Alex'));
+  assert.ok(rows[2].includes('Rhythm Guitar: Needed!'));
+  assert.equal(JSON.stringify(setList), original);
+});
+
 test('instrument-qualified need chips use the same label in Set List and Songs', () => {
   const setList = {
     ...projectOctoberSetList(

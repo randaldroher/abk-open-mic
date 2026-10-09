@@ -101,7 +101,10 @@ For example, `Nice to have (Strings)` displays as `Strings: Nice to have`
 in both Set List and Songs. Qualifiers containing email addresses are excluded;
 unmatched initials and other role-cell prose are not displayed.
 Set List sorts by original artist by default, with sortable song and role
-headers; sorting does not indicate performance order. Shared blue/magenta role
+headers; sorting does not indicate performance order. The Set List table groups
+guitar parts into one sortable Guitar column, retaining each part's assignments
+and need markers. This display grouping does not change the underlying roles.
+Shared blue/magenta role
 chips on Set List and Songs show eligible role-interest performers and their
 unique assigned-song counts in tooltips. Guitar role interests are considered
 across guitar parts, and Additional Instruments uses Other Role interests.
