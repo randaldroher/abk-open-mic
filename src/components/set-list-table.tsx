@@ -106,10 +106,10 @@ export default function SetListTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {songs.map((song) => {
+            {songs.map((song, index) => {
               const href = `/event-planning/songs#${encodeURIComponent(getSongAnchor(song.title, song.originalArtist))}`;
               return (
-                <TableRow key={getSongAnchor(song.title, song.originalArtist)}>
+                <TableRow key={`${getSongAnchor(song.title, song.originalArtist)}-${index}`}>
                   <TableCell component="th" scope="row" sx={{ minWidth: 160 }}>
                     <Link component={NextLink} href={href}>{song.title}</Link>
                   </TableCell>
