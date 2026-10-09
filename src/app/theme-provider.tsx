@@ -5,6 +5,9 @@ import { alpha, createTheme, ThemeProvider as MuiThemeProvider } from "@mui/mate
 
 const theme = createTheme({
   cssVariables: true,
+  breakpoints: {
+    values: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1600 },
+  },
   palette: {
     mode: 'dark',
     background: { default: '#080511', paper: '#151024' },

@@ -41,7 +41,7 @@ test('resolves multiple initials, blanks, n/a and known role-need markers only',
     ['Song', 'Original Artist', 'Vocal', 'Lead Guitar', 'Bass', 'Drum', 'Additional Instruments'],
     [
       ['First', 'Artist', 'ab + AB / CD', 'Nice to have', 'NEEDED!', 'n/a', 'Nice to have (strings)'],
-      ['Second', '', 'Unknown initials / note@example.com', '', '', '', 'Nice to have (private note)'],
+      ['Second', '', 'Unknown initials / note@example.com', '', '', '', 'Nice to have (contact@example.com)'],
     ],
     performers,
   );
@@ -53,6 +53,27 @@ test('resolves multiple initials, blanks, n/a and known role-need markers only',
   assert.equal(result.songs[0].roles[4].detail, 'strings');
   assert.ok(result.songs[1].roles.every(({ performers, status, detail }) =>
     performers.length === 0 && status === null && detail === null,
+  ));
+});
+
+test('preserves Additional Instruments qualifiers without publishing malformed markers or other role prose', () => {
+  const result = projectOctoberSetList(
+    ['Song', 'Artist', 'Additional Instruments', 'Vocal'],
+    [
+      ['One', 'Artist', 'Nice to have (Strings)', 'Nice to have (Brass)'],
+      ['Two', 'Artist', '  NICE TO HAVE (  Brass / Woodwinds  ) ', ''],
+      ['Three', 'Artist', 'Nice to have ()', ''],
+      ['Four', 'Artist', 'Nice to have (Strings) extra notes', ''],
+    ],
+    performers,
+  );
+  assert.equal(result.songs[0].roles[0].detail, 'Strings');
+  assert.equal(result.songs[0].roles[0].status, 'nice-to-have');
+  assert.equal(result.songs[0].roles[1].status, null);
+  assert.equal(result.songs[1].roles[0].detail, 'Brass / Woodwinds');
+  assert.equal(result.songs[1].roles[0].status, 'nice-to-have');
+  assert.ok(result.songs.slice(2).every(({ roles }) =>
+    roles[0].status === null && roles[0].detail === null,
   ));
 });
 

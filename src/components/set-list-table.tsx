@@ -26,18 +26,23 @@ import type { OctoberSignupPerformer } from '@/lib/october-signup';
 
 type SortColumn = 'title' | 'originalArtist' | `role:${string}`;
 
+const GUITAR_ROLES = ['Lead Guitar', 'Rhythm Guitar', 'Guitar', 'Guitar 2'];
+
+function columnAssignments(song: SetListSong, role: string) {
+  return song.roles.filter((entry) =>
+    role === 'Guitar' ? GUITAR_ROLES.includes(entry.role) : entry.role === role,
+  );
+}
+
 function columnValue(song: SetListSong, column: SortColumn): string | null {
   if (column === 'title' || column === 'originalArtist') {
     return song[column];
   }
-  const role = song.roles.find((entry) => entry.role === column.slice(5));
-  return role
-    ? [
+  return columnAssignments(song, column.slice(5)).flatMap((role) => [
         ...role.performers.map(({ name }) => name),
         role.status === 'needed' ? 'Needed!' : role.status === 'nice-to-have' ? 'Nice to have' : '',
         role.detail ?? '',
-      ].filter(Boolean).join(', ') || null
-    : null;
+      ]).filter(Boolean).join(', ') || null;
 }
 
 export default function SetListTable({
@@ -49,10 +54,13 @@ export default function SetListTable({
 }) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('originalArtist');
   const [direction, setDirection] = useState<'asc' | 'desc'>('asc');
+  const displayRoles = [...new Set(
+    setList.roles.map((role) => GUITAR_ROLES.includes(role) ? 'Guitar' : role),
+  )];
   const columns: Array<{ key: SortColumn; label: string }> = [
     { key: 'title', label: 'Song' },
     { key: 'originalArtist', label: 'Original Artist' },
-    ...setList.roles.map((role) => ({ key: `role:${role}` as const, label: role })),
+    ...displayRoles.map((role) => ({ key: `role:${role}` as const, label: role })),
   ];
   const candidates = new Map(
     setList.roles.map((role) => [
@@ -83,7 +91,11 @@ export default function SetListTable({
         aria-label="Scrollable set list"
         sx={{ maxWidth: '100%', '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' } }}
       >
-        <Table size="small" aria-label="Set list song assignments and outstanding roles">
+        <Table
+          size="small"
+          aria-label="Set list song assignments and outstanding roles"
+          sx={{ '& .MuiTableCell-root': { verticalAlign: 'middle' } }}
+        >
           <TableHead>
             <TableRow>
               {columns.map(({ key, label }) => (
@@ -120,26 +132,47 @@ export default function SetListTable({
                       <Typography color="textSecondary" variant="body2">—</Typography>
                     )}
                   </TableCell>
-                  {setList.roles.map((role) => {
-                    const assignment = song.roles.find((entry) => entry.role === role);
+                  {displayRoles.map((columnRole) => {
+                    const assignments = columnAssignments(song, columnRole);
                     return (
-                      <TableCell key={role} sx={{ minWidth: 130, verticalAlign: 'top' }}>
-                        <Stack spacing={0.75} sx={{ alignItems: 'flex-start' }}>
-                          {assignment?.performers.map(({ initials, name }) => (
-                            <Typography key={initials} variant="body2">{name}</Typography>
-                          ))}
-                          {assignment?.status && (
-                            <RoleNeedChip
-                              role={role}
-                              status={assignment.status}
-                              candidates={candidates.get(role) ?? []}
-                            />
-                          )}
-                          {assignment?.detail && (
-                            <Typography color="textSecondary" variant="body2">
-                              {assignment.detail}
-                            </Typography>
-                          )}
+                      <TableCell key={columnRole} sx={{ minWidth: 130 }}>
+                        <Stack spacing={columnRole === 'Guitar' ? 0.25 : 0.75} sx={{ alignItems: 'flex-start' }}>
+                          {assignments.filter((assignment) =>
+                            assignment.performers.length > 0 || assignment.status || assignment.detail,
+                          ).map((assignment) => {
+                            const part = assignment.role === 'Lead Guitar' ? 'Lead'
+                              : assignment.role === 'Rhythm Guitar' ? 'Rhythm'
+                                : assignment.role;
+                            return (
+                            <Stack key={assignment.role} spacing={columnRole === 'Guitar' ? 0.25 : 0.75} sx={{ alignItems: 'flex-start' }}>
+                              {columnRole === 'Guitar' ? (
+                                assignment.performers.length > 0 && (
+                                  <Typography variant="body2">
+                                    {`${part}: ${assignment.performers.map(({ name }) => name).join(', ')}`}
+                                  </Typography>
+                                )
+                              ) : assignment.performers.map(({ initials, name }) => (
+                                <Typography key={initials} variant="body2">{name}</Typography>
+                              ))}
+                              {assignment.status && (
+                                <RoleNeedChip
+                                  role={assignment.role}
+                                  status={assignment.status}
+                                  detail={assignment.detail}
+                                  displayLabel={columnRole === 'Guitar'
+                                    ? `${part}: ${assignment.status === 'needed' ? 'Needed!' : 'Nice to have'}`
+                                    : undefined}
+                                  candidates={candidates.get(assignment.role) ?? []}
+                                />
+                              )}
+                              {assignment.detail && assignment.role !== 'Additional Instruments' && (
+                                <Typography color="textSecondary" variant="body2">
+                                  {assignment.detail}
+                                </Typography>
+                              )}
+                            </Stack>
+                            );
+                          })}
                         </Stack>
                       </TableCell>
                     );

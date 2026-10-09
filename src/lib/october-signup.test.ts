@@ -349,3 +349,19 @@ test('sorts performers alphabetically by initials without mutating the source ar
   );
   assert.equal(performers[0].initials, 'YM');
 });
+
+test('sorts performer-detail songs by artist and title while preserving roles and source order', () => {
+  const songs = [
+    { title: 'No credit', originalArtist: null, roles: ['Drums'] },
+    { title: 'Z song', originalArtist: 'artist A', roles: ['Vocal'] },
+    { title: 'B song', originalArtist: 'Artist B', roles: ['Bass'] },
+    { title: 'A song', originalArtist: 'Artist A', roles: ['Guitar'] },
+    { title: 'Another no credit', originalArtist: null, roles: ['Keyboard'] },
+  ];
+  const original = [...songs];
+
+  assert.deepEqual(sortSongsByOriginalArtist(songs), [
+    songs[3], songs[1], songs[2], songs[4], songs[0],
+  ]);
+  assert.deepEqual(songs, original);
+});

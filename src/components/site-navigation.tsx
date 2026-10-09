@@ -25,7 +25,7 @@ export default function SiteNavigation() {
       position="static"
       sx={{ borderBottom: 1, borderColor: 'divider' }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <Stack
           component="nav"
           direction="row"

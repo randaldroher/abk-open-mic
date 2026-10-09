@@ -15,7 +15,7 @@ export default function SiteFrame({
       {top}
       <Container
         component="main"
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{ flex: 1, py: { xs: 4, md: 7 } }}
       >
         {children}
@@ -31,7 +31,7 @@ export default function SiteFrame({
           textAlign: 'center',
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Typography component="div">ABK Open Mic</Typography>
           {freshness && (
             <Typography component="div" variant="body2" sx={{ mt: 1 }}>

@@ -5,15 +5,23 @@ import { Box, Chip, Tooltip, Typography } from '@mui/material';
 export default function RoleNeedChip({
   role,
   status,
+  detail = null,
   candidates,
   includeRole = false,
+  displayLabel,
 }: {
   role: string;
   status: 'nice-to-have' | 'needed';
+  detail?: string | null;
   candidates: Array<{ initials: string; name: string; count: number }>;
   includeRole?: boolean;
+  displayLabel?: string;
 }) {
   const label = status === 'needed' ? 'Needed!' : 'Nice to have';
+  const instrument = role === 'Additional Instruments' && status === 'nice-to-have'
+    ? detail
+    : null;
+  const displayRole = instrument || role;
 
   return (
     <Tooltip
@@ -42,11 +50,11 @@ export default function RoleNeedChip({
       }
     >
       <Chip
-        label={includeRole ? `${role}: ${label}` : label}
+        label={displayLabel ?? (includeRole || instrument ? `${displayRole}: ${label}` : label)}
         color={status === 'needed' ? 'secondary' : 'primary'}
         size="small"
         tabIndex={0}
-        aria-label={includeRole ? undefined : `${role}: ${label}`}
+        aria-label={includeRole || instrument ? undefined : `${role}: ${label}`}
         sx={{
           '&:focus-visible': {
             outline: '2px solid',

@@ -24,9 +24,9 @@ function compareAlphabetically(left: string, right: string): number {
   return left.localeCompare(right, 'en', { sensitivity: 'base' });
 }
 
-export function sortSongsByOriginalArtist(
-  songs: OctoberSignupSong[],
-): OctoberSignupSong[] {
+export function sortSongsByOriginalArtist<
+  T extends { title: string; originalArtist: string | null },
+>(songs: T[]): T[] {
   return [...songs].sort((left, right) => {
     if (left.originalArtist === null && right.originalArtist !== null) {
       return 1;

@@ -10,12 +10,118 @@ import EventPlanningNavigation from '../components/event-planning-navigation';
 import PerformersTable from '../components/performers-table';
 import SongCardsSkeleton from "../components/song-cards-skeleton";
 import SiteFrame from "../components/site-frame";
+import ThemeProvider from '../app/theme-provider';
+import RoleNeedChip from '../components/role-need-chip';
+import SetListTable from '../components/set-list-table';
+import { getSongRoleNeeds, projectOctoberSetList } from './october-set-list';
 import {
   PAST_EVENTS,
   PAST_EVENT_VIDEOS,
   getPastEventVideos,
 } from './past-events';
 import { SIGNUP_URL } from "./site-links";
+
+test('set list combines guitar parts into one column without losing assignments or needs', () => {
+  const performers = [
+    { initials: 'AB', name: 'Alex', roles: ['Guitar'], genres: '' },
+    { initials: 'CD', name: 'Casey', roles: ['Guitar'], genres: '' },
+  ];
+  const setList = {
+    ...projectOctoberSetList(
+      ['Song', 'Artist', 'Lead Guitar', 'Bass', 'Rhythm Guitar'],
+      [
+        ['Both assigned', 'Artist', 'AB', '', 'CD'],
+        ['Both needed', 'Artist', 'Needed!', '', 'Nice to have'],
+        ['Mixed', 'Artist', 'AB', '', 'Needed!'],
+      ],
+      performers,
+    ),
+    fetchedAt: '2026-10-09T00:00:00Z',
+  };
+  const original = JSON.stringify(setList);
+  const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers }));
+  assert.match(html, /\.MuiTableCell-root\{vertical-align:middle;\}/);
+  assert.ok(!html.includes('vertical-align:top'));
+  const header = html.match(/<thead[\s\S]*?<\/thead>/)?.[0] ?? '';
+  assert.equal((header.match(/scope="col"/g) ?? []).length, 4);
+  assert.ok(header.includes('Guitar'));
+  assert.ok(!header.includes('Lead Guitar'));
+  assert.ok(!header.includes('Rhythm Guitar'));
+  const rows = html.match(/<tbody[\s\S]*?<\/tbody>/)?.[0].match(/<tr[\s\S]*?<\/tr>/g) ?? [];
+  assert.equal(rows.length, 3);
+  for (const row of rows) {
+    const cells = row.match(/<td[\s\S]*?<\/td>/g) ?? [];
+    assert.equal(cells.length, 3);
+    const guitar = cells[1];
+    assert.ok(guitar.includes('Lead:'));
+    assert.ok(guitar.includes('Rhythm:'));
+    assert.ok(!guitar.includes('>Lead Guitar<'));
+    assert.ok(!guitar.includes('>Rhythm Guitar<'));
+  }
+  assert.ok(rows[0].includes('Lead: Alex'));
+  assert.ok(rows[0].includes('Rhythm: Casey'));
+  assert.ok(rows[1].includes('>Lead: Needed!</span>'));
+  assert.ok(rows[1].includes('>Rhythm: Nice to have</span>'));
+  assert.ok(rows[1].includes('aria-label="Lead Guitar: Needed!"'));
+  assert.ok(rows[2].includes('Lead: Alex'));
+  assert.ok(rows[2].includes('>Rhythm: Needed!</span>'));
+  assert.equal(JSON.stringify(setList), original);
+});
+
+test('instrument-qualified need chips use the same label in Set List and Songs', () => {
+  const setList = {
+    ...projectOctoberSetList(
+      ['Song', 'Artist', 'Additional Instruments'],
+      [['A song', 'An artist', 'Nice to have (Strings)']],
+      [],
+    ),
+    fetchedAt: '2026-10-09T00:00:00Z',
+  };
+  const table = renderToStaticMarkup(
+    createElement(SetListTable, { setList, performers: [] }),
+  );
+  const [need] = getSongRoleNeeds(setList.songs[0], setList.songs);
+  const songChip = renderToStaticMarkup(
+    createElement(RoleNeedChip, { ...need, status: 'nice-to-have', includeRole: true, candidates: [] }),
+  );
+
+  for (const html of [table, songChip]) {
+    assert.ok(html.includes('Strings: Nice to have'));
+    assert.ok(!html.includes('Additional Instruments: Nice to have'));
+  }
+});
+
+test('unqualified and other-role need chips retain their labels', () => {
+  for (const includeRole of [false, true]) {
+    for (const status of ['nice-to-have', 'needed'] as const) {
+      const html = renderToStaticMarkup(
+        createElement(RoleNeedChip, { role: 'Additional Instruments', status, includeRole, candidates: [] }),
+      );
+      const label = status === 'needed' ? 'Needed!' : 'Nice to have';
+      assert.ok(html.includes(includeRole ? `Additional Instruments: ${label}` : label));
+    }
+  }
+  const html = renderToStaticMarkup(
+    createElement(RoleNeedChip, {
+      role: 'Vocal', status: 'nice-to-have', detail: 'Strings', includeRole: true, candidates: [],
+    }),
+  );
+  assert.ok(html.includes('Vocal: Nice to have'));
+  assert.ok(!html.includes('Strings: Nice to have'));
+});
+
+test('shared site containers use the xl breakpoint with a 1600px maximum', () => {
+  const html = renderToStaticMarkup(
+    ThemeProvider({
+      children: SiteFrame({ children: 'Content' }),
+    }),
+  );
+
+  assert.match(html, /MuiContainer-maxWidthXl/);
+  assert.match(html, /@media \(min-width:1600px\)\{[^}]*max-width:1600px/);
+  assert.match(html, /width:100%/);
+  assert.doesNotMatch(html, /max-width:1200px/);
+});
 
 test("event cards render every archive with decorative Material SVG arrows", () => {
   const html = renderToStaticMarkup(createElement(PastEventCards));

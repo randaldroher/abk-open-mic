@@ -95,10 +95,19 @@ The October timetable adapter discovers normalized headers in row 1 of
 performer-role columns. The song table ends at its first blank song row.
 Practice, Link, and Comments columns are not fetched. Assignments resolve
 against signup initials to the same public first-name roster. Only recognized
-need markers (including the reviewed `Nice to have (strings)` qualifier) are
-published; unmatched initials and other role-cell prose are not displayed.
+need markers are published; Additional Instruments also accepts parenthesized
+instrument qualifiers after `Nice to have`, preserving their capitalization.
+For example, `Nice to have (Strings)` displays as `Strings: Nice to have`
+in both Set List and Songs. Qualifiers containing email addresses are excluded;
+unmatched initials and other role-cell prose are not displayed.
 Set List sorts by original artist by default, with sortable song and role
-headers; sorting does not indicate performance order. Shared blue/magenta role
+headers; sorting does not indicate performance order. The Set List table groups
+guitar parts into one sortable Guitar column, retaining each part's assignments
+and need markers. Parts use compact inline labels such as `Lead: Name` or
+`Rhythm: Nice to have` in a chip, without parentheses or separate label rows. All table cells vertically
+center their content, including multiline assignments.
+This display grouping does not change the underlying roles.
+Shared blue/magenta role
 chips on Set List and Songs show eligible role-interest performers and their
 unique assigned-song counts in tooltips. Guitar role interests are considered
 across guitar parts, and Additional Instruments uses Other Role interests.

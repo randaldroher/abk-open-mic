@@ -100,10 +100,11 @@ async function SongCards() {
                       <RoleNeedChip
                         role={role}
                         status={status}
+                        detail={detail}
                         includeRole
                         candidates={getRoleCandidates(role, eventData.performers, setList.songs)}
                       />
-                      {detail && (
+                      {detail && role !== 'Additional Instruments' && (
                         <Typography color="textSecondary" variant="body2">{detail}</Typography>
                       )}
                     </Stack>
