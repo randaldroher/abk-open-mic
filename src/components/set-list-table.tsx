@@ -27,8 +27,12 @@ import type { OctoberSignupPerformer } from '@/lib/october-signup';
 type SortColumn = 'title' | 'originalArtist' | `role:${string}`;
 
 const GUITAR_ROLES = ['Lead Guitar', 'Rhythm Guitar', 'Guitar', 'Guitar 2'];
+const ADDITIONAL_ROLES = ['Keyboard', 'Additional Instruments'];
 
 function columnAssignments(song: SetListSong, role: string) {
+  if (role === 'Additional Instruments') {
+    return ADDITIONAL_ROLES.flatMap((part) => song.roles.filter((entry) => entry.role === part));
+  }
   return song.roles.filter((entry) =>
     role === 'Guitar' ? GUITAR_ROLES.includes(entry.role) : entry.role === role,
   );
@@ -56,7 +60,10 @@ export default function SetListTable({
   const [direction, setDirection] = useState<'asc' | 'desc'>('asc');
   const displayRoles = [...new Set(
     setList.roles.map((role) => GUITAR_ROLES.includes(role) ? 'Guitar' : role),
-  )];
+  )].filter((role) => !ADDITIONAL_ROLES.includes(role));
+  if (setList.roles.some((role) => ADDITIONAL_ROLES.includes(role))) {
+    displayRoles.push('Additional Instruments');
+  }
   const columns: Array<{ key: SortColumn; label: string }> = [
     { key: 'title', label: 'Song' },
     { key: 'originalArtist', label: 'Original Artist' },
@@ -134,18 +141,21 @@ export default function SetListTable({
                   </TableCell>
                   {displayRoles.map((columnRole) => {
                     const assignments = columnAssignments(song, columnRole);
+                    const grouped = columnRole === 'Guitar' || columnRole === 'Additional Instruments';
                     return (
                       <TableCell key={columnRole} sx={{ minWidth: 130 }}>
-                        <Stack spacing={columnRole === 'Guitar' ? 0.25 : 0.75} sx={{ alignItems: 'flex-start' }}>
+                        <Stack spacing={grouped ? 0.25 : 0.75} sx={{ alignItems: 'flex-start' }}>
                           {assignments.filter((assignment) =>
                             assignment.performers.length > 0 || assignment.status || assignment.detail,
                           ).map((assignment) => {
                             const part = assignment.role === 'Lead Guitar' ? 'Lead'
                               : assignment.role === 'Rhythm Guitar' ? 'Rhythm'
-                                : assignment.role;
+                                : assignment.role === 'Additional Instruments'
+                                  ? assignment.detail ?? assignment.role
+                                  : assignment.role;
                             return (
-                            <Stack key={assignment.role} spacing={columnRole === 'Guitar' ? 0.25 : 0.75} sx={{ alignItems: 'flex-start' }}>
-                              {columnRole === 'Guitar' ? (
+                            <Stack key={assignment.role} spacing={grouped ? 0.25 : 0.75} sx={{ alignItems: 'flex-start' }}>
+                              {grouped ? (
                                 assignment.performers.length > 0 && (
                                   <Typography variant="body2">
                                     {`${part}: ${assignment.performers.map(({ name }) => name).join(', ')}`}
@@ -156,10 +166,11 @@ export default function SetListTable({
                               ))}
                               {assignment.status && (
                                 <RoleNeedChip
+                                  variant="link"
                                   role={assignment.role}
                                   status={assignment.status}
                                   detail={assignment.detail}
-                                  displayLabel={columnRole === 'Guitar'
+                                  displayLabel={grouped
                                     ? `${part}: ${assignment.status === 'needed' ? 'Needed!' : 'Nice to have'}`
                                     : undefined}
                                   candidates={candidates.get(assignment.role) ?? []}

@@ -65,10 +65,75 @@ test('set list combines guitar parts into one column without losing assignments 
   assert.ok(rows[1].includes('aria-label="Lead Guitar: Needed!"'));
   assert.ok(rows[2].includes('Lead: Alex'));
   assert.ok(rows[2].includes('>Rhythm: Needed!</span>'));
+  assert.ok(!html.includes('MuiChip-root'));
+  assert.ok(rows[1].includes('MuiLink-root'));
+  assert.ok(html.includes('font-weight:700'));
   assert.equal(JSON.stringify(setList), original);
 });
 
-test('instrument-qualified need chips use the same label in Set List and Songs', () => {
+test('set list combines keyboard and additional instruments in the final column', () => {
+  const performers = [
+    { initials: 'AB', name: 'Alex', roles: ['Keyboard'], genres: '' },
+    { initials: 'CD', name: 'Casey', roles: ['Other Role'], genres: '' },
+  ];
+  const setList = {
+    ...projectOctoberSetList(
+      ['Song', 'Artist', 'Additional Instruments', 'Keyboard', 'Bass'],
+      [
+        ['Assigned', 'Artist', 'CD', 'AB', ''],
+        ['Needed', 'Artist', 'Needed!', 'Nice to have', ''],
+        ['Qualified', 'Artist', 'Nice to have (Strings)', 'Needed!', ''],
+        ['Unassigned', 'Artist', '', '', 'AB'],
+      ],
+      performers,
+    ),
+    fetchedAt: '2026-10-09T00:00:00Z',
+  };
+  const original = JSON.stringify(setList);
+  const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers }));
+  const headers = html.match(/<thead[\s\S]*?<\/thead>/)?.[0].match(/<th\b[\s\S]*?<\/th>/g) ?? [];
+  assert.equal(headers.length, 4);
+  assert.ok(headers[2].includes('Bass'));
+  assert.ok(headers[3].includes('Additional Instruments'));
+  assert.ok(!headers.some((header) => header.includes('Keyboard')));
+  const rows = html.match(/<tbody[\s\S]*?<\/tbody>/)?.[0].match(/<tr[\s\S]*?<\/tr>/g) ?? [];
+  const combined = rows.map((row) => {
+    const cells = row.match(/<td\b[\s\S]*?<\/td>/g) ?? [];
+    assert.equal(cells.length, 3);
+    return cells[2];
+  });
+  assert.ok(combined[0].includes('Keyboard: Alex'));
+  assert.ok(combined[0].includes('Additional Instruments: Casey'));
+  assert.ok(combined[0].indexOf('Keyboard: Alex') < combined[0].indexOf('Additional Instruments: Casey'));
+  assert.ok(combined[1].includes('Keyboard: Nice to have'));
+  assert.ok(combined[1].includes('Additional Instruments: Needed!'));
+  assert.ok(combined[2].includes('Keyboard: Needed!'));
+  assert.ok(combined[2].includes('Strings: Nice to have'));
+  assert.ok(!combined[3].includes('Keyboard:'));
+  assert.ok(!combined[3].includes('Additional Instruments:'));
+  assert.ok(!html.includes('MuiChip-root'));
+  assert.equal(JSON.stringify(setList), original);
+});
+
+test('combined additional instruments column supports either source role alone', () => {
+  for (const role of ['Keyboard', 'Additional Instruments']) {
+    const setList = {
+      ...projectOctoberSetList(
+        ['Song', 'Artist', role, 'Bass'],
+        [['Song', 'Artist', 'Needed!', '']],
+        [],
+      ),
+      fetchedAt: '2026-10-09T00:00:00Z',
+    };
+    const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers: [] }));
+    const headers = html.match(/<thead[\s\S]*?<\/thead>/)?.[0].match(/<th\b[\s\S]*?<\/th>/g) ?? [];
+    assert.equal(headers.length, 4);
+    assert.ok(headers[3].includes('Additional Instruments'));
+    assert.ok(html.includes(`${role}: Needed!`));
+  }
+});
+
+test('instrument-qualified needs use the same label in Set List links and Songs chips', () => {
   const setList = {
     ...projectOctoberSetList(
       ['Song', 'Artist', 'Additional Instruments'],
@@ -88,6 +153,36 @@ test('instrument-qualified need chips use the same label in Set List and Songs',
   for (const html of [table, songChip]) {
     assert.ok(html.includes('Strings: Nice to have'));
     assert.ok(!html.includes('Additional Instruments: Nice to have'));
+  }
+  assert.ok(!table.includes('MuiChip-root'));
+  assert.ok(songChip.includes('MuiChip-root'));
+});
+
+test('role-need link and chip variants preserve colors, labels, and keyboard focus', () => {
+  for (const variant of ['link', 'chip'] as const) {
+    for (const status of ['nice-to-have', 'needed'] as const) {
+      const html = renderToStaticMarkup(
+        ThemeProvider({
+          children: createElement(RoleNeedChip, { variant, role: 'Vocal', status, candidates: [] }),
+        }),
+      );
+      const label = status === 'needed' ? 'Needed!' : 'Nice to have';
+      const color = status === 'needed' ? 'secondary' : 'primary';
+      assert.ok(html.includes(`aria-label="Vocal: ${label}"`));
+      assert.ok(html.includes('tabindex="0"'));
+      assert.ok(html.includes(':focus-visible'));
+      if (variant === 'link') {
+        assert.ok(html.includes('MuiLink-root'));
+        assert.ok(!html.includes('MuiChip-root'));
+        assert.ok(html.includes(`color:var(--mui-palette-${color}-main)`));
+        assert.ok(html.includes('font-weight:700'));
+        assert.ok(html.includes('text-decoration:none'));
+        assert.ok(!html.includes('<a'));
+      } else {
+        assert.ok(html.includes('MuiChip-root'));
+        assert.ok(html.includes(`MuiChip-color${color[0].toUpperCase()}${color.slice(1)}`));
+      }
+    }
   }
 });
 

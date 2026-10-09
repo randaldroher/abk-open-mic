@@ -104,11 +104,15 @@ Set List sorts by original artist by default, with sortable song and role
 headers; sorting does not indicate performance order. The Set List table groups
 guitar parts into one sortable Guitar column, retaining each part's assignments
 and need markers. Parts use compact inline labels such as `Lead: Name` or
-`Rhythm: Nice to have` in a chip, without parentheses or separate label rows. All table cells vertically
+`Rhythm: Nice to have` in bold colored text, without parentheses or separate label rows. All table cells vertically
 center their content, including multiline assignments.
+Keyboard and Additional Instruments share the final sortable Additional
+Instruments column, with Keyboard first and compact labels such as
+`Keyboard: Name` and `Strings: Nice to have`. Instrument qualifiers are retained;
+unqualified entries use `Additional Instruments` as their label.
 This display grouping does not change the underlying roles.
-Shared blue/magenta role
-chips on Set List and Songs show eligible role-interest performers and their
+The shared role-need component supports `link` and `chip` variants, using
+bold blue/magenta MUI Link text on Set List and chips on Songs. Both show eligible role-interest performers and their
 unique assigned-song counts in tooltips. Guitar role interests are considered
 across guitar parts, and Additional Instruments uses Other Role interests.
 Songs uses stable title/artist anchors and includes timetable-only songs so
@@ -218,7 +222,7 @@ can render the unavailable state. Verify rendered content as well.
 | `/` | October 2026 invitation with signup and Slack links, Event Planning cards for Set List, Songs, and Performers, and past-event cards |
 | `/past-events` | Static archive index, independent of Sheets availability |
 | `/event-planning` | Redirects to the first/default Set List tab |
-| `/event-planning/set-list` | Sortable October timetable song/artist/role table with resolved names and role-need chips |
+| `/event-planning/set-list` | Sortable October timetable song/artist/role table with resolved names and bold colored role-need text |
 | `/event-planning/songs` | Proposed October 2026 songs, original-artist credits, resolved interested-performer names, and validated YouTube references; not a finalized lineup |
 | `/event-planning/performers` | October signup names, recognized self-reported role interests, entered genres, expandable set-list assignments and proposed song interests; no contact fields |
 | `/songs`, `/performers` | Legacy redirects to their corresponding Event Planning tabs |
