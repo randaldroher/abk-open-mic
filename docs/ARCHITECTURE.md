@@ -87,7 +87,7 @@ lineup or performance order. The Songs tab sorts by original artist, then song
 title, with missing artist credits last; the Performers tab sorts initials
 alphabetically and matches song interests by initials. Missing, duplicated,
 reversed, or malformed section markers or headers fail closed. The adapter uses
-the `seconds` cache profile and
+the `minutes` cache profile and
 instance-local last-known-good fallback pattern.
 
 The October timetable adapter discovers normalized headers in row 1 of
@@ -118,7 +118,7 @@ across guitar parts, and Additional Instruments uses Other Role interests.
 Songs uses stable title/artist anchors and includes timetable-only songs so
 set-list links have destinations. Performer expansion distinguishes assignments
 from proposed interests; its count includes only unique set-list songs.
-The timetable has its own `seconds` cache and instance-local fallback. An
+The timetable has its own `minutes` cache and instance-local fallback. An
 unavailable timetable does not hide signup data, and the planning freshness
 timestamp is the older successful fetch when both sources are available.
 
@@ -184,9 +184,14 @@ The May server adapter caches the validated public program with `use cache` and
 stale time, and one-hour expiry. Refresh is request-driven; the first request
 after the revalidation interval may receive the previous result while a
 background refresh runs. This is not an immediate-publishing guarantee.
-The October signup adapter uses `cacheLife("seconds")`: one-second server
-revalidation, 30-second client stale time, and one-minute expiry. Historical
-event adapters remain on the `minutes` profile.
+Both October adapters use the same `cacheLife("minutes")` profile, so planning
+content and its successful-fetch timestamp can be included in prerendered HTML
+and prefetched navigation. The `seconds` profile expires after one minute;
+Next.js excludes caches with expiry under five minutes from prerenders, leaving
+request-time holes that display the Suspense skeletons on visits. Keep both the
+signup and nested timetable caches prerender-compatible. Suspense boundaries
+remain for streaming when needed, not as the normal static page content.
+Historical event adapters also remain on the `minutes` profile.
 
 Each event uses `withLastKnownGood` to keep a best-effort in-memory copy per running instance.
 If a read or validation fails, that instance can return its last successful
