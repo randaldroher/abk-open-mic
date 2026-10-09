@@ -4,6 +4,7 @@ import {
   getRoleCandidates,
   getSongAnchor,
   getSongRoleNeeds,
+  getSongStatus,
   mergeDuplicateSignupSongs,
   octoberSetListColumns,
   projectOctoberSetList,
@@ -195,4 +196,35 @@ test('anchors are stable, distinguish artist credits and match role needs', () =
   assert.deepEqual(getSongRoleNeeds({ title: 'a song', originalArtist: 'artist' }, songs), [
     { role: 'Bass', performers: [], status: 'needed', detail: null },
   ]);
+});
+
+test('song status distinguishes filled roles, outstanding needs and songs outside the set list', () => {
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal', 'Bass', 'Additional Instruments'],
+    [
+      ['Filled', 'Artist', 'AB', 'CD', 'N/A'],
+      ['Needed', 'Artist', 'AB', 'Needed!', ''],
+      ['Optional', 'Artist', 'AB', 'CD', 'Nice to have (Strings)'],
+      ['Unassigned', 'Artist', '', '', ''],
+      ['Unknown', 'Artist', 'ZZ', '', ''],
+    ],
+    performers,
+  );
+  assert.equal(getSongStatus({ title: ' filled ', originalArtist: 'ARTIST' }, songs), 'all-roles-filled');
+  for (const title of ['Needed', 'Optional', 'Unassigned', 'Unknown']) {
+    assert.equal(getSongStatus({ title, originalArtist: 'Artist' }, songs), null);
+  }
+  assert.equal(getSongStatus({ title: 'Filled', originalArtist: 'Other Artist' }, songs), 'not-on-set-list');
+  assert.equal(getSongStatus({ title: 'Proposed', originalArtist: null }, songs), 'not-on-set-list');
+  assert.equal(getSongStatus({ title: 'Filled', originalArtist: 'Artist' }, null), null);
+  assert.equal(getSongStatus({ title: 'Proposed', originalArtist: null }, null), null);
+});
+
+test('song status considers outstanding needs across duplicate set-list entries', () => {
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal', 'Bass'],
+    [['Song', 'Artist', 'AB', 'CD'], [' song ', 'ARTIST', 'AB', 'Needed!']],
+    performers,
+  );
+  assert.equal(getSongStatus({ title: 'Song', originalArtist: 'Artist' }, songs), null);
 });

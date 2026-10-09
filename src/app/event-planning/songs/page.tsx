@@ -13,6 +13,7 @@ import {
   getRoleCandidates,
   getSongAnchor,
   getSongRoleNeeds,
+  getSongStatus,
   mergeDuplicateSignupSongs,
 } from '@/lib/october-set-list';
 
@@ -38,6 +39,17 @@ export default function SongsPage() {
         <SongCards />
       </Suspense>
     </Stack>
+  );
+}
+
+function SongStatusChip({ status }: { status: ReturnType<typeof getSongStatus> }) {
+  if (!status) return null;
+  return (
+    <Chip
+      label={status === 'all-roles-filled' ? 'All roles filled' : 'Not on set list'}
+      color={status === 'all-roles-filled' ? 'success' : 'default'}
+      size="small"
+    />
   );
 }
 
@@ -94,6 +106,7 @@ async function SongCards() {
             )}
             {setList && (
               <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                <SongStatusChip status={getSongStatus(song, setList.songs)} />
                 {getSongRoleNeeds(song, setList.songs).map(
                   ({ role, status, detail }) => status && (
                     <Stack key={role} spacing={0.5} sx={{ alignItems: 'flex-start' }}>
