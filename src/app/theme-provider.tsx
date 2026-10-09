@@ -44,6 +44,11 @@ const theme = createTheme({
     },
   },
   components: {
+    MuiContainer: {
+      styleOverrides: {
+        maxWidthLg: { maxWidth: 1600 },
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: (theme) => ({
         ':root': {

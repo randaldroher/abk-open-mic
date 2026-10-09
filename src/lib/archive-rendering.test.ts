@@ -10,12 +10,25 @@ import EventPlanningNavigation from '../components/event-planning-navigation';
 import PerformersTable from '../components/performers-table';
 import SongCardsSkeleton from "../components/song-cards-skeleton";
 import SiteFrame from "../components/site-frame";
+import ThemeProvider from '../app/theme-provider';
 import {
   PAST_EVENTS,
   PAST_EVENT_VIDEOS,
   getPastEventVideos,
 } from './past-events';
 import { SIGNUP_URL } from "./site-links";
+
+test('shared site containers use a 1600px maximum without changing layout breakpoints', () => {
+  const html = renderToStaticMarkup(
+    ThemeProvider({
+      children: SiteFrame({ children: 'Content' }),
+    }),
+  );
+
+  assert.match(html, /max-width:1600px/);
+  assert.match(html, /width:100%/);
+  assert.match(html, /@media \(min-width:1200px\)/);
+});
 
 test("event cards render every archive with decorative Material SVG arrows", () => {
   const html = renderToStaticMarkup(createElement(PastEventCards));

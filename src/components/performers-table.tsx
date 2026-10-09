@@ -21,6 +21,7 @@ import type {
   OctoberSignupPerformer,
   PerformerSongInterest,
 } from '@/lib/october-signup';
+import { sortSongsByOriginalArtist } from '@/lib/october-signup';
 
 type PerformerWithSongs = Omit<OctoberSignupPerformer, 'initials'> & {
   songs: PerformerSongInterest[];
@@ -172,7 +173,7 @@ function SongGroup({
       <Typography sx={{ fontWeight: 600 }}>{heading}</Typography>
       {songs.length > 0 ? (
         <Box component="ul" sx={{ mb: 0, pl: 3 }}>
-          {songs.map(({ title, originalArtist, roles }, index) => (
+          {sortSongsByOriginalArtist(songs).map(({ title, originalArtist, roles }, index) => (
             <Box component="li" key={`${title}-${index}`} sx={{ mb: 1 }}>
               <Typography>
                 {title}
