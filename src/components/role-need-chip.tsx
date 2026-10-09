@@ -8,12 +8,14 @@ export default function RoleNeedChip({
   detail = null,
   candidates,
   includeRole = false,
+  displayLabel,
 }: {
   role: string;
   status: 'nice-to-have' | 'needed';
   detail?: string | null;
   candidates: Array<{ initials: string; name: string; count: number }>;
   includeRole?: boolean;
+  displayLabel?: string;
 }) {
   const label = status === 'needed' ? 'Needed!' : 'Nice to have';
   const instrument = role === 'Additional Instruments' && status === 'nice-to-have'
@@ -48,7 +50,7 @@ export default function RoleNeedChip({
       }
     >
       <Chip
-        label={includeRole || instrument ? `${displayRole}: ${label}` : label}
+        label={displayLabel ?? (includeRole || instrument ? `${displayRole}: ${label}` : label)}
         color={status === 'needed' ? 'secondary' : 'primary'}
         size="small"
         tabIndex={0}

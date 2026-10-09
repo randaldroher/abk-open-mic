@@ -40,6 +40,8 @@ test('set list combines guitar parts into one column without losing assignments 
   };
   const original = JSON.stringify(setList);
   const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers }));
+  assert.match(html, /\.MuiTableCell-root\{vertical-align:middle;\}/);
+  assert.ok(!html.includes('vertical-align:top'));
   const header = html.match(/<thead[\s\S]*?<\/thead>/)?.[0] ?? '';
   assert.equal((header.match(/scope="col"/g) ?? []).length, 4);
   assert.ok(header.includes('Guitar'));
@@ -51,15 +53,18 @@ test('set list combines guitar parts into one column without losing assignments 
     const cells = row.match(/<td[\s\S]*?<\/td>/g) ?? [];
     assert.equal(cells.length, 3);
     const guitar = cells[1];
-    assert.ok(guitar.includes('Lead Guitar'));
-    assert.ok(guitar.includes('Rhythm Guitar'));
+    assert.ok(guitar.includes('Lead:'));
+    assert.ok(guitar.includes('Rhythm:'));
+    assert.ok(!guitar.includes('>Lead Guitar<'));
+    assert.ok(!guitar.includes('>Rhythm Guitar<'));
   }
-  assert.ok(rows[0].includes('Alex'));
-  assert.ok(rows[0].includes('Casey'));
-  assert.ok(rows[1].includes('Lead Guitar: Needed!'));
-  assert.ok(rows[1].includes('Rhythm Guitar: Nice to have'));
-  assert.ok(rows[2].includes('Alex'));
-  assert.ok(rows[2].includes('Rhythm Guitar: Needed!'));
+  assert.ok(rows[0].includes('Lead: Alex'));
+  assert.ok(rows[0].includes('Rhythm: Casey'));
+  assert.ok(rows[1].includes('(Lead: Needed!)'));
+  assert.ok(rows[1].includes('(Rhythm: Nice to have)'));
+  assert.ok(rows[1].includes('aria-label="Lead Guitar: Needed!"'));
+  assert.ok(rows[2].includes('Lead: Alex'));
+  assert.ok(rows[2].includes('(Rhythm: Needed!)'));
   assert.equal(JSON.stringify(setList), original);
 });
 

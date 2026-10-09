@@ -91,7 +91,11 @@ export default function SetListTable({
         aria-label="Scrollable set list"
         sx={{ maxWidth: '100%', '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' } }}
       >
-        <Table size="small" aria-label="Set list song assignments and outstanding roles">
+        <Table
+          size="small"
+          aria-label="Set list song assignments and outstanding roles"
+          sx={{ '& .MuiTableCell-root': { verticalAlign: 'middle' } }}
+        >
           <TableHead>
             <TableRow>
               {columns.map(({ key, label }) => (
@@ -131,17 +135,23 @@ export default function SetListTable({
                   {displayRoles.map((columnRole) => {
                     const assignments = columnAssignments(song, columnRole);
                     return (
-                      <TableCell key={columnRole} sx={{ minWidth: 130, verticalAlign: 'top' }}>
-                        <Stack spacing={0.75} sx={{ alignItems: 'flex-start' }}>
-                          {assignments.map((assignment) => (
-                            <Stack key={assignment.role} spacing={0.75} sx={{ alignItems: 'flex-start' }}>
-                              {columnRole === 'Guitar' && assignment.role !== 'Guitar' &&
-                                (assignment.performers.length > 0 || assignment.status) && (
-                                <Typography color="textSecondary" variant="caption">
-                                  {assignment.role}
-                                </Typography>
-                              )}
-                              {assignment.performers.map(({ initials, name }) => (
+                      <TableCell key={columnRole} sx={{ minWidth: 130 }}>
+                        <Stack spacing={columnRole === 'Guitar' ? 0.25 : 0.75} sx={{ alignItems: 'flex-start' }}>
+                          {assignments.filter((assignment) =>
+                            assignment.performers.length > 0 || assignment.status || assignment.detail,
+                          ).map((assignment) => {
+                            const part = assignment.role === 'Lead Guitar' ? 'Lead'
+                              : assignment.role === 'Rhythm Guitar' ? 'Rhythm'
+                                : assignment.role;
+                            return (
+                            <Stack key={assignment.role} spacing={columnRole === 'Guitar' ? 0.25 : 0.75} sx={{ alignItems: 'flex-start' }}>
+                              {columnRole === 'Guitar' ? (
+                                assignment.performers.length > 0 && (
+                                  <Typography variant="body2">
+                                    {`${part}: ${assignment.performers.map(({ name }) => name).join(', ')}`}
+                                  </Typography>
+                                )
+                              ) : assignment.performers.map(({ initials, name }) => (
                                 <Typography key={initials} variant="body2">{name}</Typography>
                               ))}
                               {assignment.status && (
@@ -149,6 +159,9 @@ export default function SetListTable({
                                   role={assignment.role}
                                   status={assignment.status}
                                   detail={assignment.detail}
+                                  displayLabel={columnRole === 'Guitar'
+                                    ? `(${part}: ${assignment.status === 'needed' ? 'Needed!' : 'Nice to have'})`
+                                    : undefined}
                                   candidates={candidates.get(assignment.role) ?? []}
                                 />
                               )}
@@ -158,7 +171,8 @@ export default function SetListTable({
                                 </Typography>
                               )}
                             </Stack>
-                          ))}
+                            );
+                          })}
                         </Stack>
                       </TableCell>
                     );

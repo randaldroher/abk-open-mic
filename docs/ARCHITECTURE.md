@@ -103,7 +103,10 @@ unmatched initials and other role-cell prose are not displayed.
 Set List sorts by original artist by default, with sortable song and role
 headers; sorting does not indicate performance order. The Set List table groups
 guitar parts into one sortable Guitar column, retaining each part's assignments
-and need markers. This display grouping does not change the underlying roles.
+and need markers. Parts use compact inline labels such as `Lead: Name` or
+`(Rhythm: Nice to have)`, without separate label rows. All table cells vertically
+center their content, including multiline assignments.
+This display grouping does not change the underlying roles.
 Shared blue/magenta role
 chips on Set List and Songs show eligible role-interest performers and their
 unique assigned-song counts in tooltips. Guitar role interests are considered
