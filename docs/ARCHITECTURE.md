@@ -118,6 +118,12 @@ across guitar parts, and Additional Instruments uses Other Role interests.
 Songs uses stable title/artist anchors and includes timetable-only songs so
 set-list links have destinations. Performer expansion distinguishes assignments
 from proposed interests; its count includes only unique set-list songs.
+Song status chips aggregate all timetable entries with the same normalized
+title/artist anchor. A song with no matching timetable entry is labeled `Not on
+set list`; `All roles filled` is shown only when at least one role has an
+assigned performer and every matching role has no need marker. Other matched
+songs have no status chip. Status chips are suppressed when timetable data is
+unavailable; signup songs remain visible.
 The timetable has its own `minutes` cache and instance-local fallback. An
 unavailable timetable does not hide signup data, and the planning freshness
 timestamp is the older successful fetch when both sources are available.

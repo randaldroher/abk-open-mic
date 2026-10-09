@@ -185,3 +185,20 @@ export function getSongRoleNeeds(
     getSongAnchor(entry.title, entry.originalArtist) === key,
   ).flatMap(({ roles }) => roles.filter(({ status }) => status !== null));
 }
+
+export function getSongStatus(
+  song: { title: string; originalArtist: string | null },
+  setList: SetListSong[] | null,
+): 'all-roles-filled' | 'not-on-set-list' | null {
+  if (!setList) return null;
+  const key = getSongAnchor(song.title, song.originalArtist);
+  const entries = setList.filter((entry) =>
+    getSongAnchor(entry.title, entry.originalArtist) === key,
+  );
+  if (!entries.length) return 'not-on-set-list';
+  const roles = entries.flatMap(({ roles }) => roles);
+  return roles.some(({ performers }) => performers.length > 0) &&
+    roles.every(({ status }) => status === null)
+    ? 'all-roles-filled'
+    : null;
+}
