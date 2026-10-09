@@ -3,6 +3,8 @@ import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { getSheetsClient, SPREADSHEET_ID } from './google-sheets';
 import { withLastKnownGood } from './last-known-good';
+import { getOctoberSetList } from './october-set-list-data';
+import type { OctoberSetList } from './october-set-list';
 import {
   getYouTubeVideoId,
   octoberSignupPerformerColumns,
@@ -19,6 +21,7 @@ export type October2026Signup = {
   fetchedAt: string;
   songs: OctoberSignupSong[];
   performers: OctoberSignupPerformer[];
+  setList: OctoberSetList | null;
 };
 
 const TAB = 'Sign Up (October 2026)';
@@ -173,11 +176,14 @@ async function fetchOctober2026Signup(): Promise<October2026Signup> {
     chipLinks,
   );
 
+  const setList = await getOctoberSetList(performers);
+  const fetchedAt = new Date().toISOString();
   return {
     eventTitle: 'ABK Open Mic October 2026',
-    fetchedAt: new Date().toISOString(),
+    fetchedAt: setList && setList.fetchedAt < fetchedAt ? setList.fetchedAt : fetchedAt,
     songs,
     performers,
+    setList,
   };
 }
 

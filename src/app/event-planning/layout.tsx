@@ -36,8 +36,8 @@ export default function EventPlanningLayout({
         <header>
           <Typography variant="h1">Event Planning</Typography>
           <Typography color="textSecondary" sx={{ mt: 1 }}>
-            October 2026 song and performer interests. Sign up to participate or
-            update your interests.
+            October 2026 set list, songs, and performer interests. Sign up to
+            participate or update your interests.
           </Typography>
         </header>
         <EventPlanningNavigation />

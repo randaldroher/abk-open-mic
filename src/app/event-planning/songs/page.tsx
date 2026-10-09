@@ -3,21 +3,36 @@ import { Box, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 import { Suspense } from 'react';
 import ProgramUnavailable from '@/components/program-unavailable';
 import SongCardsSkeleton from '@/components/song-cards-skeleton';
+import RoleNeedChip from '@/components/role-need-chip';
 import { getOctober2026Signup } from '@/lib/october-2026-signup-data';
-import { sortSongsByOriginalArtist } from '@/lib/october-signup';
+import {
+  sortSongsByOriginalArtist,
+  type OctoberSignupSong,
+} from '@/lib/october-signup';
+import {
+  getRoleCandidates,
+  getSongAnchor,
+  getSongRoleNeeds,
+  mergeDuplicateSignupSongs,
+} from '@/lib/october-set-list';
 
 export const metadata: Metadata = {
   title: 'Songs',
   description:
-    'Proposed songs, interested performers, and YouTube references for the October 2026 ABK Open Mic.',
+    'Set-list and proposed songs, interested performers, and YouTube references for the October 2026 ABK Open Mic.',
 };
 
 export default function SongsPage() {
   return (
-    <Stack spacing={3}>
+    <Stack
+      spacing={3}
+      id="event-planning-songs-panel"
+      role="tabpanel"
+      aria-labelledby="event-planning-songs-tab"
+    >
       <Typography color="textSecondary">
-        Proposed songs from the signup sheet. This is an interest list, not the
-        confirmed set list.
+        Songs from the signup sheet and set list. Signup interest is not a
+        confirmed performer assignment.
       </Typography>
       <Suspense fallback={<SongCardsSkeleton showReferences={true} />}>
         <SongCards />
@@ -31,11 +46,28 @@ async function SongCards() {
   if (!eventData) {
     return <ProgramUnavailable />;
   }
+  const setList = eventData.setList;
+  const songsByAnchor = new Map<string, OctoberSignupSong>();
+  for (const song of mergeDuplicateSignupSongs(eventData.songs)) {
+    const anchor = getSongAnchor(song.title, song.originalArtist);
+    songsByAnchor.set(anchor, song);
+  }
+  for (const song of setList?.songs ?? []) {
+    const anchor = getSongAnchor(song.title, song.originalArtist);
+    if (!songsByAnchor.has(anchor)) {
+      songsByAnchor.set(anchor, {
+        title: song.title,
+        originalArtist: song.originalArtist,
+        interestedPerformers: [],
+        videoId: null,
+      });
+    }
+  }
 
   return (
     <Box
-      component="ol"
-      aria-label="Proposed songs"
+      component="ul"
+      aria-label="Set-list and proposed songs"
       sx={{
         display: 'grid',
         gap: 2,
@@ -45,24 +77,39 @@ async function SongCards() {
         m: 0,
       }}
     >
-      {sortSongsByOriginalArtist(eventData.songs).map((song, index) => (
+      {sortSongsByOriginalArtist([...songsByAnchor.values()]).map((song) => (
         <Card
           component="li"
-          key={`${song.title}-${index}`}
+          id={getSongAnchor(song.title, song.originalArtist)}
+          key={getSongAnchor(song.title, song.originalArtist)}
           variant="outlined"
-          sx={{ minWidth: 0 }}
+          sx={{ minWidth: 0, scrollMarginTop: 24 }}
         >
           <CardContent sx={{ p: 3 }}>
-            <Typography variant="h3">
-              <Box component="span" sx={{ color: 'secondary.main', mr: 1 }}>
-                {index + 1}.
-              </Box>{' '}
-              {song.title}
-            </Typography>
+            <Typography variant="h3">{song.title}</Typography>
             {song.originalArtist && (
               <Typography color="textSecondary">
                 Originally by {song.originalArtist}
               </Typography>
+            )}
+            {setList && (
+              <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                {getSongRoleNeeds(song, setList.songs).map(
+                  ({ role, status, detail }) => status && (
+                    <Stack key={role} spacing={0.5} sx={{ alignItems: 'flex-start' }}>
+                      <RoleNeedChip
+                        role={role}
+                        status={status}
+                        includeRole
+                        candidates={getRoleCandidates(role, eventData.performers, setList.songs)}
+                      />
+                      {detail && (
+                        <Typography color="textSecondary" variant="body2">{detail}</Typography>
+                      )}
+                    </Stack>
+                  ),
+                )}
+              </Stack>
             )}
             {song.interestedPerformers.length > 0 && (
               <Stack spacing={1} sx={{ mt: 2 }}>

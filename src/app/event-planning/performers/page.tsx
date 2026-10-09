@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import ProgramUnavailable from '@/components/program-unavailable';
 import PerformersTable from '@/components/performers-table';
 import { getOctober2026Signup } from '@/lib/october-2026-signup-data';
+import { setListSongsByPerformer } from '@/lib/october-set-list';
 import {
   songsInterestedByPerformer,
   sortPerformersByInitials,
@@ -17,7 +18,12 @@ export const metadata: Metadata = {
 
 export default function PerformersPage() {
   return (
-    <Stack spacing={3}>
+    <Stack
+      spacing={3}
+      id="event-planning-performers-panel"
+      role="tabpanel"
+      aria-labelledby="event-planning-performers-tab"
+    >
       <Typography color="textSecondary">
         Performer names, entered genres, self-reported role interests, and
         proposed songs of interest. This is not a confirmed lineup.
@@ -57,6 +63,9 @@ async function PerformerList() {
           genres,
           roles,
           songs: songsInterestedByPerformer(data.songs, initials),
+          assignments: data.setList
+            ? setListSongsByPerformer(data.setList.songs, initials)
+            : null,
         }),
       )}
     />

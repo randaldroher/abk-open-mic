@@ -24,6 +24,7 @@ import type {
 
 type PerformerWithSongs = Omit<OctoberSignupPerformer, 'initials'> & {
   songs: PerformerSongInterest[];
+  assignments?: PerformerSongInterest[] | null;
 };
 
 export default function PerformersTable({
@@ -38,7 +39,7 @@ export default function PerformersTable({
       >
         <TableContainer>
           <Table
-            aria-label="Performer names, role interests, genres, and proposed songs"
+            aria-label="Performer names, role interests, genres, proposed songs, and set-list assignments in expandable rows"
             size="small"
           >
             <TableHead>
@@ -84,7 +85,8 @@ function PerformerRow({
   detailsId: string;
   isLast: boolean;
 }) {
-  const { name, genres, roles, songs } = performer;
+  const { name, genres, roles, songs, assignments = null } = performer;
+  const assignedCount = assignments?.length ?? 0;
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -100,7 +102,7 @@ function PerformerRow({
             onClick={() => setExpanded((open) => !open)}
             sx={{ px: 0 }}
           >
-            {expanded ? 'Hide songs' : 'Show songs'}
+            {expanded ? 'Hide Songs' : 'Show Songs'}{assignedCount > 0 ? ` (${assignedCount})` : ''}
           </Button>
         </TableCell>
         <TableCell>
@@ -134,32 +136,57 @@ function PerformerRow({
         >
           <Collapse in={expanded} timeout="auto" unmountOnExit>
             <Box sx={{ p: 2 }}>
-              <Typography sx={{ fontWeight: 600 }}>
-                Interested in
-              </Typography>
-              {songs.length > 0 ? (
-                <Box component="ul" sx={{ mb: 0, pl: 3 }}>
-                  {songs.map(({ title, originalArtist, roles }, index) => (
-                    <Box component="li" key={`${title}-${index}`} sx={{ mb: 1 }}>
-                      <Typography>
-                        {title}
-                        {originalArtist ? ` — ${originalArtist}` : ''}
-                      </Typography>
-                      <Typography color="textSecondary" variant="body2">
-                        {roles.join(', ')}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              ) : (
-                <Typography color="textSecondary" variant="body2">
-                  No song interests listed
-                </Typography>
-              )}
+              <Stack spacing={2}>
+                {assignments !== null && (
+                  <SongGroup
+                    heading="Set list assignments"
+                    songs={assignments}
+                    emptyText="No set list assignments"
+                  />
+                )}
+                <SongGroup
+                  heading="Interested in"
+                  songs={songs}
+                  emptyText="No song interests listed"
+                />
+              </Stack>
             </Box>
           </Collapse>
         </TableCell>
       </TableRow>
     </Fragment>
+  );
+}
+
+function SongGroup({
+  heading,
+  songs,
+  emptyText,
+}: {
+  heading: string;
+  songs: PerformerSongInterest[];
+  emptyText: string;
+}) {
+  return (
+    <Box>
+      <Typography sx={{ fontWeight: 600 }}>{heading}</Typography>
+      {songs.length > 0 ? (
+        <Box component="ul" sx={{ mb: 0, pl: 3 }}>
+          {songs.map(({ title, originalArtist, roles }, index) => (
+            <Box component="li" key={`${title}-${index}`} sx={{ mb: 1 }}>
+              <Typography>
+                {title}
+                {originalArtist ? ` — ${originalArtist}` : ''}
+              </Typography>
+              <Typography color="textSecondary" variant="body2">
+                {roles.join(', ')}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      ) : (
+        <Typography color="textSecondary" variant="body2">{emptyText}</Typography>
+      )}
+    </Box>
   );
 }
