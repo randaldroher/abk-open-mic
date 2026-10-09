@@ -24,7 +24,7 @@ import type {
 
 type PerformerWithSongs = Omit<OctoberSignupPerformer, 'initials'> & {
   songs: PerformerSongInterest[];
-  assignments: PerformerSongInterest[] | null;
+  assignments?: PerformerSongInterest[] | null;
 };
 
 export default function PerformersTable({
@@ -85,7 +85,7 @@ function PerformerRow({
   detailsId: string;
   isLast: boolean;
 }) {
-  const { name, genres, roles, songs, assignments } = performer;
+  const { name, genres, roles, songs, assignments = null } = performer;
   const assignedCount = assignments?.length ?? 0;
   const [expanded, setExpanded] = useState(false);
 
