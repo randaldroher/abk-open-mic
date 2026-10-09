@@ -20,7 +20,7 @@ function columnLetter(index: number): string {
 
 async function readTimetable() {
   'use cache';
-  cacheLife('seconds');
+  cacheLife('minutes');
   try {
     const sheets = getSheetsClient();
     const headerResponse = await sheets.spreadsheets.values.get({
