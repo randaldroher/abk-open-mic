@@ -132,10 +132,11 @@ export default function SetListTable({
                             <RoleNeedChip
                               role={role}
                               status={assignment.status}
+                              detail={assignment.detail}
                               candidates={candidates.get(role) ?? []}
                             />
                           )}
-                          {assignment?.detail && (
+                          {assignment?.detail && role !== 'Additional Instruments' && (
                             <Typography color="textSecondary" variant="body2">
                               {assignment.detail}
                             </Typography>

@@ -51,7 +51,15 @@ export function projectOctoberSetList(
     }
     const roles = columns.roles.map(({ column, role }) => {
       const cell = normalizeSignupHeader(row[column] ?? '');
-      const nice = /^nice to have(?: \(strings\))?$/.test(cell);
+      const qualifier = role === 'Additional Instruments'
+        ? /^nice to have\s*\(\s*([^()]+?)\s*\)$/i.exec(
+            (row[column] ?? '').normalize('NFKC').trim().replace(/\s+/g, ' '),
+          )?.[1]?.trim() || null
+        : null;
+      const safeQualifier = qualifier && !/\b[^\s@]+@[^\s@]+\.[^\s@]+\b/.test(qualifier)
+        ? qualifier
+        : null;
+      const nice = /^nice to have(?: \(strings\))?$/.test(cell) || safeQualifier !== null;
       const status = nice
         ? 'nice-to-have' as const
         : cell === 'needed!'
@@ -67,7 +75,7 @@ export function projectOctoberSetList(
           return name ? [{ initials, name }] : [];
         }),
         status,
-        detail: nice && cell.endsWith('(strings)') ? 'strings' : null,
+        detail: safeQualifier ?? (nice && cell.endsWith('(strings)') ? 'strings' : null),
       };
     });
     songs.push({ title, originalArtist, roles });

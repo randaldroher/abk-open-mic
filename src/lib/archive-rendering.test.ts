@@ -11,12 +11,57 @@ import PerformersTable from '../components/performers-table';
 import SongCardsSkeleton from "../components/song-cards-skeleton";
 import SiteFrame from "../components/site-frame";
 import ThemeProvider from '../app/theme-provider';
+import RoleNeedChip from '../components/role-need-chip';
+import SetListTable from '../components/set-list-table';
+import { getSongRoleNeeds, projectOctoberSetList } from './october-set-list';
 import {
   PAST_EVENTS,
   PAST_EVENT_VIDEOS,
   getPastEventVideos,
 } from './past-events';
 import { SIGNUP_URL } from "./site-links";
+
+test('instrument-qualified need chips use the same label in Set List and Songs', () => {
+  const setList = {
+    ...projectOctoberSetList(
+      ['Song', 'Artist', 'Additional Instruments'],
+      [['A song', 'An artist', 'Nice to have (Strings)']],
+      [],
+    ),
+    fetchedAt: '2026-10-09T00:00:00Z',
+  };
+  const table = renderToStaticMarkup(
+    createElement(SetListTable, { setList, performers: [] }),
+  );
+  const [need] = getSongRoleNeeds(setList.songs[0], setList.songs);
+  const songChip = renderToStaticMarkup(
+    createElement(RoleNeedChip, { ...need, status: 'nice-to-have', includeRole: true, candidates: [] }),
+  );
+
+  for (const html of [table, songChip]) {
+    assert.ok(html.includes('Strings: Nice to have'));
+    assert.ok(!html.includes('Additional Instruments: Nice to have'));
+  }
+});
+
+test('unqualified and other-role need chips retain their labels', () => {
+  for (const includeRole of [false, true]) {
+    for (const status of ['nice-to-have', 'needed'] as const) {
+      const html = renderToStaticMarkup(
+        createElement(RoleNeedChip, { role: 'Additional Instruments', status, includeRole, candidates: [] }),
+      );
+      const label = status === 'needed' ? 'Needed!' : 'Nice to have';
+      assert.ok(html.includes(includeRole ? `Additional Instruments: ${label}` : label));
+    }
+  }
+  const html = renderToStaticMarkup(
+    createElement(RoleNeedChip, {
+      role: 'Vocal', status: 'nice-to-have', detail: 'Strings', includeRole: true, candidates: [],
+    }),
+  );
+  assert.ok(html.includes('Vocal: Nice to have'));
+  assert.ok(!html.includes('Strings: Nice to have'));
+});
 
 test('shared site containers use the xl breakpoint with a 1600px maximum', () => {
   const html = renderToStaticMarkup(

@@ -95,8 +95,11 @@ The October timetable adapter discovers normalized headers in row 1 of
 performer-role columns. The song table ends at its first blank song row.
 Practice, Link, and Comments columns are not fetched. Assignments resolve
 against signup initials to the same public first-name roster. Only recognized
-need markers (including the reviewed `Nice to have (strings)` qualifier) are
-published; unmatched initials and other role-cell prose are not displayed.
+need markers are published; Additional Instruments also accepts parenthesized
+instrument qualifiers after `Nice to have`, preserving their capitalization.
+For example, `Nice to have (Strings)` displays as `Strings: Nice to have`
+in both Set List and Songs. Qualifiers containing email addresses are excluded;
+unmatched initials and other role-cell prose are not displayed.
 Set List sorts by original artist by default, with sortable song and role
 headers; sorting does not indicate performance order. Shared blue/magenta role
 chips on Set List and Songs show eligible role-interest performers and their
