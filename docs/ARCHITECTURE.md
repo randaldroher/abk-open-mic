@@ -106,6 +106,10 @@ guitar parts into one sortable Guitar column, retaining each part's assignments
 and need markers. Parts use compact inline labels such as `Lead: Name` or
 `Rhythm: Nice to have` in bold colored text, without parentheses or separate label rows. All table cells vertically
 center their content, including multiline assignments.
+Keyboard and Additional Instruments share the final sortable Additional
+Instruments column, with Keyboard first and compact labels such as
+`Keyboard: Name` and `Strings: Nice to have`. Instrument qualifiers are retained;
+unqualified entries use `Additional Instruments` as their label.
 This display grouping does not change the underlying roles.
 The shared role-need component supports `link` and `chip` variants, using
 bold blue/magenta MUI Link text on Set List and chips on Songs. Both show eligible role-interest performers and their

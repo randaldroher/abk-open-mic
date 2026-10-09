@@ -71,6 +71,68 @@ test('set list combines guitar parts into one column without losing assignments 
   assert.equal(JSON.stringify(setList), original);
 });
 
+test('set list combines keyboard and additional instruments in the final column', () => {
+  const performers = [
+    { initials: 'AB', name: 'Alex', roles: ['Keyboard'], genres: '' },
+    { initials: 'CD', name: 'Casey', roles: ['Other Role'], genres: '' },
+  ];
+  const setList = {
+    ...projectOctoberSetList(
+      ['Song', 'Artist', 'Additional Instruments', 'Keyboard', 'Bass'],
+      [
+        ['Assigned', 'Artist', 'CD', 'AB', ''],
+        ['Needed', 'Artist', 'Needed!', 'Nice to have', ''],
+        ['Qualified', 'Artist', 'Nice to have (Strings)', 'Needed!', ''],
+        ['Unassigned', 'Artist', '', '', 'AB'],
+      ],
+      performers,
+    ),
+    fetchedAt: '2026-10-09T00:00:00Z',
+  };
+  const original = JSON.stringify(setList);
+  const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers }));
+  const headers = html.match(/<thead[\s\S]*?<\/thead>/)?.[0].match(/<th\b[\s\S]*?<\/th>/g) ?? [];
+  assert.equal(headers.length, 4);
+  assert.ok(headers[2].includes('Bass'));
+  assert.ok(headers[3].includes('Additional Instruments'));
+  assert.ok(!headers.some((header) => header.includes('Keyboard')));
+  const rows = html.match(/<tbody[\s\S]*?<\/tbody>/)?.[0].match(/<tr[\s\S]*?<\/tr>/g) ?? [];
+  const combined = rows.map((row) => {
+    const cells = row.match(/<td\b[\s\S]*?<\/td>/g) ?? [];
+    assert.equal(cells.length, 3);
+    return cells[2];
+  });
+  assert.ok(combined[0].includes('Keyboard: Alex'));
+  assert.ok(combined[0].includes('Additional Instruments: Casey'));
+  assert.ok(combined[0].indexOf('Keyboard: Alex') < combined[0].indexOf('Additional Instruments: Casey'));
+  assert.ok(combined[1].includes('Keyboard: Nice to have'));
+  assert.ok(combined[1].includes('Additional Instruments: Needed!'));
+  assert.ok(combined[2].includes('Keyboard: Needed!'));
+  assert.ok(combined[2].includes('Strings: Nice to have'));
+  assert.ok(!combined[3].includes('Keyboard:'));
+  assert.ok(!combined[3].includes('Additional Instruments:'));
+  assert.ok(!html.includes('MuiChip-root'));
+  assert.equal(JSON.stringify(setList), original);
+});
+
+test('combined additional instruments column supports either source role alone', () => {
+  for (const role of ['Keyboard', 'Additional Instruments']) {
+    const setList = {
+      ...projectOctoberSetList(
+        ['Song', 'Artist', role, 'Bass'],
+        [['Song', 'Artist', 'Needed!', '']],
+        [],
+      ),
+      fetchedAt: '2026-10-09T00:00:00Z',
+    };
+    const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers: [] }));
+    const headers = html.match(/<thead[\s\S]*?<\/thead>/)?.[0].match(/<th\b[\s\S]*?<\/th>/g) ?? [];
+    assert.equal(headers.length, 4);
+    assert.ok(headers[3].includes('Additional Instruments'));
+    assert.ok(html.includes(`${role}: Needed!`));
+  }
+});
+
 test('instrument-qualified needs use the same label in Set List links and Songs chips', () => {
   const setList = {
     ...projectOctoberSetList(
