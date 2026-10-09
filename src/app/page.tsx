@@ -71,7 +71,7 @@ export default function Home() {
               style={{ objectFit: 'cover', objectPosition: 'center 48%' }}
             />
           </Box>
-          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+          <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
             <Box sx={{ mb: 1 }}>
               <Typography variant="overline" color="primary">
                 Sunday, October 25 · Evening show

@@ -18,16 +18,17 @@ import {
 } from './past-events';
 import { SIGNUP_URL } from "./site-links";
 
-test('shared site containers use a 1600px maximum without changing layout breakpoints', () => {
+test('shared site containers use the xl breakpoint with a 1600px maximum', () => {
   const html = renderToStaticMarkup(
     ThemeProvider({
       children: SiteFrame({ children: 'Content' }),
     }),
   );
 
-  assert.match(html, /max-width:1600px/);
+  assert.match(html, /MuiContainer-maxWidthXl/);
+  assert.match(html, /@media \(min-width:1600px\)\{[^}]*max-width:1600px/);
   assert.match(html, /width:100%/);
-  assert.match(html, /@media \(min-width:1200px\)/);
+  assert.doesNotMatch(html, /max-width:1200px/);
 });
 
 test("event cards render every archive with decorative Material SVG arrows", () => {
