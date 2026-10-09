@@ -39,7 +39,7 @@ export default function PerformersTable({
       >
         <TableContainer>
           <Table
-            aria-label="Performer names, role interests, genres, and proposed songs"
+            aria-label="Performer names, role interests, genres, proposed songs, and set-list assignments in expandable rows"
             size="small"
           >
             <TableHead>

@@ -2,6 +2,7 @@ import {
   normalizeSignupHeader,
   octoberSignupSongColumns,
   type OctoberSignupPerformer,
+  type OctoberSignupSong,
   type PerformerSongInterest,
 } from './october-signup';
 
@@ -82,6 +83,46 @@ export function getSongAnchor(title: string, originalArtist: string | null): str
   ]))}`;
 }
 
+export function mergeDuplicateSignupSongs(
+  songs: OctoberSignupSong[],
+): OctoberSignupSong[] {
+  const merged = new Map<string, OctoberSignupSong>();
+  for (const song of songs) {
+    const anchor = getSongAnchor(song.title, song.originalArtist);
+    const previous = merged.get(anchor);
+    if (!previous) {
+      merged.set(anchor, song);
+      continue;
+    }
+
+    const interestedPerformers = new Map(
+      previous.interestedPerformers.map((performer) => [
+        performer.initials,
+        { ...performer, roles: [...performer.roles] },
+      ]),
+    );
+    for (const performer of song.interestedPerformers) {
+      const existing = interestedPerformers.get(performer.initials);
+      interestedPerformers.set(
+        performer.initials,
+        existing
+          ? {
+              ...existing,
+              roles: [...new Set([...existing.roles, ...performer.roles])],
+            }
+          : performer,
+      );
+    }
+
+    merged.set(anchor, {
+      ...previous,
+      interestedPerformers: [...interestedPerformers.values()],
+      videoId: previous.videoId ?? song.videoId,
+    });
+  }
+  return [...merged.values()];
+}
+
 export function setListSongsByPerformer(
   songs: SetListSong[],
   initials: string,
@@ -117,9 +158,10 @@ export function getRoleCandidates(
   role: string,
   performers: OctoberSignupPerformer[],
   songs: SetListSong[],
-): Array<{ name: string; count: number }> {
+): Array<{ initials: string; name: string; count: number }> {
   return performers.filter((performer) => supportsRole(performer.roles, role))
     .map(({ name, initials }) => ({
+      initials,
       name,
       count: setListSongsByPerformer(songs, initials).length,
     }))

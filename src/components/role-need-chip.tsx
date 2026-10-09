@@ -10,7 +10,7 @@ export default function RoleNeedChip({
 }: {
   role: string;
   status: 'nice-to-have' | 'needed';
-  candidates: Array<{ name: string; count: number }>;
+  candidates: Array<{ initials: string; name: string; count: number }>;
   includeRole?: boolean;
 }) {
   const label = status === 'needed' ? 'Needed!' : 'Nice to have';
@@ -29,8 +29,8 @@ export default function RoleNeedChip({
           </Typography>
           {candidates.length > 0 ? (
             <Box component="ul" sx={{ m: 0, pl: 2 }}>
-              {candidates.map(({ name, count }) => (
-                <li key={name}>
+              {candidates.map(({ initials, name, count }) => (
+                <li key={initials}>
                   {name}: {count}
                 </li>
               ))}

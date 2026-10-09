@@ -4,6 +4,7 @@ import {
   getRoleCandidates,
   getSongAnchor,
   getSongRoleNeeds,
+  mergeDuplicateSignupSongs,
   octoberSetListColumns,
   projectOctoberSetList,
   setListSongsByPerformer,
@@ -100,10 +101,65 @@ test('counts unique songs across roles and matches identities, not display names
     { title: 'Two', originalArtist: 'Artist', roles: ['Vocal'] },
   ]);
   assert.deepEqual(getRoleCandidates('Rhythm Guitar', performers, songs), [
-    { name: 'Jamie', count: 0 }, { name: 'Alex', count: 2 },
+    { initials: 'EF', name: 'Jamie', count: 0 },
+    { initials: 'AB', name: 'Alex', count: 2 },
   ]);
-  assert.deepEqual(getRoleCandidates('Bass', performers, songs), [{ name: 'Sam', count: 1 }]);
+  assert.deepEqual(getRoleCandidates('Bass', performers, songs), [
+    { initials: 'CD', name: 'Sam', count: 1 },
+  ]);
   assert.deepEqual(getRoleCandidates('Keyboard', performers, songs), []);
+});
+
+test('merges duplicate signup songs by anchor, performer initials, roles and available video', () => {
+  const songs = [
+    {
+      title: ' A Song ',
+      originalArtist: 'Artist',
+      interestedPerformers: [
+        { initials: 'AB', name: 'Alex', roles: ['Vocal'] },
+      ],
+      videoId: null,
+    },
+    {
+      title: 'a song',
+      originalArtist: ' ARTIST ',
+      interestedPerformers: [
+        { initials: 'AB', name: 'Alex', roles: ['Bass'] },
+        { initials: 'CD', name: 'Alex', roles: ['Vocal'] },
+      ],
+      videoId: 'first-video',
+    },
+    {
+      title: 'A Song',
+      originalArtist: 'artist',
+      interestedPerformers: [],
+      videoId: 'later-video',
+    },
+    {
+      title: 'A Song',
+      originalArtist: 'Other Artist',
+      interestedPerformers: [],
+      videoId: null,
+    },
+  ];
+
+  assert.deepEqual(mergeDuplicateSignupSongs(songs), [
+    {
+      title: ' A Song ',
+      originalArtist: 'Artist',
+      interestedPerformers: [
+        { initials: 'AB', name: 'Alex', roles: ['Vocal', 'Bass'] },
+        { initials: 'CD', name: 'Alex', roles: ['Vocal'] },
+      ],
+      videoId: 'first-video',
+    },
+    {
+      title: 'A Song',
+      originalArtist: 'Other Artist',
+      interestedPerformers: [],
+      videoId: null,
+    },
+  ]);
 });
 
 test('anchors are stable, distinguish artist credits and match role needs', () => {

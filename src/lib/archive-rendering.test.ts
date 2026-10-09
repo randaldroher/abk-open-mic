@@ -149,7 +149,7 @@ test('performer interests render in one card with expandable song rows', () => {
 
   assert.ok(
     html.includes(
-      'aria-label="Performer names, role interests, genres, and proposed songs"',
+      'aria-label="Performer names, role interests, genres, proposed songs, and set-list assignments in expandable rows"',
     ),
   );
   assert.ok(html.includes('Alex Brown'));

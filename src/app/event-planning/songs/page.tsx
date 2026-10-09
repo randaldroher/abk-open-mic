@@ -13,6 +13,7 @@ import {
   getRoleCandidates,
   getSongAnchor,
   getSongRoleNeeds,
+  mergeDuplicateSignupSongs,
 } from '@/lib/october-set-list';
 
 export const metadata: Metadata = {
@@ -47,11 +48,9 @@ async function SongCards() {
   }
   const setList = eventData.setList;
   const songsByAnchor = new Map<string, OctoberSignupSong>();
-  for (const song of eventData.songs) {
+  for (const song of mergeDuplicateSignupSongs(eventData.songs)) {
     const anchor = getSongAnchor(song.title, song.originalArtist);
-    if (!songsByAnchor.has(anchor)) {
-      songsByAnchor.set(anchor, song);
-    }
+    songsByAnchor.set(anchor, song);
   }
   for (const song of setList?.songs ?? []) {
     const anchor = getSongAnchor(song.title, song.originalArtist);
