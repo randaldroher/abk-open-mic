@@ -160,7 +160,7 @@ export default function SetListTable({
                                   status={assignment.status}
                                   detail={assignment.detail}
                                   displayLabel={columnRole === 'Guitar'
-                                    ? `(${part}: ${assignment.status === 'needed' ? 'Needed!' : 'Nice to have'})`
+                                    ? `${part}: ${assignment.status === 'needed' ? 'Needed!' : 'Nice to have'}`
                                     : undefined}
                                   candidates={candidates.get(assignment.role) ?? []}
                                 />

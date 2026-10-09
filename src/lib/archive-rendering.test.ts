@@ -60,11 +60,11 @@ test('set list combines guitar parts into one column without losing assignments 
   }
   assert.ok(rows[0].includes('Lead: Alex'));
   assert.ok(rows[0].includes('Rhythm: Casey'));
-  assert.ok(rows[1].includes('(Lead: Needed!)'));
-  assert.ok(rows[1].includes('(Rhythm: Nice to have)'));
+  assert.ok(rows[1].includes('>Lead: Needed!</span>'));
+  assert.ok(rows[1].includes('>Rhythm: Nice to have</span>'));
   assert.ok(rows[1].includes('aria-label="Lead Guitar: Needed!"'));
   assert.ok(rows[2].includes('Lead: Alex'));
-  assert.ok(rows[2].includes('(Rhythm: Needed!)'));
+  assert.ok(rows[2].includes('>Rhythm: Needed!</span>'));
   assert.equal(JSON.stringify(setList), original);
 });
 
