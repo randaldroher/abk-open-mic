@@ -147,6 +147,25 @@ test('set list highlights only roles marked Needed! above the table', () => {
   assert.ok(!highlight.includes('Nice to have'));
 });
 
+test('set list reports when there are no critical openings', () => {
+  const setList = {
+    ...projectOctoberSetList(
+      ['Song', 'Artist', 'Lead Guitar', 'Bass'],
+      [['Song without critical openings', 'Artist', 'Nice to have', '']],
+      [],
+    ),
+    fetchedAt: '2026-10-09T00:00:00Z',
+  };
+  const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers: [] }));
+  const highlight = html.match(
+    /<section\b[^>]*aria-labelledby="critical-openings-heading"[^>]*>[\s\S]*?<\/section>/,
+  )?.[0] ?? '';
+
+  assert.ok(highlight);
+  assert.ok(highlight.includes('0 roles marked Needed!'));
+  assert.ok(highlight.includes('No critical openings are marked Needed!'));
+});
+
 test('combined additional instruments column supports either source role alone', () => {
   for (const role of ['Keyboard', 'Additional Instruments']) {
     const setList = {
