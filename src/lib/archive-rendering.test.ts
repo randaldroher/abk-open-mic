@@ -40,6 +40,7 @@ test('set list combines guitar parts into one column without losing assignments 
   };
   const original = JSON.stringify(setList);
   const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers }));
+  const table = html.slice(html.indexOf('<table'));
   assert.match(html, /\.MuiTableCell-root\{vertical-align:middle;\}/);
   assert.ok(!html.includes('vertical-align:top'));
   const header = html.match(/<thead[\s\S]*?<\/thead>/)?.[0] ?? '';
@@ -65,7 +66,7 @@ test('set list combines guitar parts into one column without losing assignments 
   assert.ok(rows[1].includes('aria-label="Lead Guitar: Needed!"'));
   assert.ok(rows[2].includes('Lead: Alex'));
   assert.ok(rows[2].includes('>Rhythm: Needed!</span>'));
-  assert.ok(!html.includes('MuiChip-root'));
+  assert.ok(!table.includes('MuiChip-root'));
   assert.ok(rows[1].includes('MuiLink-root'));
   assert.ok(html.includes('font-weight:700'));
   assert.equal(JSON.stringify(setList), original);
@@ -91,6 +92,7 @@ test('set list combines keyboard and additional instruments in the final column'
   };
   const original = JSON.stringify(setList);
   const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers }));
+  const table = html.slice(html.indexOf('<table'));
   const headers = html.match(/<thead[\s\S]*?<\/thead>/)?.[0].match(/<th\b[\s\S]*?<\/th>/g) ?? [];
   assert.equal(headers.length, 4);
   assert.ok(headers[2].includes('Bass'));
@@ -111,8 +113,57 @@ test('set list combines keyboard and additional instruments in the final column'
   assert.ok(combined[2].includes('Strings: Nice to have'));
   assert.ok(!combined[3].includes('Keyboard:'));
   assert.ok(!combined[3].includes('Additional Instruments:'));
-  assert.ok(!html.includes('MuiChip-root'));
+  assert.ok(!table.includes('MuiChip-root'));
   assert.equal(JSON.stringify(setList), original);
+});
+
+test('set list highlights only roles marked Needed! above the table', () => {
+  const performers = [
+    { initials: 'AB', name: 'Alex', roles: ['Guitar'], genres: '' },
+  ];
+  const setList = {
+    ...projectOctoberSetList(
+      ['Song', 'Artist', 'Lead Guitar', 'Bass', 'Vocal'],
+      [
+        ['Opening song', 'Artist', 'Needed!', 'Nice to have', ''],
+        ['Second song', '', '', 'Needed!', ''],
+      ],
+      performers,
+    ),
+    fetchedAt: '2026-10-09T00:00:00Z',
+  };
+  const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers }));
+  const highlight = html.match(
+    /<section\b[^>]*aria-labelledby="critical-openings-heading"[^>]*>[\s\S]*?<\/section>/,
+  )?.[0] ?? '';
+
+  assert.ok(highlight);
+  assert.ok(html.indexOf(highlight) < html.indexOf('<table'));
+  assert.ok(highlight.includes('2 roles marked Needed!'));
+  assert.ok(highlight.includes('Opening song'));
+  assert.ok(highlight.includes('Lead Guitar: Needed!'));
+  assert.ok(highlight.includes('Second song'));
+  assert.ok(highlight.includes('Bass: Needed!'));
+  assert.ok(!highlight.includes('Nice to have'));
+});
+
+test('set list reports when there are no critical openings', () => {
+  const setList = {
+    ...projectOctoberSetList(
+      ['Song', 'Artist', 'Lead Guitar', 'Bass'],
+      [['Song without critical openings', 'Artist', 'Nice to have', '']],
+      [],
+    ),
+    fetchedAt: '2026-10-09T00:00:00Z',
+  };
+  const html = renderToStaticMarkup(createElement(SetListTable, { setList, performers: [] }));
+  const highlight = html.match(
+    /<section\b[^>]*aria-labelledby="critical-openings-heading"[^>]*>[\s\S]*?<\/section>/,
+  )?.[0] ?? '';
+
+  assert.ok(highlight);
+  assert.ok(highlight.includes('0 roles marked Needed!'));
+  assert.ok(highlight.includes('No critical openings are marked Needed!'));
 });
 
 test('combined additional instruments column supports either source role alone', () => {
@@ -145,6 +196,7 @@ test('instrument-qualified needs use the same label in Set List links and Songs 
   const table = renderToStaticMarkup(
     createElement(SetListTable, { setList, performers: [] }),
   );
+  const tableGrid = table.slice(table.indexOf('<table'));
   const [need] = getSongRoleNeeds(setList.songs[0], setList.songs);
   const songChip = renderToStaticMarkup(
     createElement(RoleNeedChip, { ...need, status: 'nice-to-have', includeRole: true, candidates: [] }),
@@ -154,7 +206,7 @@ test('instrument-qualified needs use the same label in Set List links and Songs 
     assert.ok(html.includes('Strings: Nice to have'));
     assert.ok(!html.includes('Additional Instruments: Nice to have'));
   }
-  assert.ok(!table.includes('MuiChip-root'));
+  assert.ok(!tableGrid.includes('MuiChip-root'));
   assert.ok(songChip.includes('MuiChip-root'));
 });
 
