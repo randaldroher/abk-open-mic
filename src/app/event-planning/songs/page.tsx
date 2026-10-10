@@ -12,6 +12,7 @@ import {
 import {
   getRoleCandidates,
   getSongAnchor,
+  getSongAssignments,
   getSongRoleNeeds,
   getSongStatus,
   mergeDuplicateSignupSongs,
@@ -20,7 +21,7 @@ import {
 export const metadata: Metadata = {
   title: 'Songs',
   description:
-    'Set-list and proposed songs, interested performers, and YouTube references for the October 2026 ABK Open Mic.',
+    'Set-list and proposed songs, assigned performers, and YouTube references for the October 2026 ABK Open Mic.',
 };
 
 export default function SongsPage() {
@@ -32,8 +33,8 @@ export default function SongsPage() {
       aria-labelledby="event-planning-songs-tab"
     >
       <Typography color="textSecondary">
-        Songs from the signup sheet and set list. Signup interest is not a
-        confirmed performer assignment.
+        Songs from the signup sheet and set list. Performers shown here are
+        assignments from the timetable, not signup interests.
       </Typography>
       <Suspense fallback={<SongCardsSkeleton showReferences={true} />}>
         <SongCards />
@@ -125,13 +126,13 @@ async function SongCards() {
                 )}
               </Stack>
             )}
-            {song.interestedPerformers.length > 0 && (
+            {setList && getSongAssignments(song, setList.songs).length > 0 && (
               <Stack spacing={1} sx={{ mt: 2 }}>
                 <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
-                  {song.interestedPerformers.map(({ name, roles }) => (
+                  {getSongAssignments(song, setList.songs).map(({ role, performers }) => (
                     <Chip
-                      key={name}
-                      label={`${name}: ${roles.join(', ')}`}
+                      key={role}
+                      label={`${role}: ${performers.join(', ')}`}
                       size="small"
                     />
                   ))}

@@ -234,7 +234,7 @@ can render the unavailable state. Verify rendered content as well.
 | `/past-events` | Static archive index, independent of Sheets availability |
 | `/event-planning` | Redirects to the first/default Set List tab |
 | `/event-planning/set-list` | Sortable October timetable song/artist/role table with resolved names and bold colored role-need text |
-| `/event-planning/songs` | Proposed October 2026 songs, original-artist credits, resolved interested-performer names, and validated YouTube references; not a finalized lineup |
+| `/event-planning/songs` | October 2026 signup and timetable songs, original-artist credits, assigned performers, role needs, and validated YouTube references; signup interests are not displayed as assignments |
 | `/event-planning/performers` | October signup names, recognized self-reported role interests, entered genres, expandable set-list assignments and proposed song interests; no contact fields |
 | `/songs`, `/performers` | Legacy redirects to their corresponding Event Planning tabs |
 | `/robots.txt` | Disallows crawling of all paths for compliant crawlers |
