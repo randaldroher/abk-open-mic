@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   getRoleCandidates,
+  getSongAssignments,
   getSongAnchor,
   getSongRoleNeeds,
   getSongStatus,
@@ -196,6 +197,30 @@ test('anchors are stable, distinguish artist credits and match role needs', () =
   assert.deepEqual(getSongRoleNeeds({ title: 'a song', originalArtist: 'artist' }, songs), [
     { role: 'Bass', performers: [], status: 'needed', detail: null },
   ]);
+});
+
+test('song assignments include assigned performers only and merge matching entries', () => {
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal', 'Bass'],
+    [
+      ['A Song', 'Artist', 'AB', 'CD'],
+      ['a song', 'ARTIST', 'AB', ''],
+      ['A Song', 'Other Artist', 'EF', ''],
+    ],
+    performers,
+  );
+
+  assert.deepEqual(
+    getSongAssignments({ title: ' a song ', originalArtist: 'artist' }, songs),
+    [
+      { role: 'Vocal', performers: ['Alex'] },
+      { role: 'Bass', performers: ['Sam'] },
+    ],
+  );
+  assert.deepEqual(
+    getSongAssignments({ title: 'A Song', originalArtist: null }, songs),
+    [],
+  );
 });
 
 test('song status distinguishes filled roles, outstanding needs and songs outside the set list', () => {

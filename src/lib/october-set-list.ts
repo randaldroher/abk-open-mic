@@ -186,6 +186,29 @@ export function getSongRoleNeeds(
   ).flatMap(({ roles }) => roles.filter(({ status }) => status !== null));
 }
 
+export function getSongAssignments(
+  song: { title: string; originalArtist: string | null },
+  setList: SetListSong[],
+): Array<{ role: string; performers: string[] }> {
+  const key = getSongAnchor(song.title, song.originalArtist);
+  const assignments = new Map<string, Map<string, string>>();
+  for (const entry of setList) {
+    if (getSongAnchor(entry.title, entry.originalArtist) !== key) continue;
+    for (const { role, performers } of entry.roles) {
+      if (!performers.length) continue;
+      const assigned = assignments.get(role) ?? new Map<string, string>();
+      for (const performer of performers) {
+        assigned.set(performer.initials, performer.name);
+      }
+      assignments.set(role, assigned);
+    }
+  }
+  return [...assignments].map(([role, performers]) => ({
+    role,
+    performers: [...performers.values()],
+  }));
+}
+
 export function getSongStatus(
   song: { title: string; originalArtist: string | null },
   setList: SetListSong[] | null,

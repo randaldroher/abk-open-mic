@@ -38,11 +38,11 @@ redaction exist. Live historical publication is range-based, not flag-based.
   responsive sortable table. Practice, Link, and Comments are excluded from
   reads. Initials resolve to public first names. Blue “Nice to have” and magenta
   “Needed!” chips share performer/count tooltips with the Songs page.
-- `/event-planning/songs` lists proposed song titles, artist credits, matched
-  performer names by role, and validated YouTube references from the October
-  signup tab. Header names are normalized on read. Cards are unnumbered and have
-  stable song/artist anchors for timetable links, including timetable-only
-  songs and outstanding-role chips.
+- `/event-planning/songs` lists signup and timetable song titles, artist credits,
+  assigned performers by role, and validated YouTube references. Signup
+  interests are not displayed as assignments. Header names are normalized on
+  read. Cards are unnumbered and have stable song/artist anchors for timetable
+  links, including timetable-only songs and outstanding-role chips.
 - `/event-planning/performers` lists consented performer names, recognized
   self-reported role interests, and entered Genres text as written. Expandable
   rows show set-list assignments (with unique assigned-song counts on the

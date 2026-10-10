@@ -19,7 +19,7 @@ export default function SetListPage() {
     >
       <Typography color="textSecondary">
         Songs and performer assignments from the October set list. Select a song
-        or artist to see its references and performer interests.
+        or artist to see its references and assigned performers.
       </Typography>
       <Suspense fallback={
         <Card variant="outlined" aria-hidden="true">
