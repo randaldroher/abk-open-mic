@@ -37,7 +37,9 @@ redaction exist. Live historical publication is range-based, not flag-based.
   October timetable's song, original artist, and recognized role columns in a
   responsive sortable table. Practice, Link, and Comments are excluded from
   reads. Initials resolve to public first names. Blue “Nice to have” and magenta
-  “Needed!” chips share performer/count tooltips with the Songs page.
+  “Needed!” chips share performer/count tooltips with the Songs page. A Critical
+  openings section above the table highlights roles marked “Needed!” and links
+  to their song entries.
 - `/event-planning/songs` lists signup and timetable song titles, artist credits,
   assigned performers by role, and validated YouTube references. Signup
   interests are not displayed as assignments. Header names are normalized on

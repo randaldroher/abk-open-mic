@@ -4,6 +4,7 @@ import { useState } from 'react';
 import NextLink from 'next/link';
 import {
   Card,
+  Chip,
   Link,
   Stack,
   Table,
@@ -75,6 +76,11 @@ export default function SetListTable({
       getRoleCandidates(role, performers, setList.songs),
     ]),
   );
+  const criticalOpenings = setList.songs.flatMap((song, songIndex) =>
+    song.roles.flatMap((assignment) =>
+      assignment.status === 'needed' ? [{ song, assignment, songIndex }] : [],
+    ),
+  );
   const songs = [...setList.songs].sort((left, right) => {
     const a = columnValue(left, sortColumn);
     const b = columnValue(right, sortColumn);
@@ -91,7 +97,54 @@ export default function SetListTable({
   }
 
   return (
-    <Card variant="outlined">
+    <Stack spacing={2}>
+      <Card component="section" variant="outlined" aria-labelledby="critical-openings-heading">
+        <Stack spacing={1.5} sx={{ p: 2 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <Typography id="critical-openings-heading" component="h2" variant="h2">
+              Critical openings
+            </Typography>
+            <Chip
+              label={`${criticalOpenings.length} ${criticalOpenings.length === 1 ? 'role' : 'roles'} marked Needed!`}
+              color="secondary"
+              size="small"
+            />
+          </Stack>
+          {criticalOpenings.length ? (
+            <Stack component="ul" spacing={1} sx={{ m: 0, p: 0, listStyle: 'none' }}>
+              {criticalOpenings.map(({ song, assignment, songIndex }) => {
+                const href = `/event-planning/songs#${encodeURIComponent(getSongAnchor(song.title, song.originalArtist))}`;
+                return (
+                  <Stack
+                    key={`${getSongAnchor(song.title, song.originalArtist)}-${assignment.role}-${songIndex}`}
+                    component="li"
+                    direction="row"
+                    spacing={1}
+                    sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}
+                  >
+                    <Typography variant="body2">
+                      <Link component={NextLink} href={href}>{song.title}</Link>
+                      {song.originalArtist ? ` — ${song.originalArtist}` : ''}
+                    </Typography>
+                    <RoleNeedChip
+                      variant="chip"
+                      role={assignment.role}
+                      status="needed"
+                      includeRole
+                      candidates={candidates.get(assignment.role) ?? []}
+                    />
+                  </Stack>
+                );
+              })}
+            </Stack>
+          ) : (
+            <Typography color="textSecondary" variant="body2">
+              No critical openings are marked Needed!
+            </Typography>
+          )}
+        </Stack>
+      </Card>
+      <Card variant="outlined">
       <TableContainer
         tabIndex={0}
         role="region"
@@ -194,6 +247,7 @@ export default function SetListTable({
           </TableBody>
         </Table>
       </TableContainer>
-    </Card>
+      </Card>
+    </Stack>
   );
 }

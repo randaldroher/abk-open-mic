@@ -106,6 +106,8 @@ guitar parts into one sortable Guitar column, retaining each part's assignments
 and need markers. Parts use compact inline labels such as `Lead: Name` or
 `Rhythm: Nice to have` in bold colored text, without parentheses or separate label rows. All table cells vertically
 center their content, including multiline assignments.
+Roles marked `Needed!` are also highlighted in a Critical openings section above
+the table, linked to their song entries; the section reports when none remain.
 Keyboard and Additional Instruments share the final sortable Additional
 Instruments column, with Keyboard first and compact labels such as
 `Keyboard: Name` and `Strings: Nice to have`. Instrument qualifiers are retained;
