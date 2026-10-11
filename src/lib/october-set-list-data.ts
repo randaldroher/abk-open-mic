@@ -4,6 +4,7 @@ import { getSheetsClient, SPREADSHEET_ID } from './google-sheets';
 import { withLastKnownGood } from './last-known-good';
 import { octoberSetListColumns, projectOctoberSetList } from './october-set-list';
 import type { OctoberSignupPerformer } from './october-signup';
+import { isPracticeDone, octoberPracticeColumn, projectOctoberPracticeSongs } from './october-practice';
 
 const TAB = "'Time Table (October 2026)'";
 
@@ -30,10 +31,12 @@ async function readTimetable() {
     });
     const headers = headerResponse.data.values?.[0]?.map(String) ?? [];
     const mapping = octoberSetListColumns(headers);
+    const practiceColumn = octoberPracticeColumn(headers);
     const columns = [
       mapping.song,
       mapping.artist,
       ...mapping.roles.map(({ column }) => column),
+      ...(practiceColumn === null ? [] : [practiceColumn]),
     ];
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: SPREADSHEET_ID,
@@ -48,7 +51,9 @@ async function readTimetable() {
     const rows = Array.from({ length }, (_, rowIndex) => {
       const row = Array<string>(headers.length).fill('');
       columns.forEach((column, index) => {
-        row[column] = String(values[index]?.values?.[rowIndex]?.[0] ?? '');
+        const value = String(values[index]?.values?.[rowIndex]?.[0] ?? '');
+        // Retain only the completion marker, never raw practice notes.
+        row[column] = column === practiceColumn ? (isPracticeDone(value) ? 'Done!' : '') : value;
       });
       return row;
     });
@@ -67,6 +72,7 @@ export async function getOctoberSetList(performers: OctoberSignupPerformer[]) {
   if (!data) return null;
   return {
     ...projectOctoberSetList(data.headers, data.rows, performers),
+    practiceSongs: projectOctoberPracticeSongs(data.headers, data.rows, performers),
     fetchedAt: data.fetchedAt,
   };
 }

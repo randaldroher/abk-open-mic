@@ -21,6 +21,7 @@ export type OctoberSetList = {
   songs: SetListSong[];
   roles: string[];
   fetchedAt: string;
+  practiceSongs?: SetListSong[] | null;
 };
 
 export function octoberSetListColumns(headers: string[]) {
