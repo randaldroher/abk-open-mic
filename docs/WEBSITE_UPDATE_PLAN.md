@@ -35,11 +35,19 @@ redaction exist. Live historical publication is range-based, not flag-based.
   a song.
 - `/event-planning/set-list` is the first/default planning tab and shows the
   October timetable's song, original artist, and recognized role columns in a
-  responsive sortable table. Practice, Link, and Comments are excluded from
-  reads. Initials resolve to public first names. Blue “Nice to have” and magenta
+  responsive sortable table. Link and Comments are excluded from
+  reads; Practice is reduced to a completion marker only. Initials resolve to public first names. Blue “Nice to have” and magenta
   “Needed!” chips share performer/count tooltips with the Songs page. A Critical
   openings section above the table highlights roles marked “Needed!” and links
   to their song entries.
+- `/event-planning/practice` is the second planning tab. It excludes songs marked
+  `Done!` in the header-discovered Practice column and suggests up to five distinct
+  balanced pairs of sessions minimizing assigned performers attending both.
+  Each option shows songs, attendees, and shared performers. Small tables use
+  exact optimization; bounded search for larger tables is labeled when a global
+  minimum is not proven. Practice notes and participant availability stay private.
+  Missing/ambiguous Practice headers show an unavailable state without hiding
+  Set List; completed and one-song tables have explicit empty states.
 - `/event-planning/songs` lists signup and timetable song titles, artist credits,
   assigned performers by role, and validated YouTube references. Signup
   interests are not displayed as assignments. Header names are normalized on

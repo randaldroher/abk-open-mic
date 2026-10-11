@@ -13,6 +13,7 @@ import SiteFrame from "../components/site-frame";
 import ThemeProvider from '../app/theme-provider';
 import RoleNeedChip from '../components/role-need-chip';
 import SetListTable from '../components/set-list-table';
+import PracticeOptions from '../components/practice-options';
 import { getSongRoleNeeds, projectOctoberSetList } from './october-set-list';
 import {
   PAST_EVENTS,
@@ -296,6 +297,8 @@ test('homepage event planning cards link to each October planning tab', () => {
   const html = renderToStaticMarkup(createElement(EventPlanningCards));
 
   assert.ok(html.includes('href="/event-planning/songs"'));
+  assert.ok(html.includes('href="/event-planning/practice"'));
+  assert.ok(html.includes('aria-label="October 2026 Practice"'));
   assert.ok(html.includes('href="/event-planning/performers"'));
   assert.ok(html.includes('aria-label="October 2026 Songs"'));
   assert.ok(html.includes('aria-label="October 2026 Performers"'));
@@ -372,6 +375,49 @@ test('event planning navigation uses tabs for songs and performers', () => {
   assert.ok(html.includes('href="/event-planning/performers"'));
   assert.ok(html.includes('role="tab"'));
   assert.ok(html.includes('aria-label="Event planning sections"'));
+  const tabs = [...html.matchAll(/href="\/event-planning\/([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(tabs, ['set-list', 'practice', 'songs', 'performers']);
+});
+
+test('practice options show both groups, shared attendees, song links and search caveats', () => {
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal'],
+    [['First song', 'Artist', 'AB'], ['Second song', 'Artist', 'AB']],
+    [{ initials: 'AB', name: 'Alex', roles: ['Vocal'], genres: '' }],
+  );
+  for (const optimal of [true, false]) {
+    const html = renderToStaticMarkup(createElement(PracticeOptions, {
+      result: {
+        optimal,
+        options: [{
+          groups: [[songs[0]], [songs[1]]],
+          sharedPerformers: [{ initials: 'AB', name: 'Alex' }],
+        }],
+      },
+    }));
+    assert.ok(html.includes('Option 1: 1 performer in both sessions'));
+    assert.ok(html.includes('Both sessions: Alex'));
+    assert.ok(html.includes('Session 1'));
+    assert.ok(html.includes('Session 2'));
+    assert.ok(html.includes('First song'));
+    assert.ok(html.includes('Second song'));
+    assert.ok(html.includes('href="/event-planning/songs#song-'));
+    assert.equal(html.includes('a lower-overlap split may exist'), !optimal);
+  }
+});
+
+test('practice options handle all-done and one-song states', () => {
+  const empty = renderToStaticMarkup(createElement(PracticeOptions, {
+    result: { options: [], optimal: true },
+  }));
+  assert.ok(empty.includes('No songs remain to practice'));
+  const { songs } = projectOctoberSetList(['Song', 'Artist', 'Vocal'], [['Only song', '', '']], []);
+  const single = renderToStaticMarkup(createElement(PracticeOptions, {
+    result: { options: [{ groups: [songs, []], sharedPerformers: [] }], optimal: true },
+  }));
+  assert.ok(single.includes('Both sessions: None'));
+  assert.ok(single.includes('No songs in this session'));
+  assert.ok(single.includes('No assigned performers'));
 });
 
 test('performer interests render in one card with expandable song rows', () => {

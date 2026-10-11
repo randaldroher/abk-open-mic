@@ -8,6 +8,11 @@ const PLANNING_PAGES = [
     description: 'Explore song assignments and roles that still need performers.',
   },
   {
+    slug: 'practice',
+    title: 'Practice',
+    description: 'Compare two-session song groups with fewer shared attendees.',
+  },
+  {
     slug: 'songs',
     title: 'Songs',
     description:
@@ -26,7 +31,7 @@ export default function EventPlanningCards() {
       sx={{
         display: 'grid',
         gap: 3,
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
       }}
     >
       {PLANNING_PAGES.map(({ slug, title, description }) => (

@@ -6,6 +6,7 @@ import { Box, Tab, Tabs } from '@mui/material';
 
 const PLANNING_TABS = [
   { slug: 'set-list', label: 'Set List' },
+  { slug: 'practice', label: 'Practice' },
   { slug: 'songs', label: 'Songs' },
   { slug: 'performers', label: 'Performers' },
 ] as const;

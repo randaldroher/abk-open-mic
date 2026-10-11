@@ -1,0 +1,231 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { getSongAnchor, type SetListSong } from './october-set-list';
+import { buildPracticeGroups } from './practice-groups';
+
+function song(title: string, initials: string[] = []): SetListSong {
+  return {
+    title,
+    originalArtist: 'Artist',
+    roles: [{
+      role: 'Vocal',
+      performers: initials.map((initials) => ({ initials, name: `Name ${initials}` })),
+      status: null,
+      detail: null,
+    }],
+  };
+}
+
+function identities(songs: SetListSong[]): Set<string> {
+  return new Set(songs.flatMap(({ roles }) =>
+    roles.flatMap(({ performers }) => performers.map(({ initials }) => initials)),
+  ));
+}
+
+function shared(groups: [SetListSong[], SetListSong[]]): string[] {
+  const second = identities(groups[1]);
+  return [...identities(groups[0])].filter((initials) => second.has(initials)).sort();
+}
+
+function pairKey(groups: [SetListSong[], SetListSong[]]): string {
+  return groups.map((group) => JSON.stringify(group.map(({ title, originalArtist }) =>
+    getSongAnchor(title, originalArtist),
+  ).sort())).sort().join('|');
+}
+
+function oracle(songs: SetListSong[]) {
+  let best = Infinity;
+  const keys = new Set<string>();
+  for (let mask = 0; mask < 2 ** songs.length; mask++) {
+    const first = songs.filter((_, index) => mask & (1 << index));
+    if (first.length !== Math.floor(songs.length / 2)) continue;
+    const second = songs.filter((_, index) => !(mask & (1 << index)));
+    const score = shared([first, second]).length;
+    if (score < best) {
+      best = score;
+      keys.clear();
+    }
+    if (score === best) keys.add(pairKey([first, second]));
+  }
+  return { best, keys };
+}
+
+function check(songs: SetListSong[]) {
+  const result = buildPracticeGroups(songs);
+  assert.ok(result.options.length > 0 && result.options.length <= 5);
+  const uniqueSongs = new Set(songs.map(({ title, originalArtist }) =>
+    getSongAnchor(title, originalArtist),
+  ));
+  const keys = new Set<string>();
+  for (const { groups, sharedPerformers } of result.options) {
+    const lengths = groups.map((group) => group.length).sort((a, b) => a - b);
+    assert.deepEqual(lengths, [
+      Math.floor(uniqueSongs.size / 2), Math.ceil(uniqueSongs.size / 2),
+    ]);
+    const anchors = groups.flat().map(({ title, originalArtist }) =>
+      getSongAnchor(title, originalArtist),
+    );
+    assert.equal(new Set(anchors).size, anchors.length);
+    assert.deepEqual(new Set(anchors), uniqueSongs);
+    assert.deepEqual(sharedPerformers.map(({ initials }) => initials), shared(groups));
+    keys.add(pairKey(groups));
+  }
+  assert.equal(keys.size, result.options.length);
+  assert.equal(new Set(result.options.map(({ sharedPerformers }) =>
+    sharedPerformers.length,
+  )).size, 1);
+  return result;
+}
+
+test('empty and single-song inputs have explicit results', () => {
+  assert.deepEqual(buildPracticeGroups([]), { options: [], optimal: true });
+  const only = song('Only', ['AB']);
+  assert.deepEqual(buildPracticeGroups([only]), {
+    options: [{ groups: [[only], []], sharedPerformers: [] }],
+    optimal: true,
+  });
+});
+
+test('returns all small ties, caps at five, and never repeats mirrored pairs', () => {
+  for (const size of [2, 3, 4, 5, 6, 7]) {
+    const songs = Array.from({ length: size }, (_, index) => song(`Song ${index}`));
+    const result = check(songs);
+    assert.equal(result.optimal, true);
+    assert.equal(result.options.length, Math.min(5, oracle(songs).keys.size));
+    assert.ok(result.options.every(({ sharedPerformers }) => !sharedPerformers.length));
+  }
+});
+
+test('exact results agree with exhaustive oracle on varied tiny tables', () => {
+  let state = 12345;
+  function random() {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state;
+  }
+  for (let sample = 0; sample < 100; sample++) {
+    const size = 2 + random() % 8;
+    const songs = Array.from({ length: size }, (_, index) =>
+      song(`Song ${index}`, ['A', 'B', 'C', 'D', 'E'].filter(() => random() % 3 === 0)),
+    );
+    const expected = oracle(songs);
+    const actual = check(songs);
+    assert.equal(actual.optimal, true);
+    assert.equal(actual.options[0].sharedPerformers.length, expected.best);
+    assert.equal(actual.options.length, Math.min(5, expected.keys.size));
+    for (const { groups } of actual.options) assert.ok(expected.keys.has(pairKey(groups)));
+    assert.deepEqual(buildPracticeGroups(songs), actual);
+  }
+});
+
+test('minimizes shared initials, not attendance or duplicate role assignments', () => {
+  const songs = [
+    song('One', ['A', 'B', 'C']),
+    song('Two', ['A', 'B', 'C']),
+    song('Three', ['D', 'E']),
+    song('Four', ['D', 'E']),
+  ];
+  songs[0].roles.push({
+    ...songs[0].roles[0], role: 'Guitar',
+    performers: [...songs[0].roles[0].performers, { initials: 'A', name: 'Other name' }],
+  });
+  const result = check(songs);
+  assert.equal(result.options.length, 1);
+  assert.deepEqual(result.options[0].sharedPerformers, []);
+  assert.deepEqual(result.options[0].groups.map((group) => group.map(({ title }) => title)), [
+    ['One', 'Two'], ['Three', 'Four'],
+  ]);
+});
+
+test('uses initials as identities even with identical or conflicting display names', () => {
+  const first = song('One', ['AB', 'CD', 'AB']);
+  first.roles[0].performers.forEach((performer) => { performer.name = 'Alex'; });
+  first.roles.push({ ...first.roles[0], role: 'Bass' });
+  const second = song('Two', ['CD', 'AB']);
+  second.roles[0].performers[1].name = 'Different';
+  const result = check([first, second]);
+  assert.deepEqual(result.options[0].sharedPerformers, [
+    { initials: 'AB', name: 'Alex' }, { initials: 'CD', name: 'Alex' },
+  ]);
+});
+
+test('prefers fewer shared identities even when they hold many more roles', () => {
+  const songs = [
+    song('One', ['X', 'Y', 'Z']),
+    song('Two', ['X', 'W', 'V']),
+    song('Three', ['Y', 'W']),
+    song('Four', ['Z', 'V']),
+  ];
+  for (const entry of songs.slice(0, 2)) {
+    for (let role = 0; role < 20; role++) {
+      entry.roles.push({
+        role: `Part ${role}`, status: null, detail: null,
+        performers: [{ initials: 'X', name: 'Name X' }],
+      });
+    }
+  }
+  const result = check(songs);
+  assert.equal(result.options.length, 2);
+  for (const { sharedPerformers } of result.options) {
+    assert.equal(sharedPerformers.length, 3);
+    assert.ok(sharedPerformers.some(({ initials }) => initials === 'X'));
+  }
+});
+
+test('merges normalized duplicate anchors and roles without losing performers or mutating input', () => {
+  const first = song(' A Song ', ['AB', 'AB']);
+  const duplicate = song('a song', ['CD', 'AB']);
+  duplicate.originalArtist = ' ARTIST ';
+  duplicate.roles.push({
+    role: 'Additional Instruments', performers: [{ initials: 'EF', name: 'Name EF' }],
+    status: 'nice-to-have', detail: 'Strings',
+  });
+  duplicate.roles.push({
+    role: 'Vocal', performers: [], status: 'needed', detail: null,
+  });
+  const songs = [first, duplicate, song('Other', ['CD', 'EF'])];
+  const before = structuredClone(songs);
+  const result = check(songs);
+  assert.equal(result.optimal, true);
+  assert.equal(result.options.length, 1);
+  const merged = result.options[0].groups.flat().find(({ title }) => title === first.title)!;
+  assert.deepEqual(merged.roles, [
+    { ...first.roles[0], performers: [
+      { initials: 'AB', name: 'Name AB' }, { initials: 'CD', name: 'Name CD' },
+    ] },
+    duplicate.roles[1], duplicate.roles[2],
+  ]);
+  assert.deepEqual(result.options[0].sharedPerformers.map(({ initials }) => initials), ['CD', 'EF']);
+  assert.deepEqual(songs, before);
+});
+
+test('different artists remain distinct; eligibility and Done! filtering belong to the caller', () => {
+  const first = song('Done!', ['AB']);
+  const second = { ...song('Done!', ['CD']), originalArtist: 'Other artist' };
+  check([first, second, song('Third')]);
+  const duplicate = { ...first, title: ' DONE! ' };
+  const result = buildPracticeGroups([first, duplicate]);
+  assert.deepEqual(result.options[0].groups.map((group) => group.length), [1, 0]);
+});
+
+test('22 songs still receive an exact balanced optimum', () => {
+  const songs = Array.from({ length: 22 }, (_, index) =>
+    song(`Song ${index}`, [index < 11 ? 'AB' : 'CD']),
+  );
+  const result = check(songs);
+  assert.equal(result.optimal, true);
+  assert.equal(result.options.length, 1);
+  assert.equal(result.options[0].sharedPerformers.length, 0);
+});
+
+test('larger fallback is deterministic, balanced, bounded, and explicitly non-optimal', { timeout: 10_000 }, () => {
+  for (const size of [23, 100, 1_000]) {
+    const songs = Array.from({ length: size }, (_, index) =>
+      song(`Song ${index}`, [`P${index % 13}`, `Q${index % 7}`]),
+    );
+    const before = structuredClone(songs);
+    const result = check(songs);
+    assert.equal(result.optimal, false);
+    assert.deepEqual(buildPracticeGroups(songs), result);
+    assert.deepEqual(songs, before);
+  }
+});
