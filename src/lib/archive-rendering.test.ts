@@ -402,9 +402,10 @@ test('practice options show both groups, shared attendees, song links and search
         }],
       },
     }));
-    assert.ok(html.includes('Option 1: 1 other performer in both sessions'));
-    assert.ok(html.includes('Other assigned performers in both sessions: Alex'));
-    assert.ok(html.includes('Donald and Randal are assumed present throughout'));
+    assert.ok(html.includes('Option 1 · 1 shared performer'));
+    assert.ok(html.includes('Needed at both sessions: Alex'));
+    assert.ok(html.includes('How these suggestions work'));
+    assert.ok(!html.includes('Donald and Randal'));
     assert.ok(html.includes('Session 1'));
     assert.ok(html.includes('Session 2'));
     assert.ok(html.includes('First song'));
@@ -434,11 +435,33 @@ test('practice options handle all-done and one-song states', () => {
       swapSearchComplete: true,
     },
   }));
-  assert.ok(single.includes('Other assigned performers in both sessions: None'));
+  assert.ok(single.includes('Needed at both sessions: None'));
   assert.ok(single.includes('No songs in this session'));
   assert.ok(single.includes('No assigned performers'));
   assert.ok(single.includes('No songs in this late block'));
   assert.ok(single.includes('No songs in this early block'));
+});
+
+test('practice presentation supports another event without October names or links', () => {
+  const performers = [
+    { initials: 'HOST', name: 'Casey', roles: ['Vocal'], genres: '' },
+    { initials: 'GUEST', name: 'Donald', roles: ['Vocal'], genres: '' },
+  ];
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal'],
+    [['First', 'Artist', 'HOST,GUEST'], ['Second', 'Artist', 'HOST,GUEST']],
+    performers,
+  );
+  const html = renderToStaticMarkup(createElement(PracticeOptions, {
+    result: buildPracticeSchedule(songs, undefined, new Set(['HOST'])),
+    alwaysPresentPerformers: [performers[0]],
+    songsHref: '/future-event/songs',
+  }));
+  assert.ok(html.includes('Casey is assumed present'));
+  assert.ok(html.includes('Needed at both sessions: Donald'));
+  assert.ok(html.includes('href="/future-event/songs#song-'));
+  assert.ok(!html.includes('/event-planning/songs'));
+  assert.ok(!html.includes('Randal'));
 });
 
 test('practice options show individual song-assignment swap suggestions', () => {
@@ -464,7 +487,7 @@ test('practice options show individual song-assignment swap suggestions', () => 
     result,
   }));
 
-  assert.ok(html.includes('Individual song-swap suggestions'));
+  assert.ok(html.includes('Assignment swap suggestions'));
   assert.ok(html.includes('Each suggestion exchanges one Bass or Drums song assignment'));
   assert.ok(html.includes(`${result.suggestedSwaps[0].exchanges[0].performer.name} swaps “`));
   assert.ok(html.includes(`reduces shared attendance by ${result.suggestedSwaps[0].overlapReduction}`));
@@ -489,6 +512,10 @@ test('practice blocks distinguish early-only, late-only and whole-practice atten
   );
   for (const optimal of [true, false]) {
     const html = renderToStaticMarkup(createElement(PracticeOptions, {
+      alwaysPresentPerformers: [
+        { initials: 'DON', name: 'Donald Smith' },
+        { initials: 'RAN', name: 'Randal Jones' },
+      ],
       result: {
         optimal: true,
         suggestedSwaps: [],
@@ -507,17 +534,17 @@ test('practice blocks distinguish early-only, late-only and whole-practice atten
         }],
       },
     }));
-    assert.ok(html.includes('Other assigned performers in both halves (1): Sam'));
-    assert.ok(html.includes('Early only (can leave after the early block): Alex'));
-    assert.ok(html.includes('Late only (can arrive for the late block): Casey'));
-    assert.ok(!html.includes('Early only (can leave after the early block): Donald'));
-    assert.ok(!html.includes('Late only (can arrive for the late block): Randal'));
-    assert.ok(html.includes('>Early</h4>'));
-    assert.ok(html.includes('>Late</h4>'));
+    assert.ok(html.includes('Needed for both blocks (1): Sam'));
+    assert.ok(html.includes('Early only (can leave after this block): Alex'));
+    assert.ok(html.includes('Late only (can arrive later): Casey'));
+    assert.ok(!html.includes('Early only (can leave after this block): Donald'));
+    assert.ok(!html.includes('Late only (can arrive later): Randal'));
+    assert.ok(html.includes('>Early block</h3>'));
+    assert.ok(html.includes('>Late block</h3>'));
     assert.equal((html.match(/href="\/event-planning\/songs#song-/g) ?? []).length, 2);
-    assert.ok(html.indexOf('>Early</h4>') < html.indexOf('Early song'));
-    assert.ok(html.indexOf('Early song') < html.indexOf('>Late</h4>'));
-    assert.ok(html.indexOf('>Late</h4>') < html.indexOf('Late song'));
+    assert.ok(html.indexOf('>Early block</h3>') < html.indexOf('Early song'));
+    assert.ok(html.indexOf('Early song') < html.indexOf('>Late block</h3>'));
+    assert.ok(html.indexOf('>Late block</h3>') < html.indexOf('Late song'));
     assert.equal(html.includes('fewer performers may need both halves'), !optimal);
     assert.ok(!html.includes('a lower-overlap split may exist'));
   }

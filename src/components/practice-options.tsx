@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { Alert, Box, Paper, Stack, Typography } from '@mui/material';
 import {
-  isAlwaysPresentPracticeAttendee,
   type buildPracticeSchedule,
+  type PracticePerformer,
 } from '../lib/practice-groups';
 import { getSongAnchor, type SetListSong } from '../lib/october-set-list';
 
@@ -14,11 +14,33 @@ function attendees(songs: SetListSong[]) {
   )).values()].sort((a, b) => a.name.localeCompare(b.name) || a.initials.localeCompare(b.initials));
 }
 
+function SongReferences({ songs, songsHref }: { songs: SetListSong[]; songsHref: string }) {
+  return (
+    <Box component="ul" sx={{ pl: 3, my: 1, '& li': { my: 1 }, overflowWrap: 'anywhere' }}>
+      {songs.map((song) => (
+        <li key={getSongAnchor(song.title, song.originalArtist)}>
+          <Link href={`${songsHref}#${encodeURIComponent(getSongAnchor(song.title, song.originalArtist))}`}>
+            {song.title}{song.originalArtist ? ` — ${song.originalArtist}` : ''}
+          </Link>
+          <Typography variant="body2" color="textSecondary">
+            {attendees([song]).map(({ name }) => name).join(', ') || 'No assigned performers'}
+          </Typography>
+        </li>
+      ))}
+    </Box>
+  );
+}
+
 export default function PracticeOptions({
   result,
+  alwaysPresentPerformers = [],
+  songsHref = '/event-planning/songs',
 }: {
   result: ReturnType<typeof buildPracticeSchedule>;
+  alwaysPresentPerformers?: PracticePerformer[];
+  songsHref?: string;
 }) {
+  const alwaysPresentInitials = new Set(alwaysPresentPerformers.map(({ initials }) => initials));
   if (!result.options.length) {
     return <Alert severity="success">No songs remain to practice. All set-list songs are marked Done!</Alert>;
   }
@@ -27,81 +49,87 @@ export default function PracticeOptions({
       <Alert severity="info">
         {result.availabilitySearchComplete === undefined
           ? (result.optimal
-            ? 'These options minimize the number of other assigned performers attending both sessions.'
-            : 'These are the best options found in a bounded search to minimize other assigned performers attending both sessions; a lower-overlap split may exist.')
+            ? 'These options minimize shared attendance between two balanced sessions.'
+            : 'These are the best balanced options found; a lower-overlap split may exist.')
           : (result.optimal
-            ? 'These options minimize known weeknight availability conflicts, then minimize other assigned performers attending both sessions.'
-            : 'These options use a bounded search to minimize known weeknight availability conflicts, then other assigned performers attending both sessions.')}
-        {' '}Assignments use confirmed set-list roles, not signup interests. Availability conflicts count only known weeknights.
-        {' '}Donald and Randal are assumed present throughout and are excluded from overlap and availability-conflict counts.
-        {' '}Blank or unrecognized availability is unknown and is not counted as a conflict.
-        Each session is split into balanced early and late blocks without changing its song group.
-        Unfilled roles are not counted. These are suggestions, not scheduled sessions.
+            ? 'These options prioritize known availability conflicts, then shared attendance.'
+            : 'These are the best availability-aware options found; a better grouping may exist.')}
       </Alert>
-      {result.availabilitySearchComplete === false && (
-        <Alert severity="info">
-          Weeknight planning used a bounded search; another availability-aware grouping may be better.
-        </Alert>
-      )}
+      <Box component="details">
+        <Box component="summary" sx={{ cursor: 'pointer', fontWeight: 'bold' }}>
+          How these suggestions work
+        </Box>
+        <Box component="ul" sx={{ pl: 3, '& li': { my: 1 } }}>
+          <li>Only assigned set-list performers count, not signup interests or unfilled roles.</li>
+          <li>Unknown availability is not counted as a conflict. Suggested nights are not confirmed dates.</li>
+          {alwaysPresentPerformers.length > 0 && (
+            <li>
+             {alwaysPresentPerformers.map(({ name }) => name).join(' and ')}
+             {alwaysPresentPerformers.length === 1 ? ' is' : ' are'} assumed present
+             throughout and excluded from shared-attendance and availability-conflict counts.
+            </li>
+          )}
+          <li>Each session is split independently into balanced early and late blocks.</li>
+          <li>Up to five options are shown. Large song lists use a limited search and may not be optimal.</li>
+        </Box>
+      </Box>
       {result.suggestedSwaps.length > 0 && (
-        <Stack component="section" spacing={2} aria-labelledby="practice-swaps-heading">
-          <Typography variant="h2" id="practice-swaps-heading">Individual song-swap suggestions</Typography>
-          <Typography color="textSecondary">
-            Each suggestion exchanges one Bass or Drums song assignment between two performers.
-            The suggested sessions are re-optimized; your set-list assignments are unchanged.
-          </Typography>
-          {result.suggestedSwaps.map(({ role, exchanges, overlapReduction, availabilityConflictReduction, sharedPerformers, sessions }, index) => (
-            <Paper key={`${role}-${index}`} variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
-              <Typography variant="h3">Suggestion {index + 1}: {role} song swap</Typography>
-              <Typography sx={{ mt: 1 }}>
-                {exchanges[0].performer.name} swaps “{exchanges[0].song.title}” with
-                {' '}{exchanges[1].performer.name}’s “{exchanges[1].song.title}”.
-              </Typography>
-              <Typography sx={{ mt: 1 }}>
-                {availabilityConflictReduction > 0
-                  ? `This reduces known availability conflicts by ${availabilityConflictReduction}. `
-                  : 'This keeps known availability conflicts unchanged. '}
-                {overlapReduction > 0
-                  ? `It also reduces shared attendance by ${overlapReduction}. `
-                  : ''}
-                After the swap, {sharedPerformers.length} other assigned
-                {' '}{sharedPerformers.length === 1 ? 'performer attends' : 'performers attend'} both sessions:
-                {' '}{sharedPerformers.map(({ name }) => name).join(', ') || 'None'}.
-              </Typography>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2 }}>
-                {sessions.map(({ blocks, weeknight, unavailablePerformers }, session) => (
-                  <Box component="section" key={session} sx={{ flex: 1 }}>
-                    <Typography variant="h4">
-                      Session {session + 1}{weeknight ? ` · ${weeknight} night` : ''}
-                    </Typography>
-                    {unavailablePerformers && unavailablePerformers.length > 0 && (
-                      <Typography color="warning.main" variant="body2">
-                        Known unavailable attendees: {unavailablePerformers.map(({ name }) => name).join(', ')}
+        <Box component="details">
+          <Box component="summary" sx={{ cursor: 'pointer', fontWeight: 'bold' }}>
+            Assignment swap suggestions ({result.suggestedSwaps.length})
+          </Box>
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <Typography color="textSecondary" variant="body2">
+              Each suggestion exchanges one Bass or Drums song assignment between two performers.
+              The suggested sessions are re-optimized; your set-list assignments are unchanged.
+            </Typography>
+            {result.suggestedSwaps.map(({ role, exchanges, overlapReduction, availabilityConflictReduction, sharedPerformers, sessions }, index) => (
+              <Paper key={`${role}-${index}`} variant="outlined" sx={{ p: { xs: 2, sm: 3 }, overflowWrap: 'anywhere' }}>
+                <Typography variant="h3" component="h2">Suggestion {index + 1}: {role} song swap</Typography>
+                <Typography sx={{ mt: 1 }}>
+                  {exchanges[0].performer.name} swaps “{exchanges[0].song.title}” with
+                  {' '}{exchanges[1].performer.name}’s “{exchanges[1].song.title}”.
+                </Typography>
+                <Typography sx={{ mt: 1 }}>
+                  {availabilityConflictReduction > 0
+                    ? `This reduces known availability conflicts by ${availabilityConflictReduction}. `
+                    : 'This keeps known availability conflicts unchanged. '}
+                  {overlapReduction > 0
+                    ? `It also reduces shared attendance by ${overlapReduction}. `
+                    : ''}
+                  After the swap, {sharedPerformers.length} assigned
+                  {' '}{sharedPerformers.length === 1 ? 'performer attends' : 'performers attend'} both sessions:
+                  {' '}{sharedPerformers.map(({ name }) => name).join(', ') || 'None'}.
+                </Typography>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2 }}>
+                  {sessions.map(({ blocks, weeknight, unavailablePerformers }, session) => (
+                    <Box component="section" key={session} sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="h4" component="h3">
+                        Session {session + 1}{weeknight ? ` · ${weeknight} night` : ''}
                       </Typography>
-                    )}
-                    {blocks.map((songs, block) => (
-                      <Box key={block} sx={{ mt: 1 }}>
-                        <Typography variant="subtitle2">{block === 0 ? 'Early' : 'Late'}</Typography>
-                        <Box component="ul" sx={{ pl: 3, my: 0 }}>
-                          {songs.map((song) => (
-                            <li key={getSongAnchor(song.title, song.originalArtist)}>
-                              <Link href={`/event-planning/songs#${encodeURIComponent(getSongAnchor(song.title, song.originalArtist))}`}>
-                                {song.title}{song.originalArtist ? ` — ${song.originalArtist}` : ''}
-                              </Link>
-                            </li>
-                          ))}
-                        </Box>
-                        <Typography variant="body2" color="textSecondary">
-                          Attendees: {attendees(songs).map(({ name }) => name).join(', ') || 'No assigned performers'}
+                      {unavailablePerformers && unavailablePerformers.length > 0 && (
+                        <Typography color="warning.main" variant="body2">
+                         Known unavailable attendees: {unavailablePerformers.map(({ name }) => name).join(', ')}
                         </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                ))}
-              </Stack>
-            </Paper>
-          ))}
-        </Stack>
+                      )}
+                      {blocks.map((songs, block) => (
+                        <Box key={block} sx={{ mt: 1 }}>
+                         <Typography variant="subtitle2" component="h4">{block === 0 ? 'Early' : 'Late'}</Typography>
+                         {songs.length
+                           ? <SongReferences songs={songs} songsHref={songsHref} />
+                           : <Typography variant="body2">No songs in this block.</Typography>}
+                         <Typography variant="body2" color="textSecondary">
+                           Attendees: {attendees(songs).map(({ name }) => name).join(', ') || 'No assigned performers'}
+                         </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ))}
+                </Stack>
+              </Paper>
+            ))}
+          </Stack>
+        </Box>
       )}
       {!result.swapSearchComplete && (
         <Alert severity="info">
@@ -110,7 +138,7 @@ export default function PracticeOptions({
       )}
       {result.swapSearchComplete && result.suggestedSwaps.length === 0 && (
         <Alert severity="info">
-          No individual Bass or Drums song swap improved the availability and shared-attendance plan.
+          No improving Bass or Drums assignment swap was found.
         </Alert>
       )}
       {result.options.map(({ groups, sharedPerformers, sessions }, index) => (
@@ -122,12 +150,12 @@ export default function PracticeOptions({
           sx={{ p: { xs: 2, sm: 3 } }}
         >
           <Box component="summary" sx={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}>
-            Option {index + 1}: {sharedPerformers.length} other {sharedPerformers.length === 1 ? 'performer' : 'performers'} in both sessions
+            Option {index + 1} · {sharedPerformers.length} shared {sharedPerformers.length === 1 ? 'performer' : 'performers'}
           </Box>
           <Typography sx={{ my: 2 }}>
-            Other assigned performers in both sessions: {sharedPerformers.map(({ name }) => name).join(', ') || 'None'}
+            Needed at both sessions: {sharedPerformers.map(({ name }) => name).join(', ') || 'None'}
           </Typography>
-          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' } }}>
+          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, overflowWrap: 'anywhere' }}>
             {groups.map((songs, session) => {
               const people = attendees(songs);
               const {
@@ -138,15 +166,15 @@ export default function PracticeOptions({
                 unavailablePerformers,
               } = sessions[session];
               const sharedInitials = new Set(bothHalves.map(({ initials }) => initials));
-              const earlyOnly = attendees(blocks[0]).filter(({ initials, name }) =>
-                !sharedInitials.has(initials) && !isAlwaysPresentPracticeAttendee(name),
+              const earlyOnly = attendees(blocks[0]).filter(({ initials }) =>
+                !sharedInitials.has(initials) && !alwaysPresentInitials.has(initials),
               );
-              const lateOnly = attendees(blocks[1]).filter(({ initials, name }) =>
-                !sharedInitials.has(initials) && !isAlwaysPresentPracticeAttendee(name),
+              const lateOnly = attendees(blocks[1]).filter(({ initials }) =>
+                !sharedInitials.has(initials) && !alwaysPresentInitials.has(initials),
               );
               return (
                 <Box component="section" key={session} aria-labelledby={`practice-${index}-${session}-heading`}>
-                  <Typography variant="h3" id={`practice-${index}-${session}-heading`}>
+                  <Typography variant="h3" component="h2" id={`practice-${index}-${session}-heading`}>
                     Session {session + 1}{weeknight ? ` · ${weeknight} night` : ''}
                   </Typography>
                   <Typography sx={{ mt: 1 }}>
@@ -166,13 +194,13 @@ export default function PracticeOptions({
                   </Typography>
                   <Stack spacing={1} sx={{ my: 2 }}>
                     <Typography>
-                      Other assigned performers in both halves ({bothHalves.length}): {bothHalves.map(({ name }) => name).join(', ') || 'None'}
+                      Needed for both blocks ({bothHalves.length}): {bothHalves.map(({ name }) => name).join(', ') || 'None'}
                     </Typography>
                     <Typography color="textSecondary">
-                      Early only (can leave after the early block): {earlyOnly.map(({ name }) => name).join(', ') || 'None'}
+                      Early only (can leave after this block): {earlyOnly.map(({ name }) => name).join(', ') || 'None'}
                     </Typography>
                     <Typography color="textSecondary">
-                      Late only (can arrive for the late block): {lateOnly.map(({ name }) => name).join(', ') || 'None'}
+                      Late only (can arrive later): {lateOnly.map(({ name }) => name).join(', ') || 'None'}
                     </Typography>
                   </Stack>
                   {!optimal && (
@@ -187,7 +215,7 @@ export default function PracticeOptions({
                     const heading = `practice-${index}-${session}-${block}-heading`;
                     return (
                       <Box component="section" key={block} aria-labelledby={heading} sx={{ mt: 2 }}>
-                        <Typography variant="h3" component="h4" id={heading}>{label}</Typography>
+                        <Typography variant="h4" component="h3" id={heading}>{label} block</Typography>
                         <Typography variant="body2" sx={{ mt: 1 }}>
                           {blockSongs.length} {blockSongs.length === 1 ? 'song' : 'songs'} · {blockPeople.length} {blockPeople.length === 1 ? 'performer' : 'performers'}
                         </Typography>
@@ -195,18 +223,7 @@ export default function PracticeOptions({
                           Attendees: {blockPeople.map(({ name }) => name).join(', ') || 'No assigned performers'}
                         </Typography>
                         {blockSongs.length ? (
-                          <Box component="ul" sx={{ pl: 3, '& li': { my: 1 } }}>
-                            {blockSongs.map((song) => (
-                              <li key={getSongAnchor(song.title, song.originalArtist)}>
-                                <Link href={`/event-planning/songs#${encodeURIComponent(getSongAnchor(song.title, song.originalArtist))}`}>
-                                  {song.title}{song.originalArtist ? ` — ${song.originalArtist}` : ''}
-                                </Link>
-                                <Typography variant="body2" color="textSecondary">
-                                  {attendees([song]).map(({ name }) => name).join(', ') || 'No assigned performers'}
-                                </Typography>
-                              </li>
-                            ))}
-                          </Box>
+                          <SongReferences songs={blockSongs} songsHref={songsHref} />
                         ) : <Typography color="textSecondary" sx={{ mt: 1 }}>No songs in this {label.toLowerCase()} block.</Typography>}
                       </Box>
                     );

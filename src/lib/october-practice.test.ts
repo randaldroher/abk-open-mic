@@ -1,9 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isPracticeDone, octoberPracticeColumn, projectOctoberPracticeSongs } from './october-practice';
+import { isPracticeDone, octoberAlwaysPresentPerformers, octoberPracticeColumn, projectOctoberPracticeSongs } from './october-practice';
 import { projectOctoberSetList } from './october-set-list';
 
 const performers = [{ initials: 'AB', name: 'Alex', roles: ['Vocal'], genres: '' }];
+
+test('October attendance assumptions stay at the event boundary', () => {
+  const roster = ['Donald S.', ' Randal ', 'Alex'].map((name, index) => ({
+    initials: `P${index}`, name, roles: [], genres: '',
+  }));
+  assert.deepEqual(octoberAlwaysPresentPerformers(roster).map(({ initials }) => initials), ['P0', 'P1']);
+});
 
 test('discovers moved Practice headers and excludes only the normalized Done! marker', () => {
   const headers = ['Comments', ' PRACTICE\n', 'Artist', 'Vocal', 'Song', 'Link'];

@@ -4,8 +4,6 @@ import { getSongAnchor, type SetListSong } from './october-set-list';
 import { PRACTICE_WEEKDAYS, type PracticeWeekday } from './october-signup';
 import { buildPracticeGroups, buildPracticeSchedule } from './practice-groups';
 
-const ALWAYS_PRESENT_FIRST_NAMES = new Set(['donald', 'randal']);
-
 function song(title: string, initials: string[] = []): SetListSong {
   return {
     title,
@@ -19,22 +17,17 @@ function song(title: string, initials: string[] = []): SetListSong {
   };
 }
 
-function isAlwaysPresent(name: string): boolean {
-  const firstName = name.trim().split(/\s+/)[0]?.toLocaleLowerCase('en');
-  return ALWAYS_PRESENT_FIRST_NAMES.has(firstName ?? '');
-}
-
-function identities(songs: SetListSong[]): Set<string> {
+function identities(songs: SetListSong[], alwaysPresent: ReadonlySet<string> = new Set()): Set<string> {
   return new Set(songs.flatMap(({ roles }) =>
     roles.flatMap(({ performers }) => performers
-      .filter(({ name }) => !isAlwaysPresent(name))
+      .filter(({ initials }) => !alwaysPresent.has(initials))
       .map(({ initials }) => initials)),
   ));
 }
 
-function shared(groups: [SetListSong[], SetListSong[]]): string[] {
-  const second = identities(groups[1]);
-  return [...identities(groups[0])].filter((initials) => second.has(initials)).sort();
+function shared(groups: [SetListSong[], SetListSong[]], alwaysPresent: ReadonlySet<string> = new Set()): string[] {
+  const second = identities(groups[1], alwaysPresent);
+  return [...identities(groups[0], alwaysPresent)].filter((initials) => second.has(initials)).sort();
 }
 
 function pairKey(groups: [SetListSong[], SetListSong[]]): string {
@@ -60,8 +53,8 @@ function oracle(songs: SetListSong[]) {
   return { best, keys };
 }
 
-function check(songs: SetListSong[]) {
-  const result = buildPracticeGroups(songs);
+function check(songs: SetListSong[], alwaysPresent: ReadonlySet<string> = new Set()) {
+  const result = buildPracticeGroups(songs, alwaysPresent);
   assert.ok(result.options.length > 0 && result.options.length <= 5);
   const uniqueSongs = new Set(songs.map(({ title, originalArtist }) =>
     getSongAnchor(title, originalArtist),
@@ -77,7 +70,7 @@ function check(songs: SetListSong[]) {
     );
     assert.equal(new Set(anchors).size, anchors.length);
     assert.deepEqual(new Set(anchors), uniqueSongs);
-    assert.deepEqual(sharedPerformers.map(({ initials }) => initials), shared(groups));
+    assert.deepEqual(sharedPerformers.map(({ initials }) => initials), shared(groups, alwaysPresent));
     keys.add(pairKey(groups));
   }
   assert.equal(keys.size, result.options.length);
@@ -158,7 +151,7 @@ test('uses initials as identities even with identical or conflicting display nam
   ]);
 });
 
-test('assumes Donald and Randal are present and minimizes overlap for other performers', () => {
+test('uses event-configured always-present identities in sessions and early/late blocks', () => {
   const songs = [
     song('One', ['DON', 'RAN', 'A']),
     song('Two', ['DON', 'RAN', 'A']),
@@ -175,16 +168,38 @@ test('assumes Donald and Randal are present and minimizes overlap for other perf
     });
   }
 
-  const result = check(songs);
+  const alwaysPresent = new Set(['DON', 'RAN']);
+  const result = check(songs, alwaysPresent);
   assert.equal(result.options.length, 1);
   assert.deepEqual(result.options[0].sharedPerformers, []);
   assert.deepEqual(result.options[0].groups.map((group) => group.map(({ title }) => title)), [
     ['One', 'Two'], ['Three', 'Four'],
   ]);
-  const schedule = buildPracticeSchedule(songs);
+  const schedule = buildPracticeSchedule(songs, undefined, alwaysPresent);
   assert.deepEqual(schedule.options[0].sessions.map(({ sharedPerformers }) =>
     sharedPerformers.map(({ initials }) => initials),
   ), [['A'], ['B']]);
+  assert.deepEqual(buildPracticeGroups(songs).options[0].sharedPerformers.map(({ initials }) => initials),
+    ['DON', 'RAN']);
+});
+
+test('always-present policy is identity-based, event-isolated and applied to availability', () => {
+  const songs = [song('One', ['HOST', 'GUEST']), song('Two', ['HOST', 'GUEST'])];
+  for (const entry of songs) {
+    for (const performer of entry.roles[0].performers) performer.name = 'Donald';
+  }
+  const availability = new Map<string, PracticeWeekday[]>([
+    ['HOST', ['Friday']], ['GUEST', ['Monday']],
+  ]);
+  const original = JSON.stringify(songs);
+  const schedule = buildPracticeSchedule(songs, availability, new Set(['HOST']));
+  assert.deepEqual(schedule.options[0].sharedPerformers.map(({ initials }) => initials), ['GUEST']);
+  assert.ok(schedule.options.every(({ sessions }) =>
+    sessions.flatMap(({ unavailablePerformers }) => unavailablePerformers ?? [])
+      .every(({ initials }) => initials !== 'HOST'),
+  ));
+  assert.equal(buildPracticeSchedule(songs).options[0].sharedPerformers.length, 2);
+  assert.equal(JSON.stringify(songs), original);
 });
 
 test('uses known weekday availability to choose lower-conflict practice groups and nights', () => {
@@ -225,6 +240,24 @@ test('uses known weekday availability to choose lower-conflict practice groups a
   ]));
   assert.equal(unknown.availabilitySearchComplete, undefined);
   assert.ok(unknown.options[0].sessions.every(({ weeknight }) => weeknight === undefined));
+});
+
+test('weeknight planning can put the first group on a later weekday without depending on row order', () => {
+  const songs = [
+    song('Friday one', ['FRI']), song('Friday two', ['FRI']),
+    song('Monday one', ['MON']), song('Monday two', ['MON']),
+  ];
+  const availability = new Map<string, PracticeWeekday[]>([
+    ['FRI', ['Friday']], ['MON', ['Monday']],
+  ]);
+  for (const entries of [songs, [...songs].reverse(), songs.slice(1)]) {
+    const result = buildPracticeSchedule(entries, availability);
+    assert.equal(result.optimal, true);
+    assert.ok(result.options.every(({ sessions }) =>
+      sessions.every(({ unavailablePerformers }) => unavailablePerformers?.length === 0),
+    ));
+    assert.equal(new Set(result.options.map(({ groups }) => pairKey(groups))).size, result.options.length);
+  }
 });
 
 test('uses a deterministic bounded availability search above the exact song limit', () => {

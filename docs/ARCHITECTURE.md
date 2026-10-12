@@ -60,6 +60,7 @@ stays put, and review the adapter before changing its source layout.
 
 The July and December 2025 adapters read the first row of each confirmed
 timetable tab to locate normalized song, artist, and performer-role headers.
+Header reads span the whole row, so approved columns can move beyond Z or ZZ.
 They then request only those selected public columns, stopping at the first
 blank row in the song table. July has no artist column; December does. The
 projection excludes other columns and treats the `<Open>` performer marker as
@@ -92,6 +93,10 @@ lineup or performance order. The Songs tab sorts by original artist, then song
 title, with missing artist credits last; the Performers tab sorts initials
 alphabetically and matches song interests by initials. Missing, duplicated,
 reversed, or malformed section markers or headers fail closed. The adapter uses
+the same duplicate-role-alias rejection as the timetable: `Drum` and `Drums`,
+for example, cannot both map to one role. Header rows have no fixed column limit;
+only the discovered approved data columns are fetched.
+The adapter uses
 the `minutes` cache profile and
 instance-local last-known-good fallback pattern.
 
@@ -141,12 +146,19 @@ timestamp is the older successful fetch when both sources are available.
 Practice excludes completed songs by normalized title/artist, including duplicate
 rows of the same song, and merges remaining duplicates and their assignments.
 The optimizer counts distinct assigned performer initials in both sessions,
-not roles or signup interests. Donald and Randal, identified by performer first
-name, are assumed present throughout and excluded from overlap and availability
-conflict counts. When recognized weeknight availability exists for assigned
+not roles or signup interests. The reusable optimizer accepts an event-specific
+set of always-present performer initials, defaulting to no exclusions. October's
+adapter resolves Donald and Randal by first name into that set; names are not
+special-cased in the optimizer or presentation. These performers are assumed
+present throughout and excluded from overlap and availability conflict counts.
+The presentation accepts the event's song-link destination and always-present
+roster, so future events can reuse it without inheriting October's assumptions.
+When recognized weeknight availability exists for assigned
 performers, it chooses
 two distinct weeknights by minimizing known unavailable performer/session
 assignments first, then shared-attendee count. Unknown availability is ignored.
+Both weekday orderings are evaluated for each song grouping, so spreadsheet
+row order does not restrict which group can use an earlier weekday.
 Session song counts differ by at most one. It returns up to five distinct
 best-score pairs, without counting swapped sessions as different options. Small
 tables are searched exactly; large tables use bounded deterministic search and
@@ -170,6 +182,9 @@ These are suggestions, not confirmed session dates; reported availability is
 self-reported and unknown values are ignored. Missing or ambiguous Practice
 headers make Practice unavailable without hiding Set List. All-completed tables show an
 empty state; one remaining song has an empty second session.
+Practice uses a short introduction, expandable planning assumptions and swap
+suggestions, and responsive session columns with nested early/late headings.
+The first session-pair option is expanded by default.
 
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
 schedule entries, and grouped gear. It skips recognized schedule headings and

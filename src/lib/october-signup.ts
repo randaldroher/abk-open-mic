@@ -192,7 +192,8 @@ export function octoberSignupSongColumns(headers: string[]): {
   if (
     artistMatches.length > 1 ||
     videoMatches.length > 1 ||
-    roles.length === 0
+    roles.length === 0 ||
+    new Set(roles.map(({ role }) => role)).size !== roles.length
   ) {
     throw new Error('Invalid October signup song headers');
   }

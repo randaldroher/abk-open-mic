@@ -1,6 +1,13 @@
 import { getSongAnchor, projectOctoberSetList, type SetListSong } from './october-set-list';
 import { normalizeSignupHeader, type OctoberSignupPerformer } from './october-signup';
 
+export function octoberAlwaysPresentPerformers(performers: OctoberSignupPerformer[]) {
+  return performers.filter(({ name }) => {
+    const firstName = normalizeSignupHeader(name).split(' ')[0];
+    return firstName === 'donald' || firstName === 'randal';
+  });
+}
+
 export function octoberPracticeColumn(headers: string[]): number | null {
   const columns = headers.flatMap((header, column) =>
     normalizeSignupHeader(header) === 'practice' ? [column] : [],

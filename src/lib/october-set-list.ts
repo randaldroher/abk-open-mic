@@ -26,10 +26,7 @@ export type OctoberSetList = {
 
 export function octoberSetListColumns(headers: string[]) {
   const columns = octoberSignupSongColumns(headers);
-  if (
-    columns.artist === null ||
-    new Set(columns.roles.map(({ role }) => role)).size !== columns.roles.length
-  ) {
+  if (columns.artist === null) {
     throw new Error('Invalid October set-list headers');
   }
   return { ...columns, artist: columns.artist };
