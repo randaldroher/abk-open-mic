@@ -142,7 +142,15 @@ It returns up to five distinct best-score pairs, without counting swapped
 sessions as different options. Small tables are searched exactly; large tables
 use bounded deterministic search and explicitly warn when optimality is not
 proven. The page shows each session's songs and assigned attendees, the shared
-attendees, and links to song references. These are suggestions, not confirmed
+attendees, and links to song references. Each suggested session is independently
+split into balanced early and late blocks using the same overlap optimizer.
+This preserves the original two-group membership and minimizes assigned
+performers needing both halves within each group; it is not joint four-way
+optimization. One best block split is shown per group, with its own bounded-search
+warning if optimality is unproven. The page identifies early-only attendees who
+can leave after that block, late-only attendees who can arrive later, and those
+needed for both halves. A single-song group uses only its early block.
+These are suggestions, not confirmed
 dates or participant availability. Missing or ambiguous Practice headers make
 Practice unavailable without hiding Set List. All-completed tables show an
 empty state; one remaining song has an empty second session.

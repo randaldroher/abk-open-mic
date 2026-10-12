@@ -5,6 +5,11 @@ type PracticeOption = {
   groups: [SetListSong[], SetListSong[]];
   sharedPerformers: Performer[];
 };
+type PracticeSession = {
+  blocks: [SetListSong[], SetListSong[]];
+  sharedPerformers: Performer[];
+  optimal: boolean;
+};
 
 const EXACT_SONG_LIMIT = 22;
 const SEARCH_STARTS = 8;
@@ -185,4 +190,32 @@ export function buildPracticeGroups(songs: SetListSong[]): {
     }
   }
   return { options, optimal: false };
+}
+
+export function buildPracticeSchedule(songs: SetListSong[]): {
+  options: (PracticeOption & { sessions: [PracticeSession, PracticeSession] })[];
+  optimal: boolean;
+} {
+  const result = buildPracticeGroups(songs);
+
+  function session(group: SetListSong[]): PracticeSession {
+    if (!group.length) {
+      return { blocks: [[], []], sharedPerformers: [], optimal: true };
+    }
+    const split = buildPracticeGroups(group);
+    const first = split.options[0];
+    return {
+      blocks: first.groups,
+      sharedPerformers: first.sharedPerformers,
+      optimal: split.optimal,
+    };
+  }
+
+  return {
+    options: result.options.map((option) => ({
+      ...option,
+      sessions: [session(option.groups[0]), session(option.groups[1])],
+    })),
+    optimal: result.optimal,
+  };
 }

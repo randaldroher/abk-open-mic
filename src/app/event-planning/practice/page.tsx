@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { Paper, Skeleton, Stack, Typography } from '@mui/material';
 import PracticeOptions from '@/components/practice-options';
 import { getOctober2026Signup } from '@/lib/october-2026-signup-data';
-import { buildPracticeGroups } from '@/lib/practice-groups';
+import { buildPracticeSchedule } from '@/lib/practice-groups';
 
 export const metadata: Metadata = {
   title: 'Practice',
@@ -22,6 +22,8 @@ export default function PracticePage() {
         Split the songs into two practice sessions, each with about half the songs,
         while keeping as few performers as possible in both sessions. Songs marked
         Done! in the Practice column are excluded. Compare up to five distinct options.
+        Each session has an early and a late block, with fewer performers needing to
+        stay for the whole practice.
       </Typography>
       <Suspense fallback={
         <Stack spacing={2} role="status" aria-label="Loading practice options">
@@ -49,5 +51,5 @@ async function Practice() {
       </Paper>
     );
   }
-  return <PracticeOptions result={buildPracticeGroups(songs)} />;
+  return <PracticeOptions result={buildPracticeSchedule(songs)} />;
 }

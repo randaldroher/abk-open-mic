@@ -392,6 +392,10 @@ test('practice options show both groups, shared attendees, song links and search
         options: [{
           groups: [[songs[0]], [songs[1]]],
           sharedPerformers: [{ initials: 'AB', name: 'Alex' }],
+          sessions: [
+            { blocks: [[songs[0]], []], sharedPerformers: [], optimal: true },
+            { blocks: [[songs[1]], []], sharedPerformers: [], optimal: true },
+          ],
         }],
       },
     }));
@@ -413,11 +417,67 @@ test('practice options handle all-done and one-song states', () => {
   assert.ok(empty.includes('No songs remain to practice'));
   const { songs } = projectOctoberSetList(['Song', 'Artist', 'Vocal'], [['Only song', '', '']], []);
   const single = renderToStaticMarkup(createElement(PracticeOptions, {
-    result: { options: [{ groups: [songs, []], sharedPerformers: [] }], optimal: true },
+    result: {
+      options: [{
+        groups: [songs, []], sharedPerformers: [],
+        sessions: [
+          { blocks: [songs, []], sharedPerformers: [], optimal: true },
+          { blocks: [[], []], sharedPerformers: [], optimal: true },
+        ],
+      }],
+      optimal: true,
+    },
   }));
   assert.ok(single.includes('Both sessions: None'));
   assert.ok(single.includes('No songs in this session'));
   assert.ok(single.includes('No assigned performers'));
+  assert.ok(single.includes('No songs in this late block'));
+  assert.ok(single.includes('No songs in this early block'));
+});
+
+test('practice blocks distinguish early-only, late-only and whole-practice attendees by initials', () => {
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal', 'Bass'],
+    [
+      ['Early song', 'Artist', 'AB', 'EF'],
+      ['Late song', 'Artist', 'CD', 'EF'],
+    ],
+    [
+      { initials: 'AB', name: 'Alex', roles: ['Vocal'], genres: '' },
+      { initials: 'CD', name: 'Casey', roles: ['Vocal'], genres: '' },
+      { initials: 'EF', name: 'Sam', roles: ['Bass'], genres: '' },
+    ],
+  );
+  for (const optimal of [true, false]) {
+    const html = renderToStaticMarkup(createElement(PracticeOptions, {
+      result: {
+        optimal: true,
+        options: [{
+          groups: [songs, []],
+          sharedPerformers: [],
+          sessions: [
+            {
+              blocks: [[songs[0]], [songs[1]]],
+              sharedPerformers: [{ initials: 'EF', name: 'Sam' }],
+              optimal,
+            },
+            { blocks: [[], []], sharedPerformers: [], optimal: true },
+          ],
+        }],
+      },
+    }));
+    assert.ok(html.includes('Both halves (1): Sam'));
+    assert.ok(html.includes('Early only (can leave after the early block): Alex'));
+    assert.ok(html.includes('Late only (can arrive for the late block): Casey'));
+    assert.ok(html.includes('>Early</h4>'));
+    assert.ok(html.includes('>Late</h4>'));
+    assert.equal((html.match(/href="\/event-planning\/songs#song-/g) ?? []).length, 2);
+    assert.ok(html.indexOf('>Early</h4>') < html.indexOf('Early song'));
+    assert.ok(html.indexOf('Early song') < html.indexOf('>Late</h4>'));
+    assert.ok(html.indexOf('>Late</h4>') < html.indexOf('Late song'));
+    assert.equal(html.includes('fewer performers may need both halves'), !optimal);
+    assert.ok(!html.includes('a lower-overlap split may exist'));
+  }
 });
 
 test('performer interests render in one card with expandable song rows', () => {

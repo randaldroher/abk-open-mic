@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getSongAnchor, type SetListSong } from './october-set-list';
-import { buildPracticeGroups } from './practice-groups';
+import { buildPracticeGroups, buildPracticeSchedule } from './practice-groups';
 
 function song(title: string, initials: string[] = []): SetListSong {
   return {
@@ -226,6 +226,174 @@ test('larger fallback is deterministic, balanced, bounded, and explicitly non-op
     const result = check(songs);
     assert.equal(result.optimal, false);
     assert.deepEqual(buildPracticeGroups(songs), result);
+    assert.deepEqual(songs, before);
+  }
+});
+
+function checkSchedule(songs: SetListSong[]) {
+  const groups = buildPracticeGroups(songs);
+  const schedule = buildPracticeSchedule(songs);
+  assert.equal(schedule.optimal, groups.optimal);
+  assert.deepEqual(schedule.options.map(({ groups, sharedPerformers }) => ({
+    groups, sharedPerformers,
+  })), groups.options);
+  assert.ok(schedule.options.length <= 5);
+  for (const option of schedule.options) {
+    assert.equal(option.sessions.length, 2);
+    for (let index = 0; index < 2; index++) {
+      const group = option.groups[index];
+      const session = option.sessions[index];
+      const split = buildPracticeGroups(group);
+      assert.deepEqual(session, group.length ? {
+        blocks: split.options[0].groups,
+        sharedPerformers: split.options[0].sharedPerformers,
+        optimal: split.optimal,
+      } : { blocks: [[], []], sharedPerformers: [], optimal: true });
+      assert.deepEqual(session.blocks.map((block) => block.length).sort((a, b) => a - b), [
+        Math.floor(group.length / 2), Math.ceil(group.length / 2),
+      ]);
+      const anchors = session.blocks.flat().map(({ title, originalArtist }) =>
+        getSongAnchor(title, originalArtist),
+      );
+      assert.equal(new Set(anchors).size, anchors.length);
+      assert.deepEqual(new Set(anchors), new Set(group.map(({ title, originalArtist }) =>
+        getSongAnchor(title, originalArtist),
+      )));
+      assert.deepEqual(
+        session.sharedPerformers.map(({ initials }) => initials), shared(session.blocks),
+      );
+    }
+    const anchors = option.sessions.flatMap(({ blocks }) => blocks.flat())
+      .map(({ title, originalArtist }) => getSongAnchor(title, originalArtist));
+    assert.equal(new Set(anchors).size, anchors.length);
+    assert.deepEqual(new Set(anchors), new Set(songs.map(({ title, originalArtist }) =>
+      getSongAnchor(title, originalArtist),
+    )));
+  }
+  assert.deepEqual(buildPracticeSchedule(songs), schedule);
+  return schedule;
+}
+
+test('hierarchical schedules handle empty, single, two, and odd song counts', () => {
+  assert.deepEqual(checkSchedule([]), { options: [], optimal: true });
+  const only = song('Only', ['AB']);
+  assert.deepEqual(checkSchedule([only]), {
+    options: [{
+      groups: [[only], []],
+      sharedPerformers: [],
+      sessions: [
+        { blocks: [[only], []], sharedPerformers: [], optimal: true },
+        { blocks: [[], []], sharedPerformers: [], optimal: true },
+      ],
+    }],
+    optimal: true,
+  });
+  const two = checkSchedule([only, song('Second', ['AB'])]);
+  assert.deepEqual(two.options[0].sharedPerformers, [{ initials: 'AB', name: 'Name AB' }]);
+  assert.ok(two.options[0].sessions.every(({ blocks, sharedPerformers, optimal }) =>
+    blocks[0].length === 1 && blocks[1].length === 0 && !sharedPerformers.length && optimal,
+  ));
+  for (const size of [3, 5, 7, 9]) {
+    const result = checkSchedule(Array.from({ length: size }, (_, index) =>
+      song(`Song ${index}`, [`P${index % 3}`]),
+    ));
+    assert.equal(result.optimal, true);
+    assert.ok(result.options.every(({ sessions }) => sessions.every(({ optimal }) => optimal)));
+  }
+});
+
+test('each exact session chooses the first optimal balanced split without changing outer options', () => {
+  let state = 98765;
+  function random() {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state;
+  }
+  for (let sample = 0; sample < 50; sample++) {
+    const songs = Array.from({ length: 4 + random() % 9 }, (_, index) =>
+      song(`Song ${index}`, ['A', 'B', 'C', 'D', 'E'].filter(() => random() % 3 === 0)),
+    );
+    const schedule = checkSchedule(songs);
+    const outerOracle = oracle(songs);
+    assert.equal(schedule.optimal, true);
+    assert.equal(schedule.options[0].sharedPerformers.length, outerOracle.best);
+    for (const { groups, sessions } of schedule.options) {
+      for (let index = 0; index < 2; index++) {
+        const expected = oracle(groups[index]);
+        assert.equal(sessions[index].optimal, true);
+        assert.equal(sessions[index].sharedPerformers.length, expected.best);
+        assert.ok(expected.keys.has(pairKey(sessions[index].blocks)));
+      }
+    }
+  }
+  const ties = checkSchedule(Array.from({ length: 8 }, (_, index) => song(`Tie ${index}`)));
+  assert.equal(ties.options.length, 5);
+  assert.ok(ties.options.every(({ sessions }) => sessions.every(({ blocks }) =>
+    blocks[0].length === 2 && blocks[1].length === 2,
+  )));
+});
+
+test('inner splits count unique initials across roles, not display names or role assignments', () => {
+  const songs = Array.from({ length: 8 }, (_, index) =>
+    song(`Song ${index}`, [index < 4 ? 'A' : 'B', index % 2 ? 'Y' : 'X']),
+  );
+  for (const entry of songs) {
+    entry.roles[0].performers.forEach((performer) => { performer.name = 'Alex'; });
+    entry.roles.push({
+      role: 'Guitar', status: null, detail: null,
+      performers: [
+        { initials: entry.roles[0].performers[0].initials, name: 'Different name' },
+        ...Array.from({ length: 10 }, () => ({ ...entry.roles[0].performers[1] })),
+      ],
+    });
+  }
+  const schedule = checkSchedule(songs);
+  assert.equal(schedule.options[0].sharedPerformers.length, 2);
+  for (const { sessions } of schedule.options) {
+    for (const session of sessions) {
+      assert.equal(session.sharedPerformers.length, 1);
+      assert.equal(session.sharedPerformers[0].name, 'Alex');
+      assert.equal(session.sharedPerformers.length, oracle(session.blocks.flat()).best);
+    }
+  }
+});
+
+test('schedule preserves duplicate merging, distinct artists, caller filtering, and input immutability', () => {
+  const first = song(' A Song ', ['AB']);
+  const duplicate = song('a song', ['CD']);
+  duplicate.originalArtist = ' ARTIST ';
+  duplicate.roles.push({
+    role: 'Additional Instruments', status: 'nice-to-have', detail: 'Strings',
+    performers: [{ initials: 'EF', name: 'Name EF' }],
+  });
+  const songs = [
+    first, duplicate, { ...song('a song', ['EF']), originalArtist: 'Other artist' },
+    song('Done!', ['CD']), song('Other', ['AB']),
+  ];
+  const before = structuredClone(songs);
+  const schedule = checkSchedule(songs);
+  for (const { sessions } of schedule.options) {
+    const entries = sessions.flatMap(({ blocks }) => blocks.flat());
+    assert.equal(entries.length, 4);
+    assert.ok(entries.some(({ title }) => title === 'Done!'));
+    const merged = entries.find(({ title }) => title === first.title)!;
+    assert.deepEqual(merged.roles[0].performers.map(({ initials }) => initials), ['AB', 'CD']);
+    assert.deepEqual(merged.roles[1], duplicate.roles[1]);
+  }
+  assert.deepEqual(songs, before);
+});
+
+test('outer and inner bounded-search flags are independent and deterministic', { timeout: 10_000 }, () => {
+  for (const size of [23, 45, 46]) {
+    const songs = Array.from({ length: size }, (_, index) =>
+      song(`Song ${index}`, [`P${index % 7}`, `Q${index % 3}`]),
+    );
+    const before = structuredClone(songs);
+    const schedule = checkSchedule(songs);
+    assert.equal(schedule.optimal, false);
+    for (const { groups, sessions } of schedule.options) {
+      assert.deepEqual(sessions.map(({ optimal }) => optimal),
+        groups.map((group) => group.length <= 22));
+    }
     assert.deepEqual(songs, before);
   }
 });

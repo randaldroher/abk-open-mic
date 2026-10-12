@@ -43,7 +43,10 @@ redaction exist. Live historical publication is range-based, not flag-based.
 - `/event-planning/practice` is the second planning tab. It excludes songs marked
   `Done!` in the header-discovered Practice column and suggests up to five distinct
   balanced pairs of sessions minimizing assigned performers attending both.
-  Each option shows songs, attendees, and shared performers. Small tables use
+  Each group is then independently split into balanced early/late blocks,
+  minimizing performers needed for both halves without changing group membership.
+  Each option shows block songs and attendees, early-only and late-only performers,
+  and those needed for the full practice. Small tables use
   exact optimization; bounded search for larger tables is labeled when a global
   minimum is not proven. Practice notes and participant availability stay private.
   Missing/ambiguous Practice headers show an unavailable state without hiding
