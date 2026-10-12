@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getSongAnchor, type SetListSong } from './october-set-list';
+import type { PracticeWeekday } from './october-signup';
 import { buildPracticeGroups, buildPracticeSchedule } from './practice-groups';
 
 const ALWAYS_PRESENT_FIRST_NAMES = new Set(['donald', 'randal']);
@@ -184,6 +185,39 @@ test('assumes Donald and Randal are present and minimizes overlap for other perf
   assert.deepEqual(schedule.options[0].sessions.map(({ sharedPerformers }) =>
     sharedPerformers.map(({ initials }) => initials),
   ), [['A'], ['B']]);
+});
+
+test('uses known weekday availability to choose lower-conflict practice groups and nights', () => {
+  const songs = [
+    song('Monday one', ['MON']),
+    song('Monday two', ['MON']),
+    song('Tuesday one', ['TUE']),
+    song('Tuesday two', ['TUE']),
+  ];
+  const availability = new Map<string, PracticeWeekday[] | null>([
+    ['MON', ['Monday']],
+    ['TUE', ['Tuesday']],
+  ]);
+  const schedule = buildPracticeSchedule(songs, availability);
+
+  assert.equal(schedule.availabilitySearchComplete, true);
+  assert.deepEqual(schedule.options[0].groups.map((group) =>
+    group.map(({ title }) => title),
+  ), [['Monday one', 'Monday two'], ['Tuesday one', 'Tuesday two']]);
+  assert.deepEqual(schedule.options[0].sessions.map(({ weeknight }) => weeknight), [
+    'Monday', 'Tuesday',
+  ]);
+  assert.ok(schedule.options.every(({ sessions }) =>
+    sessions.every(({ unavailablePerformers }) => unavailablePerformers?.length === 0),
+  ));
+  assert.equal(schedule.options[0].sharedPerformers.length, 0);
+
+  const unknown = buildPracticeSchedule(songs, new Map([
+    ['MON', null],
+    ['TUE', null],
+  ]));
+  assert.equal(unknown.availabilitySearchComplete, undefined);
+  assert.ok(unknown.options[0].sessions.every(({ weeknight }) => weeknight === undefined));
 });
 
 test('suggests individual Bass song exchanges that improve the optimized session split', () => {

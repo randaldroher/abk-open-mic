@@ -467,7 +467,7 @@ test('practice options show individual song-assignment swap suggestions', () => 
   assert.ok(html.includes('Individual song-swap suggestions'));
   assert.ok(html.includes('Each suggestion exchanges one Bass or Drums song assignment'));
   assert.ok(html.includes(`${result.suggestedSwaps[0].exchanges[0].performer.name} swaps “`));
-  assert.ok(html.includes(`This reduces the overlap by ${result.suggestedSwaps[0].overlapReduction}`));
+  assert.ok(html.includes(`reduces shared attendance by ${result.suggestedSwaps[0].overlapReduction}`));
   assert.ok(html.includes('The suggested sessions are re-optimized'));
   assert.equal(html.includes('additional improving assignment exchanges may exist'), !result.swapSearchComplete);
 });
@@ -531,6 +531,7 @@ test('performer interests render in one card with expandable song rows', () => {
           name: 'Alex Brown',
           roles: ['Lead Guitar', 'Keyboard'],
           genres: 'Alt-Rock, K-pop',
+          practiceAvailability: ['Monday', 'Friday'],
           songs: [
             {
               title: 'Proposed song',
@@ -551,7 +552,7 @@ test('performer interests render in one card with expandable song rows', () => {
 
   assert.ok(
     html.includes(
-      'aria-label="Performer names, role interests, genres, proposed songs, and set-list assignments in expandable rows"',
+      'aria-label="Performer names, role interests, genres, weeknight availability, proposed songs, and set-list assignments in expandable rows"',
     ),
   );
   assert.ok(html.includes('Alex Brown'));
@@ -559,6 +560,9 @@ test('performer interests render in one card with expandable song rows', () => {
   assert.ok(html.includes('Lead Guitar'));
   assert.ok(html.includes('Keyboard'));
   assert.ok(html.includes('Genres'));
+  assert.ok(html.includes('Weeknight availability'));
+  assert.ok(html.includes('Mon, Fri'));
+  assert.ok(html.includes('Not specified'));
   assert.ok(html.indexOf('Role interests') < html.indexOf('Genres'));
   assert.ok(html.includes('Alt-Rock, K-pop'));
   assert.equal((html.match(/<section\b/g) ?? []).length, 1);

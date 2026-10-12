@@ -73,10 +73,14 @@ The October 2026 signup adapter scans only column A for the normalized
 `Performers` and `Songs` section markers. The header row follows each marker;
 performer entries run from below the Performers header up to the Songs marker,
 and song entries run from below the Songs header to the end of the tab. It reads
-only the participant `Name`, `Initials`, `Roles`, and `Genres` columns, and the
+the participant `Name`, `Initials`, `Roles`, and `Genres` columns and, when
+present, one uniquely mapped `Practice Availability` or `Weeknight Availability`
+column. Only recognized Monday–Friday selections and explicit general-flexibility
+responses are projected; raw availability prose is discarded immediately.
+Blank, qualified, or unrecognized responses remain unknown. It reads the
 song table's `Song`, `Orginal Artist` (the current spelling), recognized
 role-interest, and `YouTube Link` columns. It never fetches contact fields,
-practice availability, notes, song `Suggested By`, or comments. Song
+availability notes, song `Suggested By`, or comments. Song
 role-interest cells are projected only when their tokens match participant
 initials, then display the corresponding consented name. Performer-page roles
 are limited to recognized role labels; initials must match a short ASCII
@@ -138,12 +142,15 @@ Practice excludes completed songs by normalized title/artist, including duplicat
 rows of the same song, and merges remaining duplicates and their assignments.
 The optimizer counts distinct assigned performer initials in both sessions,
 not roles or signup interests. Donald and Randal, identified by performer first
-name, are assumed present throughout and excluded from overlap scoring. Session
-song counts differ by at most one.
-It returns up to five distinct best-score pairs, without counting swapped
-sessions as different options. Small tables are searched exactly; large tables
-use bounded deterministic search and explicitly warn when optimality is not
-proven. The page shows each session's songs and assigned attendees, the shared
+name, are assumed present throughout and excluded from overlap scoring. When
+recognized weeknight availability exists for assigned performers, it chooses
+two distinct weeknights by minimizing known unavailable performer/session
+assignments first, then shared-attendee count. Unknown availability is ignored.
+Session song counts differ by at most one. It returns up to five distinct
+best-score pairs, without counting swapped sessions as different options. Small
+tables are searched exactly; large tables use bounded deterministic search and
+explicitly warn when optimality is not proven. The page shows each session's
+songs, chosen weeknight, known unavailable attendees, assigned attendees, shared
 attendees, and links to song references. Each suggested session is independently
 split into balanced early and late blocks using the same overlap optimizer.
 This preserves the original two-group membership and minimizes other assigned
@@ -154,8 +161,9 @@ can leave after that block, late-only attendees who can arrive later, and those
 needed for both halves. A single-song group uses only its early block.
 The optimizer also checks up to 100 individual Bass or Drums assignment exchanges
 between different songs (with a 20,000-pair scan bound), re-optimizes sessions for
-each candidate, and suggests up to five exchanges that strictly reduce the
-shared-attendee count. These are proposals only; published assignments are
+each candidate, and suggests up to five exchanges that reduce known availability
+conflicts first or, without increasing those conflicts, reduce the shared-attendee
+count. These are proposals only; published assignments are
 unchanged. A notice indicates when the candidate search was bounded.
 These are suggestions, not confirmed
 dates or participant availability. Missing or ambiguous Practice headers make
@@ -188,8 +196,10 @@ on songs, and recognized YouTube song references. Contacts, private planning
 notes, and new photos are not authorized. The Set List request additionally
 authorizes the narrow October timetable projection described above. The Practice
 request additionally authorizes using the completion marker to exclude songs
-and publishing suggested song groups with their already-approved assignments,
-not raw practice details, availability, links, or comments.
+and publishing suggested song groups with their already-approved assignments.
+The subsequent weeknight-availability request authorizes only the normalized
+weekday projection for October performer display and practice planning; raw
+availability prose, notes, links, and comments remain private.
 
 **The May 2026 adapter has no `published` flag.** Its
 publication boundary is the selected historical ranges and projected columns.
@@ -201,13 +211,13 @@ Do not describe inspection or parsing as automatic anonymization.
 The 2025 adapters publish only song titles, available original-artist credits,
 and assigned performers in recognized role columns. Contact and note columns
 are not fetched for those archives. The October signup link opens the signup
-tab. The website reads only names, initials, role preferences, and genres for
+tab. The website reads names, initials, role preferences, genres, and normalized
+weekday availability for
 the performers page, song titles, original-artist credits, recognized
 role-interest columns, and YouTube links for the songs page, plus the selected
 October timetable song/artist/role columns and the narrow Practice completion
-projection. Contact data,
-availability, suggested-by values, and all notes/comments remain private and
-are not fetched.
+projection. Contact data, raw availability prose, suggested-by values, and all
+notes/comments remain private and are not fetched.
 Public performer names use first names, adding the last initial only when the
 event roster contains multiple performers with the same first name.
 
@@ -271,9 +281,9 @@ can render the unavailable state. Verify rendered content as well.
 | `/past-events` | Static archive index, independent of Sheets availability |
 | `/event-planning` | Redirects to the first/default Set List tab |
 | `/event-planning/set-list` | Sortable October timetable song/artist/role table with resolved names and bold colored role-need text |
-| `/event-planning/practice` | Up to five balanced two-session suggestions minimizing shared assigned performers, excluding Done! songs |
+| `/event-planning/practice` | Up to five balanced two-session suggestions minimizing known weeknight conflicts then shared assigned performers, excluding Done! songs |
 | `/event-planning/songs` | October 2026 signup and timetable songs, original-artist credits, assigned performers, role needs, and validated YouTube references; signup interests are not displayed as assignments |
-| `/event-planning/performers` | October signup names, recognized self-reported role interests, entered genres, expandable set-list assignments and proposed song interests; no contact fields |
+| `/event-planning/performers` | October signup names, recognized role interests, entered genres, normalized weeknight availability, expandable set-list assignments and proposed song interests; no contact fields or raw availability prose |
 | `/songs`, `/performers` | Legacy redirects to their corresponding Event Planning tabs |
 | `/robots.txt` | Disallows crawling of all paths for compliant crawlers |
 | `/past-events/<event>` | Redirects to that event's Videos tab |
