@@ -268,28 +268,26 @@ function buildWeeknightPlans(
     const secondInitials = new Set(attendees[1].map(({ initials }) => initials));
     const sharedPerformers = attendees[0]
       .filter(({ initials }) => secondInitials.has(initials));
-    const groupAnchors = groups.map((group) => group.map(({ title, originalArtist }) =>
-      getSongAnchor(title, originalArtist),
-    ).sort().join(','));
-
     let groupConflicts = Infinity;
     let groupOverlap = Infinity;
-    const plans: WeeknightPlan[] = [];
+    let bestWeeknightMask = 0;
+    let weeknightIndex = 0;
     for (let firstDay = 0; firstDay < PRACTICE_WEEKDAYS.length - 1; firstDay++) {
       for (let secondDay = firstDay + 1; secondDay < PRACTICE_WEEKDAYS.length; secondDay++) {
+        const currentWeeknightIndex = weeknightIndex++;
         const weeknights = [
           PRACTICE_WEEKDAYS[firstDay],
           PRACTICE_WEEKDAYS[secondDay],
         ] as [PracticeWeekday, PracticeWeekday];
-        const unavailablePerformers = attendees.map((people, session) =>
-          people.filter(({ initials }) => {
+        const conflicts = attendees.reduce((total, people, session) =>
+          total + people.reduce((unavailableCount, { initials }) => {
             const available = availabilityByInitials.get(initials);
-            return available !== null && available !== undefined &&
-              !available.includes(weeknights[session]);
-          }),
-        ) as [Performer[], Performer[]];
-        const conflicts = unavailablePerformers[0].length +
-          unavailablePerformers[1].length;
+            return unavailableCount + Number(
+              available !== null && available !== undefined &&
+              !available.includes(weeknights[session]),
+            );
+          }, 0),
+        0);
         if (
           conflicts > groupConflicts ||
           (conflicts === groupConflicts && sharedPerformers.length > groupOverlap)
@@ -299,16 +297,10 @@ function buildWeeknightPlans(
           (conflicts === groupConflicts && sharedPerformers.length < groupOverlap)) {
           groupConflicts = conflicts;
           groupOverlap = sharedPerformers.length;
-          plans.length = 0;
+          bestWeeknightMask = 0;
         }
 
-        plans.push({
-          groups,
-          sharedPerformers,
-          weeknights,
-          unavailablePerformers,
-          availabilityConflicts: conflicts,
-        });
+        bestWeeknightMask |= 1 << currentWeeknightIndex;
       }
     }
 
@@ -321,10 +313,35 @@ function buildWeeknightPlans(
       optionMap.clear();
     }
     if (groupConflicts === bestConflicts && groupOverlap === bestOverlap) {
-      for (const plan of plans) {
-        const key = `${groupAnchors[0]}|${groupAnchors[1]}|${plan.weeknights.join('|')}`;
-        if (optionMap.has(key) || optionMap.size === OPTION_LIMIT) continue;
-        optionMap.set(key, plan);
+      const groupAnchors = groups.map((group) => group.map(({ title, originalArtist }) =>
+        getSongAnchor(title, originalArtist),
+      ).sort().join(','));
+      weeknightIndex = 0;
+      for (let firstDay = 0; firstDay < PRACTICE_WEEKDAYS.length - 1; firstDay++) {
+        for (let secondDay = firstDay + 1; secondDay < PRACTICE_WEEKDAYS.length; secondDay++) {
+          if (!(bestWeeknightMask & (1 << weeknightIndex++))) continue;
+          if (optionMap.size === OPTION_LIMIT) continue;
+          const weeknights = [
+            PRACTICE_WEEKDAYS[firstDay],
+            PRACTICE_WEEKDAYS[secondDay],
+          ] as [PracticeWeekday, PracticeWeekday];
+          const unavailablePerformers = attendees.map((people, session) =>
+            people.filter(({ initials }) => {
+              const available = availabilityByInitials.get(initials);
+              return available !== null && available !== undefined &&
+                !available.includes(weeknights[session]);
+            }),
+          ) as [Performer[], Performer[]];
+          const key = `${groupAnchors[0]}|${groupAnchors[1]}|${weeknights.join('|')}`;
+          if (optionMap.has(key)) continue;
+          optionMap.set(key, {
+            groups,
+            sharedPerformers,
+            weeknights,
+            unavailablePerformers,
+            availabilityConflicts: groupConflicts,
+          });
+        }
       }
     }
     return [groupConflicts, groupOverlap];

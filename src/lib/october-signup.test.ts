@@ -213,7 +213,7 @@ test('projects normalized weeknight availability without retaining source prose'
     ],
   );
   assert.equal(parsePracticeAvailability('Available Thursday and TUES.')?.join(', '), 'Tuesday, Thursday');
-  assert.equal(parsePracticeAvailability('No preference'), PRACTICE_WEEKDAYS.join(', '));
+  assert.deepEqual(parsePracticeAvailability('No preference'), [...PRACTICE_WEEKDAYS]);
   assert.equal(parsePracticeAvailability('not available Monday'), null);
   assert.throws(
     () => octoberSignupPerformerColumns([
