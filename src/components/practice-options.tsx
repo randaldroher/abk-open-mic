@@ -85,7 +85,7 @@ export default function PracticeOptions({
             </Typography>
             {result.suggestedSwaps.map(({ role, exchanges, overlapReduction, availabilityConflictReduction, sharedPerformers, sessions }, index) => (
               <Paper key={`${role}-${index}`} variant="outlined" sx={{ p: { xs: 2, sm: 3 }, overflowWrap: 'anywhere' }}>
-                <Typography variant="h3" component="h2">Suggestion {index + 1}: {role} song swap</Typography>
+                <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>Suggestion {index + 1}: {role} song swap</Typography>
                 <Typography sx={{ mt: 1 }}>
                   {exchanges[0].performer.name} swaps “{exchanges[0].song.title}” with
                   {' '}{exchanges[1].performer.name}’s “{exchanges[1].song.title}”.
@@ -101,10 +101,10 @@ export default function PracticeOptions({
                   {' '}{sharedPerformers.length === 1 ? 'performer attends' : 'performers attend'} both sessions:
                   {' '}{sharedPerformers.map(({ name }) => name).join(', ') || 'None'}.
                 </Typography>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2 }}>
+                <Box sx={{ display: 'grid', gap: 2, mt: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' } }}>
                   {sessions.map(({ blocks, weeknight, unavailablePerformers }, session) => (
-                    <Box component="section" key={session} sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="h4" component="h3">
+                    <Box component="section" key={session} sx={{ minWidth: 0, border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
+                      <Typography variant="h6" component="h3">
                         Session {session + 1}{weeknight ? ` · ${weeknight} night` : ''}
                       </Typography>
                       {unavailablePerformers && unavailablePerformers.length > 0 && (
@@ -113,8 +113,8 @@ export default function PracticeOptions({
                         </Typography>
                       )}
                       {blocks.map((songs, block) => (
-                        <Box key={block} sx={{ mt: 1 }}>
-                         <Typography variant="subtitle2" component="h4">{block === 0 ? 'Early' : 'Late'}</Typography>
+                        <Box key={block} sx={{ mt: 2, p: 2, bgcolor: 'background.default', borderLeft: 3, borderColor: 'divider', borderRadius: 1 }}>
+                         <Typography variant="subtitle1" component="h4" sx={{ fontWeight: 700 }}>{block === 0 ? 'Early' : 'Late'} block</Typography>
                          {songs.length
                            ? <SongReferences songs={songs} songsHref={songsHref} />
                            : <Typography variant="body2">No songs in this block.</Typography>}
@@ -125,7 +125,7 @@ export default function PracticeOptions({
                       ))}
                     </Box>
                   ))}
-                </Stack>
+                </Box>
               </Paper>
             ))}
           </Stack>
@@ -149,8 +149,13 @@ export default function PracticeOptions({
           variant="outlined"
           sx={{ p: { xs: 2, sm: 3 } }}
         >
-          <Box component="summary" sx={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}>
-            Option {index + 1} · {sharedPerformers.length} shared {sharedPerformers.length === 1 ? 'performer' : 'performers'}
+          <Box component="summary" sx={{ cursor: 'pointer', overflowWrap: 'anywhere', '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 4 } }}>
+            <Typography variant="h5" component="h2" sx={{ display: 'inline', fontWeight: 700 }}>
+              Option {index + 1}
+            </Typography>
+            <Typography component="span" variant="body2" color="textSecondary" sx={{ ml: 1 }}>
+              · {sharedPerformers.length} shared {sharedPerformers.length === 1 ? 'performer' : 'performers'}
+            </Typography>
           </Box>
           <Typography sx={{ my: 2 }}>
             Needed at both sessions: {sharedPerformers.map(({ name }) => name).join(', ') || 'None'}
@@ -173,11 +178,11 @@ export default function PracticeOptions({
                 !sharedInitials.has(initials) && !alwaysPresentInitials.has(initials),
               );
               return (
-                <Box component="section" key={session} aria-labelledby={`practice-${index}-${session}-heading`}>
-                  <Typography variant="h3" component="h2" id={`practice-${index}-${session}-heading`}>
+                <Box component="section" key={session} aria-labelledby={`practice-${index}-${session}-heading`} sx={{ minWidth: 0, border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}>
+                  <Typography variant="h6" component="h3" id={`practice-${index}-${session}-heading`}>
                     Session {session + 1}{weeknight ? ` · ${weeknight} night` : ''}
                   </Typography>
-                  <Typography sx={{ mt: 1 }}>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
                     {songs.length} {songs.length === 1 ? 'song' : 'songs'} · {people.length} {people.length === 1 ? 'performer' : 'performers'}
                   </Typography>
                   {unavailablePerformers && (
@@ -189,17 +194,17 @@ export default function PracticeOptions({
                       Known unavailable: {unavailablePerformers.map(({ name }) => name).join(', ') || 'None'}
                     </Typography>
                   )}
-                  <Typography color="textSecondary" sx={{ mt: 1 }}>
+                  <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                     Attendees: {people.map(({ name }) => name).join(', ') || 'No assigned performers'}
                   </Typography>
                   <Stack spacing={1} sx={{ my: 2 }}>
-                    <Typography>
+                    <Typography variant="body2">
                       Needed for both blocks ({bothHalves.length}): {bothHalves.map(({ name }) => name).join(', ') || 'None'}
                     </Typography>
-                    <Typography color="textSecondary">
+                    <Typography variant="body2" color="textSecondary">
                       Early only (can leave after this block): {earlyOnly.map(({ name }) => name).join(', ') || 'None'}
                     </Typography>
-                    <Typography color="textSecondary">
+                    <Typography variant="body2" color="textSecondary">
                       Late only (can arrive later): {lateOnly.map(({ name }) => name).join(', ') || 'None'}
                     </Typography>
                   </Stack>
@@ -214,8 +219,8 @@ export default function PracticeOptions({
                     const label = block === 0 ? 'Early' : 'Late';
                     const heading = `practice-${index}-${session}-${block}-heading`;
                     return (
-                      <Box component="section" key={block} aria-labelledby={heading} sx={{ mt: 2 }}>
-                        <Typography variant="h4" component="h3" id={heading}>{label} block</Typography>
+                      <Box component="section" key={block} aria-labelledby={heading} sx={{ mt: 2, p: 2, bgcolor: 'background.default', borderLeft: 3, borderColor: 'divider', borderRadius: 1 }}>
+                        <Typography variant="subtitle1" component="h4" id={heading} sx={{ fontWeight: 700 }}>{label} block</Typography>
                         <Typography variant="body2" sx={{ mt: 1 }}>
                           {blockSongs.length} {blockSongs.length === 1 ? 'song' : 'songs'} · {blockPeople.length} {blockPeople.length === 1 ? 'performer' : 'performers'}
                         </Typography>

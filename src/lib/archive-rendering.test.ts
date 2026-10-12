@@ -402,7 +402,16 @@ test('practice options show both groups, shared attendees, song links and search
         }],
       },
     }));
-    assert.ok(html.includes('Option 1 · 1 shared performer'));
+    assert.match(html, /<h2\b[^>]*class="[^"]*MuiTypography-h5[^"]*"[^>]*>Option 1<\/h2>/);
+    assert.ok(html.includes('· 1 shared performer'));
+    for (const session of [0, 1]) {
+      assert.match(html, new RegExp(`<section[^>]*aria-labelledby="practice-0-${session}-heading"`));
+      assert.match(html, new RegExp(`<h3[^>]*class="[^"]*MuiTypography-h6[^"]*"[^>]*id="practice-0-${session}-heading"[^>]*>Session ${session + 1}</h3>`));
+      for (const block of [0, 1]) {
+        assert.match(html, new RegExp(`<section[^>]*aria-labelledby="practice-0-${session}-${block}-heading"`));
+        assert.match(html, new RegExp(`<h4[^>]*class="[^"]*MuiTypography-subtitle1[^"]*"[^>]*id="practice-0-${session}-${block}-heading"[^>]*>${block === 0 ? 'Early' : 'Late'} block</h4>`));
+      }
+    }
     assert.ok(html.includes('Needed at both sessions: Alex'));
     assert.ok(html.includes('How these suggestions work'));
     assert.ok(!html.includes('Donald and Randal'));
@@ -492,6 +501,12 @@ test('practice options show individual song-assignment swap suggestions', () => 
   assert.ok(html.includes(`${result.suggestedSwaps[0].exchanges[0].performer.name} swaps “`));
   assert.ok(html.includes(`reduces shared attendance by ${result.suggestedSwaps[0].overlapReduction}`));
   assert.ok(html.includes('The suggested sessions are re-optimized'));
+  const suggestions = html.slice(html.indexOf('Assignment swap suggestions'), html.indexOf('>Option 1</h2>'));
+  assert.match(suggestions, /<h2[^>]*class="[^"]*MuiTypography-h5[^"]*"[^>]*>Suggestion 1:/);
+  assert.match(suggestions, /<h3[^>]*class="[^"]*MuiTypography-h6[^"]*"[^>]*>Session 1/);
+  for (const label of ['Early', 'Late']) {
+    assert.match(suggestions, new RegExp(`<h4[^>]*class="[^"]*MuiTypography-subtitle1[^"]*"[^>]*>${label} block</h4>`));
+  }
   assert.equal(html.includes('additional improving assignment exchanges may exist'), !result.swapSearchComplete);
 });
 
@@ -539,12 +554,12 @@ test('practice blocks distinguish early-only, late-only and whole-practice atten
     assert.ok(html.includes('Late only (can arrive later): Casey'));
     assert.ok(!html.includes('Early only (can leave after this block): Donald'));
     assert.ok(!html.includes('Late only (can arrive later): Randal'));
-    assert.ok(html.includes('>Early block</h3>'));
-    assert.ok(html.includes('>Late block</h3>'));
+    assert.ok(html.includes('>Early block</h4>'));
+    assert.ok(html.includes('>Late block</h4>'));
     assert.equal((html.match(/href="\/event-planning\/songs#song-/g) ?? []).length, 2);
-    assert.ok(html.indexOf('>Early block</h3>') < html.indexOf('Early song'));
-    assert.ok(html.indexOf('Early song') < html.indexOf('>Late block</h3>'));
-    assert.ok(html.indexOf('>Late block</h3>') < html.indexOf('Late song'));
+    assert.ok(html.indexOf('>Early block</h4>') < html.indexOf('Early song'));
+    assert.ok(html.indexOf('Early song') < html.indexOf('>Late block</h4>'));
+    assert.ok(html.indexOf('>Late block</h4>') < html.indexOf('Late song'));
     assert.equal(html.includes('fewer performers may need both halves'), !optimal);
     assert.ok(!html.includes('a lower-overlap split may exist'));
   }
