@@ -34,6 +34,65 @@ export default function PracticeOptions({
         other performers needed for both halves, without changing the two practice groups.
         Unfilled roles are not counted. These are suggestions, not scheduled sessions.
       </Alert>
+      {result.suggestedSwaps.length > 0 && (
+        <Stack component="section" spacing={2} aria-labelledby="practice-swaps-heading">
+          <Typography variant="h2" id="practice-swaps-heading">Individual song-swap suggestions</Typography>
+          <Typography color="textSecondary">
+            Each suggestion exchanges one Bass or Drums song assignment between two performers.
+            The suggested sessions are re-optimized; your set-list assignments are unchanged.
+          </Typography>
+          {result.suggestedSwaps.map(({ role, exchanges, overlapReduction, sharedPerformers, sessions }, index) => (
+            <Paper key={`${role}-${index}`} variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
+              <Typography variant="h3">Suggestion {index + 1}: {role} song swap</Typography>
+              <Typography sx={{ mt: 1 }}>
+                {exchanges[0].performer.name} swaps “{exchanges[0].song.title}” with
+                {' '}{exchanges[1].performer.name}’s “{exchanges[1].song.title}”.
+              </Typography>
+              <Typography sx={{ mt: 1 }}>
+                This reduces the overlap by {overlapReduction} other
+                {' '}assigned {overlapReduction === 1 ? 'performer' : 'performers'}.
+                {' '}After the swap, {sharedPerformers.length} other assigned
+                {' '}{sharedPerformers.length === 1 ? 'performer attends' : 'performers attend'} both sessions:
+                {' '}{sharedPerformers.map(({ name }) => name).join(', ') || 'None'}.
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2 }}>
+                {sessions.map(({ blocks }, session) => (
+                  <Box component="section" key={session} sx={{ flex: 1 }}>
+                    <Typography variant="h4">Session {session + 1}</Typography>
+                    {blocks.map((songs, block) => (
+                      <Box key={block} sx={{ mt: 1 }}>
+                        <Typography variant="subtitle2">{block === 0 ? 'Early' : 'Late'}</Typography>
+                        <Box component="ul" sx={{ pl: 3, my: 0 }}>
+                          {songs.map((song) => (
+                            <li key={getSongAnchor(song.title, song.originalArtist)}>
+                              <Link href={`/event-planning/songs#${encodeURIComponent(getSongAnchor(song.title, song.originalArtist))}`}>
+                                {song.title}{song.originalArtist ? ` — ${song.originalArtist}` : ''}
+                              </Link>
+                            </li>
+                          ))}
+                        </Box>
+                        <Typography variant="body2" color="textSecondary">
+                          Attendees: {attendees(songs).map(({ name }) => name).join(', ') || 'No assigned performers'}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
+          ))}
+        </Stack>
+      )}
+      {!result.swapSearchComplete && (
+        <Alert severity="info">
+          Swap search was bounded; additional improving assignment exchanges may exist.
+        </Alert>
+      )}
+      {result.swapSearchComplete && result.suggestedSwaps.length === 0 && (
+        <Alert severity="info">
+          No individual Bass or Drums song swap reduced the number of other performers needed in both sessions.
+        </Alert>
+      )}
       {result.options.map(({ groups, sharedPerformers, sessions }, index) => (
         <Paper
           key={index}

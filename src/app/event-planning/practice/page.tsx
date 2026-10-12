@@ -24,7 +24,8 @@ export default function PracticePage() {
         Donald and Randal are assumed to be present throughout. Songs marked
         Done! in the Practice column are excluded. Compare up to five distinct options.
         Each session has an early and a late block, with fewer performers needing to
-        stay for the whole practice.
+        stay for the whole practice. The suggestions also check individual Bass or
+        Drums song-assignment swaps for a lower-overlap session split.
       </Typography>
       <Suspense fallback={
         <Stack spacing={2} role="status" aria-label="Loading practice options">

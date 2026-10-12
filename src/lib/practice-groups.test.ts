@@ -186,6 +186,53 @@ test('assumes Donald and Randal are present and minimizes overlap for other perf
   ), [['A'], ['B']]);
 });
 
+test('suggests individual Bass song exchanges that improve the optimized session split', () => {
+  for (const role of ['Bass', 'Drums']) {
+    const songs = [
+      song('One', ['E', 'F']),
+      song('Two', ['F']),
+      song('Three', ['F']),
+      song('Four', ['E', 'F', 'G']),
+    ];
+    const assignments = ['B', 'B', 'C', 'C'];
+    songs.forEach((entry, index) => {
+      entry.roles.push({
+        role,
+        performers: [{ initials: assignments[index], name: `${role} player ${assignments[index]}` }],
+        status: null,
+        detail: null,
+      });
+    });
+    const before = structuredClone(songs);
+    const schedule = buildPracticeSchedule(songs);
+
+    assert.equal(schedule.options[0].sharedPerformers.length, 2);
+    assert.ok(schedule.suggestedSwaps.length > 0);
+    assert.ok(schedule.suggestedSwaps[0].sharedPerformers.length < 2);
+    assert.ok(schedule.suggestedSwaps.some((suggestion) =>
+      suggestion.role === role &&
+      suggestion.exchanges.some(({ performer }) => performer.initials === 'B') &&
+      suggestion.exchanges.some(({ performer }) => performer.initials === 'C'),
+    ));
+    const suggestion = schedule.suggestedSwaps[0];
+    assert.equal(suggestion.sessions.length, 2);
+    const plannedSongs = suggestion.sessions.flatMap(({ blocks }) => blocks.flat());
+    for (const [from, to] of [
+      [suggestion.exchanges[0], suggestion.exchanges[1]],
+      [suggestion.exchanges[1], suggestion.exchanges[0]],
+    ] as const) {
+      const plannedSong = plannedSongs.find(({ title, originalArtist }) =>
+        getSongAnchor(title, originalArtist) ===
+          getSongAnchor(from.song.title, from.song.originalArtist),
+      )!;
+      assert.ok(plannedSong.roles.find((entry) => entry.role === role)?.performers.some(
+        ({ initials }) => initials === to.performer.initials,
+      ));
+    }
+    assert.deepEqual(songs, before);
+  }
+});
+
 test('prefers fewer shared identities even when they hold many more roles', () => {
   const songs = [
     song('One', ['X', 'Y', 'Z']),
@@ -313,7 +360,9 @@ function checkSchedule(songs: SetListSong[]) {
 }
 
 test('hierarchical schedules handle empty, single, two, and odd song counts', () => {
-  assert.deepEqual(checkSchedule([]), { options: [], optimal: true });
+  assert.deepEqual(checkSchedule([]), {
+    options: [], optimal: true, suggestedSwaps: [], swapSearchComplete: true,
+  });
   const only = song('Only', ['AB']);
   assert.deepEqual(checkSchedule([only]), {
     options: [{
@@ -325,6 +374,8 @@ test('hierarchical schedules handle empty, single, two, and odd song counts', ()
       ],
     }],
     optimal: true,
+    suggestedSwaps: [],
+    swapSearchComplete: true,
   });
   const two = checkSchedule([only, song('Second', ['AB'])]);
   assert.deepEqual(two.options[0].sharedPerformers, [{ initials: 'AB', name: 'Name AB' }]);

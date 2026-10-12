@@ -10,10 +10,22 @@ type PracticeSession = {
   sharedPerformers: Performer[];
   optimal: boolean;
 };
+type PracticeSwap = {
+  role: 'Bass' | 'Drums';
+  exchanges: [
+    { song: SetListSong; performer: Performer },
+    { song: SetListSong; performer: Performer },
+  ];
+  overlapReduction: number;
+  sharedPerformers: Performer[];
+  sessions: [PracticeSession, PracticeSession];
+};
 
 const EXACT_SONG_LIMIT = 22;
 const SEARCH_STARTS = 8;
 const SWAPS_PER_START = 2_500;
+const ASSIGNMENT_PAIR_SCAN_LIMIT = 20_000;
+const ASSIGNMENT_SWAP_LIMIT = 100;
 const OPTION_LIMIT = 5;
 const ALWAYS_PRESENT_FIRST_NAMES = new Set(['donald', 'randal']);
 
@@ -207,6 +219,8 @@ export function buildPracticeGroups(songs: SetListSong[]): {
 export function buildPracticeSchedule(songs: SetListSong[]): {
   options: (PracticeOption & { sessions: [PracticeSession, PracticeSession] })[];
   optimal: boolean;
+  suggestedSwaps: PracticeSwap[];
+  swapSearchComplete: boolean;
 } {
   const result = buildPracticeGroups(songs);
 
@@ -223,11 +237,104 @@ export function buildPracticeSchedule(songs: SetListSong[]): {
     };
   }
 
+  const entries = mergeSongs(songs);
+  const baseOverlap = result.options[0]?.sharedPerformers.length ?? Infinity;
+  const assignments = baseOverlap > 0
+    ? entries.flatMap((entry) => entry.roles.flatMap((role) =>
+        (role.role === 'Bass' || role.role === 'Drums')
+          ? role.performers.filter(({ name }) => !isAlwaysPresentPracticeAttendee(name))
+            .map((performer) => ({
+              song: entry,
+              role: role.role as 'Bass' | 'Drums',
+              performer,
+            }))
+          : [],
+      ))
+    : [];
+  const suggestions = new Map<string, PracticeSwap>();
+  let evaluations = 0;
+  let comparisons = 0;
+  let swapSearchComplete = true;
+  search: for (let first = 0; first < assignments.length; first++) {
+    for (let second = first + 1; second < assignments.length; second++) {
+      if (comparisons++ === ASSIGNMENT_PAIR_SCAN_LIMIT) {
+        swapSearchComplete = false;
+        break search;
+      }
+      const a = assignments[first];
+      const b = assignments[second];
+      if (
+        a.role !== b.role || a.performer.initials === b.performer.initials ||
+        getSongAnchor(a.song.title, a.song.originalArtist) ===
+          getSongAnchor(b.song.title, b.song.originalArtist)
+      ) continue;
+      const firstRole = a.song.roles.find(({ role }) => role === a.role)!;
+      const secondRole = b.song.roles.find(({ role }) => role === b.role)!;
+      if (
+        firstRole.performers.some(({ initials }) => initials === b.performer.initials) ||
+        secondRole.performers.some(({ initials }) => initials === a.performer.initials)
+      ) continue;
+      if (evaluations === ASSIGNMENT_SWAP_LIMIT) {
+        swapSearchComplete = false;
+        break search;
+      }
+      evaluations++;
+
+      const changed = mergeSongs(entries);
+      const changedFirst = changed.find(({ title, originalArtist }) =>
+        getSongAnchor(title, originalArtist) === getSongAnchor(a.song.title, a.song.originalArtist),
+      )!;
+      const changedSecond = changed.find(({ title, originalArtist }) =>
+        getSongAnchor(title, originalArtist) === getSongAnchor(b.song.title, b.song.originalArtist),
+      )!;
+      const changedFirstRole = changedFirst.roles.find(({ role }) => role === a.role)!;
+      const changedSecondRole = changedSecond.roles.find(({ role }) => role === b.role)!;
+      const firstIndex = changedFirstRole.performers.findIndex(
+        ({ initials }) => initials === a.performer.initials,
+      );
+      const secondIndex = changedSecondRole.performers.findIndex(
+        ({ initials }) => initials === b.performer.initials,
+      );
+      changedFirstRole.performers[firstIndex] = { ...b.performer };
+      changedSecondRole.performers[secondIndex] = { ...a.performer };
+
+      const optimized = buildPracticeGroups(changed.flat());
+      const best = optimized.options[0];
+      if (!best || best.sharedPerformers.length >= baseOverlap) continue;
+      const swapKey = [
+        a.role,
+        getSongAnchor(a.song.title, a.song.originalArtist),
+        a.performer.initials,
+        getSongAnchor(b.song.title, b.song.originalArtist),
+        b.performer.initials,
+      ].join('|');
+      suggestions.set(swapKey, {
+        role: a.role,
+        exchanges: [
+          { song: changedFirst, performer: { ...a.performer } },
+          { song: changedSecond, performer: { ...b.performer } },
+        ],
+        overlapReduction: baseOverlap - best.sharedPerformers.length,
+        sharedPerformers: best.sharedPerformers,
+        sessions: [session(best.groups[0]), session(best.groups[1])],
+      });
+    }
+  }
+
   return {
     options: result.options.map((option) => ({
       ...option,
       sessions: [session(option.groups[0]), session(option.groups[1])],
     })),
     optimal: result.optimal,
+    suggestedSwaps: [...suggestions.values()]
+      .sort((a, b) =>
+        a.sharedPerformers.length - b.sharedPerformers.length ||
+        a.role.localeCompare(b.role) ||
+        getSongAnchor(a.exchanges[0].song.title, a.exchanges[0].song.originalArtist)
+          .localeCompare(getSongAnchor(b.exchanges[0].song.title, b.exchanges[0].song.originalArtist)),
+      )
+      .slice(0, OPTION_LIMIT),
+    swapSearchComplete,
   };
 }

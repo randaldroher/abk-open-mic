@@ -15,6 +15,7 @@ import RoleNeedChip from '../components/role-need-chip';
 import SetListTable from '../components/set-list-table';
 import PracticeOptions from '../components/practice-options';
 import { getSongRoleNeeds, projectOctoberSetList } from './october-set-list';
+import { buildPracticeSchedule } from './practice-groups';
 import {
   PAST_EVENTS,
   PAST_EVENT_VIDEOS,
@@ -389,6 +390,8 @@ test('practice options show both groups, shared attendees, song links and search
     const html = renderToStaticMarkup(createElement(PracticeOptions, {
       result: {
         optimal,
+        suggestedSwaps: [],
+        swapSearchComplete: true,
         options: [{
           groups: [[songs[0]], [songs[1]]],
           sharedPerformers: [{ initials: 'AB', name: 'Alex' }],
@@ -413,7 +416,7 @@ test('practice options show both groups, shared attendees, song links and search
 
 test('practice options handle all-done and one-song states', () => {
   const empty = renderToStaticMarkup(createElement(PracticeOptions, {
-    result: { options: [], optimal: true },
+    result: { options: [], optimal: true, suggestedSwaps: [], swapSearchComplete: true },
   }));
   assert.ok(empty.includes('No songs remain to practice'));
   const { songs } = projectOctoberSetList(['Song', 'Artist', 'Vocal'], [['Only song', '', '']], []);
@@ -427,6 +430,8 @@ test('practice options handle all-done and one-song states', () => {
         ],
       }],
       optimal: true,
+      suggestedSwaps: [],
+      swapSearchComplete: true,
     },
   }));
   assert.ok(single.includes('Other assigned performers in both sessions: None'));
@@ -434,6 +439,37 @@ test('practice options handle all-done and one-song states', () => {
   assert.ok(single.includes('No assigned performers'));
   assert.ok(single.includes('No songs in this late block'));
   assert.ok(single.includes('No songs in this early block'));
+});
+
+test('practice options show individual song-assignment swap suggestions', () => {
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal', 'Bass'],
+    [
+      ['Bass song one', 'Artist', 'E,F', 'B'],
+      ['Bass song two', 'Artist', 'F', 'B'],
+      ['Bass song three', 'Artist', 'F', 'C'],
+      ['Bass song four', 'Artist', 'E,F,G', 'C'],
+    ],
+    [
+      { initials: 'B', name: 'Blair', roles: ['Bass'], genres: '' },
+      { initials: 'C', name: 'Casey', roles: ['Bass'], genres: '' },
+      { initials: 'E', name: 'Eli', roles: ['Vocal'], genres: '' },
+      { initials: 'F', name: 'Finn', roles: ['Vocal'], genres: '' },
+      { initials: 'G', name: 'Gale', roles: ['Vocal'], genres: '' },
+    ],
+  );
+  const result = buildPracticeSchedule(songs);
+  assert.ok(result.suggestedSwaps.length > 0);
+  const html = renderToStaticMarkup(createElement(PracticeOptions, {
+    result,
+  }));
+
+  assert.ok(html.includes('Individual song-swap suggestions'));
+  assert.ok(html.includes('Each suggestion exchanges one Bass or Drums song assignment'));
+  assert.ok(html.includes(`${result.suggestedSwaps[0].exchanges[0].performer.name} swaps “`));
+  assert.ok(html.includes(`This reduces the overlap by ${result.suggestedSwaps[0].overlapReduction}`));
+  assert.ok(html.includes('The suggested sessions are re-optimized'));
+  assert.equal(html.includes('additional improving assignment exchanges may exist'), !result.swapSearchComplete);
 });
 
 test('practice blocks distinguish early-only, late-only and whole-practice attendees by initials', () => {
@@ -455,6 +491,8 @@ test('practice blocks distinguish early-only, late-only and whole-practice atten
     const html = renderToStaticMarkup(createElement(PracticeOptions, {
       result: {
         optimal: true,
+        suggestedSwaps: [],
+        swapSearchComplete: true,
         options: [{
           groups: [songs, []],
           sharedPerformers: [],

@@ -152,6 +152,11 @@ optimization. One best block split is shown per group, with its own bounded-sear
 warning if optimality is unproven. The page identifies early-only attendees who
 can leave after that block, late-only attendees who can arrive later, and those
 needed for both halves. A single-song group uses only its early block.
+The optimizer also checks up to 100 individual Bass or Drums assignment exchanges
+between different songs (with a 20,000-pair scan bound), re-optimizes sessions for
+each candidate, and suggests up to five exchanges that strictly reduce the
+shared-attendee count. These are proposals only; published assignments are
+unchanged. A notice indicates when the candidate search was bounded.
 These are suggestions, not confirmed
 dates or participant availability. Missing or ambiguous Practice headers make
 Practice unavailable without hiding Set List. All-completed tables show an
