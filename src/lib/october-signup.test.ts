@@ -6,6 +6,8 @@ import {
   octoberSignupSectionRows,
   octoberSignupSongColumns,
   projectOctoberSignupPerformers,
+  parsePracticeAvailability,
+  PRACTICE_WEEKDAYS,
   projectOctoberSignupSongs,
   songsInterestedByPerformer,
   sortPerformersByInitials,
@@ -133,6 +135,7 @@ test('projects names, initials, recognized roles, and entered genres only', () =
     initials: 1,
     roles: 2,
     genres: 3,
+    practiceAvailability: null,
   });
   assert.deepEqual(
     projectOctoberSignupPerformers(headers, [
@@ -158,12 +161,14 @@ test('projects names, initials, recognized roles, and entered genres only', () =
         initials: 'RD',
         roles: ['Lead Guitar', 'Rhythm Guitar'],
         genres: 'Alt-Rock, K-pop / shoegaze',
+        practiceAvailability: null,
       },
       {
         name: 'Jamie',
         initials: 'KL',
         roles: ['Vocal', 'Keyboard'],
         genres: 'Jazz',
+        practiceAvailability: null,
       },
     ],
   );
@@ -182,6 +187,42 @@ test('adds last initials to October performers who share a first name', () => {
   );
 });
 
+test('projects normalized weeknight availability without retaining source prose', () => {
+  const headers = ['Genres', 'Practice Availability', 'Initials', 'Roles', 'Name', 'Notes'];
+  assert.deepEqual(octoberSignupPerformerColumns(headers), {
+    name: 4,
+    initials: 2,
+    roles: 3,
+    genres: 0,
+    practiceAvailability: 1,
+  });
+  assert.deepEqual(
+    projectOctoberSignupPerformers(headers, [
+      ['Jazz', 'Monday, Wednesday and Friday', 'AB', 'Bass', 'Alex Brown', 'private note'],
+      ['Rock', 'Any weeknight', 'CD', 'Drums', 'Casey Davis', 'private note'],
+      ['Pop', 'Flexible', 'EF', 'Vocal', 'Eli Fox', 'private note'],
+      ['Folk', '', 'GH', 'Vocal', 'Gale Hill', 'private note'],
+      ['Jazz', 'Tuesday except Thursday', 'IJ', 'Vocal', 'Ira Jones', 'private note'],
+    ]).map(({ practiceAvailability }) => practiceAvailability),
+    [
+      ['Monday', 'Wednesday', 'Friday'],
+      [...PRACTICE_WEEKDAYS],
+      [...PRACTICE_WEEKDAYS],
+      null,
+      null,
+    ],
+  );
+  assert.equal(parsePracticeAvailability('Available Thursday and TUES.')?.join(', '), 'Tuesday, Thursday');
+  assert.equal(parsePracticeAvailability('No preference'), PRACTICE_WEEKDAYS.join(', '));
+  assert.equal(parsePracticeAvailability('not available Monday'), null);
+  assert.throws(
+    () => octoberSignupPerformerColumns([
+      'Name', 'Initials', 'Roles', 'Genres', 'Practice Availability', 'Weeknight Availability',
+    ]),
+    /Invalid October performer headers/,
+  );
+});
+
 test('omits name-like values from the initials column and recognizes only valid YouTube video URLs', () => {
   assert.deepEqual(
     projectOctoberSignupPerformers(
@@ -191,7 +232,13 @@ test('omits name-like values from the initials column and recognizes only valid 
         ['alex@example.com', 'AB', 'Vocal', 'Jazz'],
       ],
     ),
-    [{ name: 'Alex', initials: 'RD', roles: ['Guitar'], genres: 'Rock' }],
+    [{
+      name: 'Alex',
+      initials: 'RD',
+      roles: ['Guitar'],
+      genres: 'Rock',
+      practiceAvailability: null,
+    }],
   );
   assert.equal(
     getYouTubeVideoId(
@@ -220,6 +267,7 @@ test('accepts long alphabetic initials and resolves them in song interests', () 
       initials: 'OCKYOUNG',
       roles: ['Vocal'],
       genres: 'Rock',
+      practiceAvailability: null,
     },
   ]);
   assert.deepEqual(

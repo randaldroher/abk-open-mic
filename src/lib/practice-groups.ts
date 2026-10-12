@@ -1,3 +1,7 @@
+import {
+  PRACTICE_WEEKDAYS,
+  type PracticeWeekday,
+} from './october-signup';
 import { getSongAnchor, type SetListSong } from './october-set-list';
 
 type Performer = { initials: string; name: string };
@@ -9,6 +13,8 @@ type PracticeSession = {
   blocks: [SetListSong[], SetListSong[]];
   sharedPerformers: Performer[];
   optimal: boolean;
+  weeknight?: PracticeWeekday;
+  unavailablePerformers?: Performer[];
 };
 type PracticeSwap = {
   role: 'Bass' | 'Drums';
@@ -17,8 +23,18 @@ type PracticeSwap = {
     { song: SetListSong; performer: Performer },
   ];
   overlapReduction: number;
+  availabilityConflictReduction: number;
   sharedPerformers: Performer[];
   sessions: [PracticeSession, PracticeSession];
+};
+type WeeknightPlan = PracticeOption & {
+  weeknights: [PracticeWeekday, PracticeWeekday];
+  unavailablePerformers: [Performer[], Performer[]];
+  availabilityConflicts: number;
+};
+type WeeknightSearch = {
+  options: WeeknightPlan[];
+  optimal: boolean;
 };
 
 const EXACT_SONG_LIMIT = 22;
@@ -216,17 +232,151 @@ export function buildPracticeGroups(songs: SetListSong[]): {
   return { options, optimal: false };
 }
 
-export function buildPracticeSchedule(songs: SetListSong[]): {
+function buildWeeknightPlans(
+  songs: SetListSong[],
+  availabilityByInitials: ReadonlyMap<string, PracticeWeekday[] | null>,
+): WeeknightSearch {
+  const entries = mergeSongs(songs);
+  if (!entries.length) return { options: [], optimal: true };
+  const peopleByInitials = new Map<string, Performer>();
+  for (const entry of entries) {
+    for (const role of entry.roles) {
+      for (const performer of role.performers) {
+        if (!peopleByInitials.has(performer.initials)) {
+          peopleByInitials.set(performer.initials, performer);
+        }
+      }
+    }
+  }
+  const optionMap = new Map<string, WeeknightPlan>();
+  let bestConflicts = Infinity;
+  let bestOverlap = Infinity;
+
+  function remember(groups: [SetListSong[], SetListSong[]]) {
+    const attendees = groups.map((group) => {
+      const initials = new Set(group.flatMap((entry) => entry.roles.flatMap(
+        ({ performers }) => performers
+          .filter(({ name }) => !isAlwaysPresentPracticeAttendee(name))
+          .map(({ initials }) => initials),
+      )));
+      return [...initials].flatMap((initial) => {
+        const performer = peopleByInitials.get(initial);
+        return performer ? [performer] : [];
+      });
+    }) as [Performer[], Performer[]];
+    const secondInitials = new Set(attendees[1].map(({ initials }) => initials));
+    const sharedPerformers = attendees[0]
+      .filter(({ initials }) => secondInitials.has(initials));
+    const groupAnchors = groups.map((group) => group.map(({ title, originalArtist }) =>
+      getSongAnchor(title, originalArtist),
+    ).sort().join(','));
+
+    for (let firstDay = 0; firstDay < PRACTICE_WEEKDAYS.length - 1; firstDay++) {
+      for (let secondDay = firstDay + 1; secondDay < PRACTICE_WEEKDAYS.length; secondDay++) {
+        const weeknights = [
+          PRACTICE_WEEKDAYS[firstDay],
+          PRACTICE_WEEKDAYS[secondDay],
+        ] as [PracticeWeekday, PracticeWeekday];
+        const unavailablePerformers = attendees.map((people, session) =>
+          people.filter(({ initials }) => {
+            const available = availabilityByInitials.get(initials);
+            return available !== null && available !== undefined &&
+              !available.includes(weeknights[session]);
+          }),
+        ) as [Performer[], Performer[]];
+        const conflicts = unavailablePerformers[0].length +
+          unavailablePerformers[1].length;
+        if (
+          conflicts > bestConflicts ||
+          (conflicts === bestConflicts && sharedPerformers.length > bestOverlap)
+        ) continue;
+
+        if (conflicts < bestConflicts ||
+          (conflicts === bestConflicts && sharedPerformers.length < bestOverlap)) {
+          bestConflicts = conflicts;
+          bestOverlap = sharedPerformers.length;
+          optionMap.clear();
+        }
+
+        const key = `${groupAnchors[0]}|${groupAnchors[1]}|${weeknights.join('|')}`;
+        if (optionMap.has(key) || optionMap.size === OPTION_LIMIT) continue;
+        optionMap.set(key, {
+          groups,
+          sharedPerformers,
+          weeknights,
+          unavailablePerformers,
+          availabilityConflicts: conflicts,
+        });
+      }
+    }
+  }
+
+  if (entries.length <= EXACT_SONG_LIMIT) {
+    const firstSize = Math.floor(entries.length / 2);
+    const selection = new Array<boolean>(entries.length).fill(false);
+    function visit(index: number, firstCount: number) {
+      if (index === entries.length) {
+        remember([
+          entries.filter((_, songIndex) => selection[songIndex]),
+          entries.filter((_, songIndex) => !selection[songIndex]),
+        ]);
+        return;
+      }
+      if (firstCount < firstSize) {
+        selection[index] = true;
+        visit(index + 1, firstCount + 1);
+      }
+      if (
+        index - firstCount < entries.length - firstSize &&
+        (index !== 0 || entries.length % 2 !== 0)
+      ) {
+        selection[index] = false;
+        visit(index + 1, firstCount);
+      }
+    }
+    if (entries.length === 1) remember([entries, []]);
+    else visit(0, 0);
+    return { options: [...optionMap.values()], optimal: true };
+  }
+
+  const bounded = buildPracticeGroups(entries);
+  for (const { groups } of bounded.options) remember(groups);
+  return { options: [...optionMap.values()], optimal: false };
+}
+
+export function buildPracticeSchedule(
+  songs: SetListSong[],
+  availabilityByInitials?: ReadonlyMap<string, PracticeWeekday[] | null>,
+): {
   options: (PracticeOption & { sessions: [PracticeSession, PracticeSession] })[];
   optimal: boolean;
   suggestedSwaps: PracticeSwap[];
   swapSearchComplete: boolean;
+  availabilitySearchComplete?: boolean;
 } {
   const result = buildPracticeGroups(songs);
+  const availabilityAware = availabilityByInitials !== undefined &&
+    [...availabilityByInitials.values()].some((days) => days !== null && days.length > 0);
+  const weeknightSearch = availabilityAware
+    ? buildWeeknightPlans(songs, availabilityByInitials!)
+    : null;
+  const baseOptions = weeknightSearch?.options ?? result.options;
+  const baseAvailabilityConflicts = weeknightSearch?.options[0]?.availabilityConflicts ?? 0;
+  const baseOverlap = baseOptions[0]?.sharedPerformers.length ?? Infinity;
 
-  function session(group: SetListSong[]): PracticeSession {
+  function session(
+    group: SetListSong[],
+    weeknight?: PracticeWeekday,
+    unavailablePerformers?: Performer[],
+  ): PracticeSession {
     if (!group.length) {
-      return { blocks: [[], []], sharedPerformers: [], optimal: true };
+      return {
+        blocks: [[], []],
+        sharedPerformers: [],
+        optimal: true,
+        ...(weeknight === undefined ? {} : { weeknight }),
+        ...(unavailablePerformers === undefined ? {} : { unavailablePerformers }),
+      };
     }
     const split = buildPracticeGroups(group);
     const first = split.options[0];
@@ -234,12 +384,13 @@ export function buildPracticeSchedule(songs: SetListSong[]): {
       blocks: first.groups,
       sharedPerformers: first.sharedPerformers,
       optimal: split.optimal,
+      ...(weeknight === undefined ? {} : { weeknight }),
+      ...(unavailablePerformers === undefined ? {} : { unavailablePerformers }),
     };
   }
 
   const entries = mergeSongs(songs);
-  const baseOverlap = result.options[0]?.sharedPerformers.length ?? Infinity;
-  const assignments = baseOverlap > 0
+  const assignments = baseAvailabilityConflicts > 0 || baseOverlap > 0
     ? entries.flatMap((entry) => entry.roles.flatMap((role) =>
         (role.role === 'Bass' || role.role === 'Drums')
           ? role.performers.filter(({ name }) => !isAlwaysPresentPracticeAttendee(name))
@@ -298,9 +449,18 @@ export function buildPracticeSchedule(songs: SetListSong[]): {
       changedFirstRole.performers[firstIndex] = { ...b.performer };
       changedSecondRole.performers[secondIndex] = { ...a.performer };
 
-      const optimized = buildPracticeGroups(changed.flat());
-      const best = optimized.options[0];
-      if (!best || best.sharedPerformers.length >= baseOverlap) continue;
+      const optimized = availabilityAware
+        ? buildWeeknightPlans(changed.flat(), availabilityByInitials!)
+        : null;
+      const best = optimized?.options[0] ?? buildPracticeGroups(changed.flat()).options[0];
+      const availabilityConflictReduction =
+        baseAvailabilityConflicts - (optimized?.options[0]?.availabilityConflicts ?? 0);
+      if (
+        !best ||
+        availabilityConflictReduction < 0 ||
+        (availabilityConflictReduction === 0 &&
+          best.sharedPerformers.length >= baseOverlap)
+      ) continue;
       const swapKey = [
         a.role,
         getSongAnchor(a.song.title, a.song.originalArtist),
@@ -314,21 +474,45 @@ export function buildPracticeSchedule(songs: SetListSong[]): {
           { song: changedFirst, performer: { ...a.performer } },
           { song: changedSecond, performer: { ...b.performer } },
         ],
-        overlapReduction: baseOverlap - best.sharedPerformers.length,
+        overlapReduction: Math.max(0, baseOverlap - best.sharedPerformers.length),
+        availabilityConflictReduction,
         sharedPerformers: best.sharedPerformers,
-        sessions: [session(best.groups[0]), session(best.groups[1])],
+        sessions: [
+          session(
+            best.groups[0],
+            optimized?.options[0]?.weeknights[0],
+            optimized?.options[0]?.unavailablePerformers[0],
+          ),
+          session(
+            best.groups[1],
+            optimized?.options[0]?.weeknights[1],
+            optimized?.options[0]?.unavailablePerformers[1],
+          ),
+        ],
       });
     }
   }
 
   return {
-    options: result.options.map((option) => ({
+    options: baseOptions.map((option) => ({
       ...option,
-      sessions: [session(option.groups[0]), session(option.groups[1])],
+      sessions: [
+        session(
+          option.groups[0],
+          'weeknights' in option ? option.weeknights[0] : undefined,
+          'unavailablePerformers' in option ? option.unavailablePerformers[0] : undefined,
+        ),
+        session(
+          option.groups[1],
+          'weeknights' in option ? option.weeknights[1] : undefined,
+          'unavailablePerformers' in option ? option.unavailablePerformers[1] : undefined,
+        ),
+      ],
     })),
-    optimal: result.optimal,
+    optimal: weeknightSearch?.optimal ?? result.optimal,
     suggestedSwaps: [...suggestions.values()]
       .sort((a, b) =>
+        b.availabilityConflictReduction - a.availabilityConflictReduction ||
         a.sharedPerformers.length - b.sharedPerformers.length ||
         a.role.localeCompare(b.role) ||
         getSongAnchor(a.exchanges[0].song.title, a.exchanges[0].song.originalArtist)
@@ -336,5 +520,8 @@ export function buildPracticeSchedule(songs: SetListSong[]): {
       )
       .slice(0, OPTION_LIMIT),
     swapSearchComplete,
+    ...(weeknightSearch === null
+      ? {}
+      : { availabilitySearchComplete: weeknightSearch.optimal }),
   };
 }

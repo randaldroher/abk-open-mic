@@ -19,9 +19,18 @@ import {
 } from '@mui/material';
 import type {
   OctoberSignupPerformer,
+  PracticeWeekday,
   PerformerSongInterest,
 } from '@/lib/october-signup';
 import { sortSongsByOriginalArtist } from '@/lib/october-signup';
+
+const WEEKDAY_SHORT_NAMES: Record<PracticeWeekday, string> = {
+  Monday: 'Mon',
+  Tuesday: 'Tue',
+  Wednesday: 'Wed',
+  Thursday: 'Thu',
+  Friday: 'Fri',
+};
 
 type PerformerWithSongs = Omit<OctoberSignupPerformer, 'initials'> & {
   songs: PerformerSongInterest[];
@@ -40,7 +49,7 @@ export default function PerformersTable({
       >
         <TableContainer>
           <Table
-            aria-label="Performer names, role interests, genres, proposed songs, and set-list assignments in expandable rows"
+            aria-label="Performer names, role interests, genres, weeknight availability, proposed songs, and set-list assignments in expandable rows"
             size="small"
           >
             <TableHead>
@@ -57,6 +66,9 @@ export default function PerformersTable({
                 </TableCell>
                 <TableCell component="th" scope="col">
                   Genres
+                </TableCell>
+                <TableCell component="th" scope="col">
+                  Weeknight availability
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -86,7 +98,14 @@ function PerformerRow({
   detailsId: string;
   isLast: boolean;
 }) {
-  const { name, genres, roles, songs, assignments = null } = performer;
+  const {
+    name,
+    genres,
+    roles,
+    practiceAvailability,
+    songs,
+    assignments = null,
+  } = performer;
   const assignedCount = assignments?.length ?? 0;
   const [expanded, setExpanded] = useState(false);
 
@@ -128,11 +147,22 @@ function PerformerRow({
             </Typography>
           )}
         </TableCell>
+        <TableCell>
+          {practiceAvailability ? (
+            <Typography variant="body2">
+              {practiceAvailability.map((day) => WEEKDAY_SHORT_NAMES[day]).join(', ')}
+            </Typography>
+          ) : (
+            <Typography color="textSecondary" variant="body2">
+              Not specified
+            </Typography>
+          )}
+        </TableCell>
       </TableRow>
       <TableRow>
         <TableCell
           id={detailsId}
-          colSpan={3}
+          colSpan={4}
           sx={{ p: 0, ...(isLast && { borderBottom: 0 }) }}
         >
           <Collapse in={expanded} timeout="auto" unmountOnExit>

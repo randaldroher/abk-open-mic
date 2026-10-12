@@ -93,6 +93,9 @@ async function fetchOctober2026Signup(): Promise<October2026Signup> {
       performerColumns.initials,
       performerColumns.roles,
       performerColumns.genres,
+      ...(performerColumns.practiceAvailability === null
+        ? []
+        : [performerColumns.practiceAvailability]),
     ]),
   ];
   const songPublicColumns = [

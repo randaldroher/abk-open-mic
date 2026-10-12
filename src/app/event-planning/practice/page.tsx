@@ -23,9 +23,10 @@ export default function PracticePage() {
         while keeping as few other assigned performers as possible in both sessions.
         Donald and Randal are assumed to be present throughout. Songs marked
         Done! in the Practice column are excluded. Compare up to five distinct options.
-        Each session has an early and a late block, with fewer performers needing to
-        stay for the whole practice. The suggestions also check individual Bass or
-        Drums song-assignment swaps for a lower-overlap session split.
+        Known weeknight availability is used to choose session nights and reduce
+        conflicts; unspecified availability is not treated as unavailable. Each
+        session has early and late blocks. Suggestions also check individual Bass
+        or Drums song-assignment swaps.
       </Typography>
       <Suspense fallback={
         <Stack spacing={2} role="status" aria-label="Loading practice options">
@@ -53,5 +54,8 @@ async function Practice() {
       </Paper>
     );
   }
-  return <PracticeOptions result={buildPracticeSchedule(songs)} />;
+  const availabilityByInitials = new Map(data.performers.map(({ initials, practiceAvailability }) =>
+    [initials, practiceAvailability ?? null],
+  ));
+  return <PracticeOptions result={buildPracticeSchedule(songs, availabilityByInitials)} />;
 }

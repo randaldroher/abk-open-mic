@@ -13,11 +13,22 @@ export type PerformerSongInterest = {
   roles: string[];
 };
 
+export const PRACTICE_WEEKDAYS = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+] as const;
+
+export type PracticeWeekday = (typeof PRACTICE_WEEKDAYS)[number];
+
 export type OctoberSignupPerformer = {
   name: string;
   initials: string;
   roles: string[];
   genres: string;
+  practiceAvailability?: PracticeWeekday[] | null;
 };
 
 function compareAlphabetically(left: string, right: string): number {
@@ -73,6 +84,7 @@ const NAME_HEADERS = ['name', 'performer name'];
 const INITIALS_HEADERS = ['initials'];
 const PERFORMER_ROLE_HEADERS = ['roles', 'role', 'instruments', 'instrument'];
 const GENRE_HEADERS = ['genres', 'genre'];
+const PRACTICE_AVAILABILITY_HEADERS = ['practice availability', 'weeknight availability'];
 const VIDEO_HEADERS = ['youtube link', 'youtube', 'video link'];
 const SONG_ROLE_HEADERS = new Map([
   ['vocal', 'Vocal'],
@@ -271,7 +283,16 @@ export function octoberSignupPerformerColumns(headers: string[]): {
   initials: number;
   roles: number;
   genres: number;
+  practiceAvailability: number | null;
 } {
+  const availabilityColumns = headers.flatMap((header, index) =>
+    PRACTICE_AVAILABILITY_HEADERS.includes(normalizeSignupHeader(header))
+      ? [index]
+      : [],
+  );
+  if (availabilityColumns.length > 1) {
+    throw new Error('Invalid October performer headers');
+  }
   return {
     name: findUniqueColumn(
       headers,
@@ -293,7 +314,35 @@ export function octoberSignupPerformerColumns(headers: string[]): {
       GENRE_HEADERS,
       'Invalid October performer headers',
     ),
+    practiceAvailability: availabilityColumns[0] ?? null,
   };
+}
+
+export function parsePracticeAvailability(value: string): PracticeWeekday[] | null {
+  const normalized = normalizeSignupHeader(value);
+  if (!normalized) return null;
+  if (/^(?:any(?: week)?nights?|all(?: week)?nights?|flexible|whenever|open|no preference|does not matter|doesn't matter)$/.test(normalized)) {
+    return [...PRACTICE_WEEKDAYS];
+  }
+
+  const weekdayPatterns: Array<[PracticeWeekday, RegExp]> = [
+    ['Monday', /\bmon(?:day)?s?\b/gi],
+    ['Tuesday', /\btue(?:s|sday)?s?\b/gi],
+    ['Wednesday', /\bwed(?:nesday)?s?\b/gi],
+    ['Thursday', /\bthu(?:rs|rsday)?s?\b/gi],
+    ['Friday', /\bfri(?:day)?s?\b/gi],
+  ];
+  const selected = weekdayPatterns.flatMap(([weekday, pattern]) =>
+    pattern.test(normalized) ? [weekday] : [],
+  );
+  if (!selected.length) return null;
+
+  const remainder = weekdayPatterns.reduce(
+    (text, [, pattern]) => text.replace(pattern, ''),
+    normalized,
+  ).replace(/\b(?:and|or|available|availability|weeknights?|nights?)\b/gi, '')
+    .replace(/[\s,;/&|+.-]/g, '');
+  return remainder ? null : selected;
 }
 
 export function projectOctoberSignupPerformers(
@@ -327,6 +376,9 @@ export function projectOctoberSignupPerformers(
       initials,
       roles: [...new Set(roles)],
       genres: row[columns.genres] ?? '',
+      practiceAvailability: columns.practiceAvailability === null
+        ? null
+        : parsePracticeAvailability(row[columns.practiceAvailability] ?? ''),
     });
   }
 
