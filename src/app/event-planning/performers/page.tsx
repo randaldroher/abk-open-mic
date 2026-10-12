@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: 'Performers',
   description:
-    'Performer names, genres, role interests, and proposed songs for the October 2026 ABK Open Mic.',
+    'Performer names, weeknight availability, genres, role interests, and proposed songs for the October 2026 ABK Open Mic.',
 };
 
 export default function PerformersPage() {

@@ -404,7 +404,7 @@ test('practice options show both groups, shared attendees, song links and search
     }));
     assert.ok(html.includes('Option 1: 1 other performer in both sessions'));
     assert.ok(html.includes('Other assigned performers in both sessions: Alex'));
-    assert.ok(html.includes('Donald and Randal are assumed to be present throughout'));
+    assert.ok(html.includes('Donald and Randal are assumed present throughout'));
     assert.ok(html.includes('Session 1'));
     assert.ok(html.includes('Session 2'));
     assert.ok(html.includes('First song'));

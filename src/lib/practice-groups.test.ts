@@ -227,6 +227,23 @@ test('uses known weekday availability to choose lower-conflict practice groups a
   assert.ok(unknown.options[0].sessions.every(({ weeknight }) => weeknight === undefined));
 });
 
+test('uses a deterministic bounded availability search above the exact song limit', () => {
+  const songs = Array.from({ length: 23 }, (_, index) =>
+    song(`Song ${index}`, [`P${index}`]),
+  );
+  const availability = new Map<string, PracticeWeekday[]>(
+    songs.map((entry) => [entry.roles[0].performers[0].initials, [...PRACTICE_WEEKDAYS]]),
+  );
+  const result = buildPracticeSchedule(songs, availability);
+
+  assert.equal(result.availabilitySearchComplete, false);
+  assert.equal(result.optimal, false);
+  assert.ok(result.options.length > 0 && result.options.length <= 5);
+  assert.ok(result.options.every(({ sessions }) =>
+    sessions[0].weeknight !== sessions[1].weeknight,
+  ));
+});
+
 test('suggests individual Bass song exchanges that improve the optimized session split', () => {
   for (const role of ['Bass', 'Drums']) {
     const songs = [

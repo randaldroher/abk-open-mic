@@ -80,7 +80,7 @@ responses are projected; raw availability prose is discarded immediately.
 Blank, qualified, or unrecognized responses remain unknown. It reads the
 song table's `Song`, `Orginal Artist` (the current spelling), recognized
 role-interest, and `YouTube Link` columns. It never fetches contact fields,
-availability notes, song `Suggested By`, or comments. Song
+notes, song `Suggested By`, or comments. Song
 role-interest cells are projected only when their tokens match participant
 initials, then display the corresponding consented name. Performer-page roles
 are limited to recognized role labels; initials must match a short ASCII
@@ -142,8 +142,9 @@ Practice excludes completed songs by normalized title/artist, including duplicat
 rows of the same song, and merges remaining duplicates and their assignments.
 The optimizer counts distinct assigned performer initials in both sessions,
 not roles or signup interests. Donald and Randal, identified by performer first
-name, are assumed present throughout and excluded from overlap scoring. When
-recognized weeknight availability exists for assigned performers, it chooses
+name, are assumed present throughout and excluded from overlap and availability
+conflict counts. When recognized weeknight availability exists for assigned
+performers, it chooses
 two distinct weeknights by minimizing known unavailable performer/session
 assignments first, then shared-attendee count. Unknown availability is ignored.
 Session song counts differ by at most one. It returns up to five distinct
@@ -165,9 +166,9 @@ each candidate, and suggests up to five exchanges that reduce known availability
 conflicts first or, without increasing those conflicts, reduce the shared-attendee
 count. These are proposals only; published assignments are
 unchanged. A notice indicates when the candidate search was bounded.
-These are suggestions, not confirmed
-dates or participant availability. Missing or ambiguous Practice headers make
-Practice unavailable without hiding Set List. All-completed tables show an
+These are suggestions, not confirmed session dates; reported availability is
+self-reported and unknown values are ignored. Missing or ambiguous Practice
+headers make Practice unavailable without hiding Set List. All-completed tables show an
 empty state; one remaining song has an empty second session.
 
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
