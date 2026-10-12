@@ -42,6 +42,7 @@ const SEARCH_STARTS = 8;
 const SWAPS_PER_START = 2_500;
 const ASSIGNMENT_PAIR_SCAN_LIMIT = 20_000;
 const ASSIGNMENT_SWAP_LIMIT = 100;
+const WEEKDAY_SWAP_EVALUATION_LIMIT = 2_500;
 const OPTION_LIMIT = 5;
 const ALWAYS_PRESENT_FIRST_NAMES = new Set(['donald', 'randal']);
 
@@ -252,7 +253,7 @@ function buildWeeknightPlans(
   let bestConflicts = Infinity;
   let bestOverlap = Infinity;
 
-  function remember(groups: [SetListSong[], SetListSong[]]) {
+  function score(groups: [SetListSong[], SetListSong[]]): [number, number] {
     const attendees = groups.map((group) => {
       const initials = new Set(group.flatMap((entry) => entry.roles.flatMap(
         ({ performers }) => performers
@@ -271,6 +272,9 @@ function buildWeeknightPlans(
       getSongAnchor(title, originalArtist),
     ).sort().join(','));
 
+    let groupConflicts = Infinity;
+    let groupOverlap = Infinity;
+    const plans: WeeknightPlan[] = [];
     for (let firstDay = 0; firstDay < PRACTICE_WEEKDAYS.length - 1; firstDay++) {
       for (let secondDay = firstDay + 1; secondDay < PRACTICE_WEEKDAYS.length; secondDay++) {
         const weeknights = [
@@ -287,20 +291,18 @@ function buildWeeknightPlans(
         const conflicts = unavailablePerformers[0].length +
           unavailablePerformers[1].length;
         if (
-          conflicts > bestConflicts ||
-          (conflicts === bestConflicts && sharedPerformers.length > bestOverlap)
+          conflicts > groupConflicts ||
+          (conflicts === groupConflicts && sharedPerformers.length > groupOverlap)
         ) continue;
 
-        if (conflicts < bestConflicts ||
-          (conflicts === bestConflicts && sharedPerformers.length < bestOverlap)) {
-          bestConflicts = conflicts;
-          bestOverlap = sharedPerformers.length;
-          optionMap.clear();
+        if (conflicts < groupConflicts ||
+          (conflicts === groupConflicts && sharedPerformers.length < groupOverlap)) {
+          groupConflicts = conflicts;
+          groupOverlap = sharedPerformers.length;
+          plans.length = 0;
         }
 
-        const key = `${groupAnchors[0]}|${groupAnchors[1]}|${weeknights.join('|')}`;
-        if (optionMap.has(key) || optionMap.size === OPTION_LIMIT) continue;
-        optionMap.set(key, {
+        plans.push({
           groups,
           sharedPerformers,
           weeknights,
@@ -309,6 +311,23 @@ function buildWeeknightPlans(
         });
       }
     }
+
+    if (
+      groupConflicts < bestConflicts ||
+      (groupConflicts === bestConflicts && groupOverlap < bestOverlap)
+    ) {
+      bestConflicts = groupConflicts;
+      bestOverlap = groupOverlap;
+      optionMap.clear();
+    }
+    if (groupConflicts === bestConflicts && groupOverlap === bestOverlap) {
+      for (const plan of plans) {
+        const key = `${groupAnchors[0]}|${groupAnchors[1]}|${plan.weeknights.join('|')}`;
+        if (optionMap.has(key) || optionMap.size === OPTION_LIMIT) continue;
+        optionMap.set(key, plan);
+      }
+    }
+    return [groupConflicts, groupOverlap];
   }
 
   if (entries.length <= EXACT_SONG_LIMIT) {
@@ -316,7 +335,7 @@ function buildWeeknightPlans(
     const selection = new Array<boolean>(entries.length).fill(false);
     function visit(index: number, firstCount: number) {
       if (index === entries.length) {
-        remember([
+        score([
           entries.filter((_, songIndex) => selection[songIndex]),
           entries.filter((_, songIndex) => !selection[songIndex]),
         ]);
@@ -334,13 +353,52 @@ function buildWeeknightPlans(
         visit(index + 1, firstCount);
       }
     }
-    if (entries.length === 1) remember([entries, []]);
+    if (entries.length === 1) score([entries, []]);
     else visit(0, 0);
     return { options: [...optionMap.values()], optimal: true };
   }
 
-  const bounded = buildPracticeGroups(entries);
-  for (const { groups } of bounded.options) remember(groups);
+  const firstSize = Math.floor(entries.length / 2);
+  let evaluations = 0;
+  function compare(left: [number, number], right: [number, number]): number {
+    return left[0] - right[0] || left[1] - right[1];
+  }
+  for (let start = 0; start < SEARCH_STARTS; start++) {
+    const offset = Math.floor(start * entries.length / SEARCH_STARTS);
+    const selection = entries.map((_, index) =>
+      (index - offset + entries.length) % entries.length < firstSize,
+    );
+    function groups(): [SetListSong[], SetListSong[]] {
+      return [
+        entries.filter((_, index) => selection[index]),
+        entries.filter((_, index) => !selection[index]),
+      ];
+    }
+
+    let currentScore = score(groups());
+    let improved = true;
+    while (improved && evaluations < WEEKDAY_SWAP_EVALUATION_LIMIT) {
+      improved = false;
+      search: for (let first = 0; first < entries.length; first++) {
+        if (!selection[first]) continue;
+        for (let second = 0; second < entries.length; second++) {
+          if (selection[second]) continue;
+          if (evaluations++ === WEEKDAY_SWAP_EVALUATION_LIMIT) break search;
+          selection[first] = false;
+          selection[second] = true;
+          const candidateScore = score(groups());
+          if (compare(candidateScore, currentScore) < 0) {
+            currentScore = candidateScore;
+            improved = true;
+            break search;
+          }
+          selection[first] = true;
+          selection[second] = false;
+        }
+      }
+    }
+    if (evaluations >= WEEKDAY_SWAP_EVALUATION_LIMIT) break;
+  }
   return { options: [...optionMap.values()], optimal: false };
 }
 
@@ -355,8 +413,16 @@ export function buildPracticeSchedule(
   availabilitySearchComplete?: boolean;
 } {
   const result = buildPracticeGroups(songs);
+  const assignedInitials = new Set(songs.flatMap(({ roles }) =>
+    roles.flatMap(({ performers }) => performers
+      .filter(({ name }) => !isAlwaysPresentPracticeAttendee(name))
+      .map(({ initials }) => initials)),
+  ));
   const availabilityAware = availabilityByInitials !== undefined &&
-    [...availabilityByInitials.values()].some((days) => days !== null && days.length > 0);
+    [...assignedInitials].some((initials) => {
+      const days = availabilityByInitials.get(initials);
+      return days !== null && days !== undefined && days.length > 0;
+    });
   const weeknightSearch = availabilityAware
     ? buildWeeknightPlans(songs, availabilityByInitials!)
     : null;
@@ -374,8 +440,6 @@ export function buildPracticeSchedule(
         blocks: [[], []],
         sharedPerformers: [],
         optimal: true,
-        ...(weeknight === undefined ? {} : { weeknight }),
-        ...(unavailablePerformers === undefined ? {} : { unavailablePerformers }),
       };
     }
     const split = buildPracticeGroups(group);
@@ -504,7 +568,9 @@ export function buildPracticeSchedule(
         ),
         session(
           option.groups[1],
-          'weeknights' in option ? option.weeknights[1] : undefined,
+          option.groups[1].length && 'weeknights' in option
+            ? option.weeknights[1]
+            : undefined,
           'unavailablePerformers' in option ? option.unavailablePerformers[1] : undefined,
         ),
       ],
