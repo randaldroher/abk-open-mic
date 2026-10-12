@@ -96,7 +96,7 @@ export default function PracticeOptions({
                           <Box component="ul" sx={{ pl: 3, '& li': { my: 1 } }}>
                             {blockSongs.map((song) => (
                               <li key={getSongAnchor(song.title, song.originalArtist)}>
-                                <Link href={`/event-planning/songs#${getSongAnchor(song.title, song.originalArtist)}`}>
+                                <Link href={`/event-planning/songs#${encodeURIComponent(getSongAnchor(song.title, song.originalArtist))}`}>
                                   {song.title}{song.originalArtist ? ` — ${song.originalArtist}` : ''}
                                 </Link>
                                 <Typography variant="body2" color="textSecondary">
