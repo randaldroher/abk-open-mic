@@ -37,6 +37,10 @@ type WeeknightSearch = {
   optimal: boolean;
 };
 
+function isWeeknightPlan(option: PracticeOption | WeeknightPlan): option is WeeknightPlan {
+  return 'weeknights' in option;
+}
+
 const EXACT_SONG_LIMIT = 22;
 const SEARCH_STARTS = 8;
 const SWAPS_PER_START = 2_500;
@@ -332,7 +336,7 @@ function buildWeeknightPlans(
                 !available.includes(weeknights[session]);
             }),
           ) as [Performer[], Performer[]];
-          const key = `${groupAnchors[0]}|${groupAnchors[1]}|${weeknights.join('|')}`;
+          const key = `${groupAnchors[0]}|${groupAnchors[1]}`;
           if (optionMap.has(key)) continue;
           optionMap.set(key, {
             groups,
@@ -575,23 +579,24 @@ export function buildPracticeSchedule(
   }
 
   return {
-    options: baseOptions.map((option) => ({
-      ...option,
-      sessions: [
-        session(
-          option.groups[0],
-          'weeknights' in option ? option.weeknights[0] : undefined,
-          'unavailablePerformers' in option ? option.unavailablePerformers[0] : undefined,
-        ),
-        session(
-          option.groups[1],
-          option.groups[1].length && 'weeknights' in option
-            ? option.weeknights[1]
-            : undefined,
-          'unavailablePerformers' in option ? option.unavailablePerformers[1] : undefined,
-        ),
-      ],
-    })),
+    options: baseOptions.map((option) => {
+      const plan = isWeeknightPlan(option) ? option : null;
+      return {
+        ...option,
+        sessions: [
+          session(
+            option.groups[0],
+            plan?.weeknights[0],
+            plan?.unavailablePerformers[0],
+          ),
+          session(
+            option.groups[1],
+            option.groups[1].length ? plan?.weeknights[1] : undefined,
+            plan?.unavailablePerformers[1],
+          ),
+        ],
+      };
+    }),
     optimal: weeknightSearch?.optimal ?? result.optimal,
     suggestedSwaps: [...suggestions.values()]
       .sort((a, b) =>

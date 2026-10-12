@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getSongAnchor, type SetListSong } from './october-set-list';
-import type { PracticeWeekday } from './october-signup';
+import { PRACTICE_WEEKDAYS, type PracticeWeekday } from './october-signup';
 import { buildPracticeGroups, buildPracticeSchedule } from './practice-groups';
 
 const ALWAYS_PRESENT_FIRST_NAMES = new Set(['donald', 'randal']);
@@ -211,6 +211,13 @@ test('uses known weekday availability to choose lower-conflict practice groups a
     sessions.every(({ unavailablePerformers }) => unavailablePerformers?.length === 0),
   ));
   assert.equal(schedule.options[0].sharedPerformers.length, 0);
+
+  const flexible = [...PRACTICE_WEEKDAYS];
+  const ties = buildPracticeSchedule(songs, new Map([
+    ['MON', flexible],
+    ['TUE', flexible],
+  ]));
+  assert.equal(new Set(ties.options.map(({ groups }) => pairKey(groups))).size, ties.options.length);
 
   const unknown = buildPracticeSchedule(songs, new Map([
     ['MON', null],

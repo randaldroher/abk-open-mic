@@ -33,7 +33,7 @@ export default function PracticeOptions({
             ? 'These options minimize known weeknight availability conflicts, then minimize other assigned performers attending both sessions.'
             : 'These options use a bounded search to minimize known weeknight availability conflicts, then other assigned performers attending both sessions.')}
         {' '}Assignments use confirmed set-list roles, not signup interests. Availability conflicts count only known weeknights.
-        {' '}Donald and Randal are assumed to be present throughout and are excluded from overlap counts.
+        {' '}Donald and Randal are assumed present throughout and are excluded from overlap and availability-conflict counts.
         {' '}Blank or unrecognized availability is unknown and is not counted as a conflict.
         Each session is split into balanced early and late blocks without changing its song group.
         Unfilled roles are not counted. These are suggestions, not scheduled sessions.
@@ -149,16 +149,15 @@ export default function PracticeOptions({
                   <Typography variant="h3" id={`practice-${index}-${session}-heading`}>
                     Session {session + 1}{weeknight ? ` · ${weeknight} night` : ''}
                   </Typography>
-                  {unavailablePerformers && unavailablePerformers.length > 0 && (
-                    <Alert severity="warning" sx={{ mt: 1 }}>
-                      Known unavailable attendees: {unavailablePerformers.map(({ name }) => name).join(', ')}
-                    </Alert>
-                  )}
                   <Typography sx={{ mt: 1 }}>
                     {songs.length} {songs.length === 1 ? 'song' : 'songs'} · {people.length} {people.length === 1 ? 'performer' : 'performers'}
                   </Typography>
                   {unavailablePerformers && (
-                    <Typography color="textSecondary" variant="body2" sx={{ mt: 1 }}>
+                    <Typography
+                      color={unavailablePerformers.length ? 'warning.main' : 'textSecondary'}
+                      variant="body2"
+                      sx={{ mt: 1 }}
+                    >
                       Known unavailable: {unavailablePerformers.map(({ name }) => name).join(', ') || 'None'}
                     </Typography>
                   )}
