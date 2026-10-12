@@ -20,7 +20,8 @@ export default function PracticePage() {
     >
       <Typography color="textSecondary">
         Split the songs into two practice sessions, each with about half the songs,
-        while keeping as few performers as possible in both sessions. Songs marked
+        while keeping as few other assigned performers as possible in both sessions.
+        Donald and Randal are assumed to be present throughout. Songs marked
         Done! in the Practice column are excluded. Compare up to five distinct options.
         Each session has an early and a late block, with fewer performers needing to
         stay for the whole practice.

@@ -399,8 +399,9 @@ test('practice options show both groups, shared attendees, song links and search
         }],
       },
     }));
-    assert.ok(html.includes('Option 1: 1 performer in both sessions'));
-    assert.ok(html.includes('Both sessions: Alex'));
+    assert.ok(html.includes('Option 1: 1 other performer in both sessions'));
+    assert.ok(html.includes('Other assigned performers in both sessions: Alex'));
+    assert.ok(html.includes('Donald and Randal are assumed to be present throughout'));
     assert.ok(html.includes('Session 1'));
     assert.ok(html.includes('Session 2'));
     assert.ok(html.includes('First song'));
@@ -428,7 +429,7 @@ test('practice options handle all-done and one-song states', () => {
       optimal: true,
     },
   }));
-  assert.ok(single.includes('Both sessions: None'));
+  assert.ok(single.includes('Other assigned performers in both sessions: None'));
   assert.ok(single.includes('No songs in this session'));
   assert.ok(single.includes('No assigned performers'));
   assert.ok(single.includes('No songs in this late block'));
@@ -439,13 +440,15 @@ test('practice blocks distinguish early-only, late-only and whole-practice atten
   const { songs } = projectOctoberSetList(
     ['Song', 'Artist', 'Vocal', 'Bass'],
     [
-      ['Early song', 'Artist', 'AB', 'EF'],
-      ['Late song', 'Artist', 'CD', 'EF'],
+      ['Early song', 'Artist', 'AB,DON', 'EF'],
+      ['Late song', 'Artist', 'CD,RAN', 'EF'],
     ],
     [
       { initials: 'AB', name: 'Alex', roles: ['Vocal'], genres: '' },
       { initials: 'CD', name: 'Casey', roles: ['Vocal'], genres: '' },
       { initials: 'EF', name: 'Sam', roles: ['Bass'], genres: '' },
+      { initials: 'DON', name: 'Donald Smith', roles: ['Vocal'], genres: '' },
+      { initials: 'RAN', name: 'Randal Jones', roles: ['Vocal'], genres: '' },
     ],
   );
   for (const optimal of [true, false]) {
@@ -466,9 +469,11 @@ test('practice blocks distinguish early-only, late-only and whole-practice atten
         }],
       },
     }));
-    assert.ok(html.includes('Both halves (1): Sam'));
+    assert.ok(html.includes('Other assigned performers in both halves (1): Sam'));
     assert.ok(html.includes('Early only (can leave after the early block): Alex'));
     assert.ok(html.includes('Late only (can arrive for the late block): Casey'));
+    assert.ok(!html.includes('Early only (can leave after the early block): Donald'));
+    assert.ok(!html.includes('Late only (can arrive for the late block): Randal'));
     assert.ok(html.includes('>Early</h4>'));
     assert.ok(html.includes('>Late</h4>'));
     assert.equal((html.match(/href="\/event-planning\/songs#song-/g) ?? []).length, 2);

@@ -3,6 +3,8 @@ import test from 'node:test';
 import { getSongAnchor, type SetListSong } from './october-set-list';
 import { buildPracticeGroups, buildPracticeSchedule } from './practice-groups';
 
+const ALWAYS_PRESENT_FIRST_NAMES = new Set(['donald', 'randal']);
+
 function song(title: string, initials: string[] = []): SetListSong {
   return {
     title,
@@ -16,9 +18,16 @@ function song(title: string, initials: string[] = []): SetListSong {
   };
 }
 
+function isAlwaysPresent(name: string): boolean {
+  const firstName = name.trim().split(/\s+/)[0]?.toLocaleLowerCase('en');
+  return ALWAYS_PRESENT_FIRST_NAMES.has(firstName ?? '');
+}
+
 function identities(songs: SetListSong[]): Set<string> {
   return new Set(songs.flatMap(({ roles }) =>
-    roles.flatMap(({ performers }) => performers.map(({ initials }) => initials)),
+    roles.flatMap(({ performers }) => performers
+      .filter(({ name }) => !isAlwaysPresent(name))
+      .map(({ initials }) => initials)),
   ));
 }
 
@@ -146,6 +155,35 @@ test('uses initials as identities even with identical or conflicting display nam
   assert.deepEqual(result.options[0].sharedPerformers, [
     { initials: 'AB', name: 'Alex' }, { initials: 'CD', name: 'Alex' },
   ]);
+});
+
+test('assumes Donald and Randal are present and minimizes overlap for other performers', () => {
+  const songs = [
+    song('One', ['DON', 'RAN', 'A']),
+    song('Two', ['DON', 'RAN', 'A']),
+    song('Three', ['DON', 'RAN', 'B']),
+    song('Four', ['DON', 'RAN', 'B']),
+  ];
+  for (const entry of songs) {
+    entry.roles[0].performers.forEach((performer) => {
+      performer.name = performer.initials === 'DON'
+        ? 'Donald Smith'
+        : performer.initials === 'RAN'
+          ? 'Randal Jones'
+          : `Name ${performer.initials}`;
+    });
+  }
+
+  const result = check(songs);
+  assert.equal(result.options.length, 1);
+  assert.deepEqual(result.options[0].sharedPerformers, []);
+  assert.deepEqual(result.options[0].groups.map((group) => group.map(({ title }) => title)), [
+    ['One', 'Two'], ['Three', 'Four'],
+  ]);
+  const schedule = buildPracticeSchedule(songs);
+  assert.deepEqual(schedule.options[0].sessions.map(({ sharedPerformers }) =>
+    sharedPerformers.map(({ initials }) => initials),
+  ), [['A'], ['B']]);
 });
 
 test('prefers fewer shared identities even when they hold many more roles', () => {

@@ -137,14 +137,16 @@ timestamp is the older successful fetch when both sources are available.
 Practice excludes completed songs by normalized title/artist, including duplicate
 rows of the same song, and merges remaining duplicates and their assignments.
 The optimizer counts distinct assigned performer initials in both sessions,
-not roles or signup interests. Session song counts differ by at most one.
+not roles or signup interests. Donald and Randal, identified by performer first
+name, are assumed present throughout and excluded from overlap scoring. Session
+song counts differ by at most one.
 It returns up to five distinct best-score pairs, without counting swapped
 sessions as different options. Small tables are searched exactly; large tables
 use bounded deterministic search and explicitly warn when optimality is not
 proven. The page shows each session's songs and assigned attendees, the shared
 attendees, and links to song references. Each suggested session is independently
 split into balanced early and late blocks using the same overlap optimizer.
-This preserves the original two-group membership and minimizes assigned
+This preserves the original two-group membership and minimizes other assigned
 performers needing both halves within each group; it is not joint four-way
 optimization. One best block split is shown per group, with its own bounded-search
 warning if optimality is unproven. The page identifies early-only attendees who

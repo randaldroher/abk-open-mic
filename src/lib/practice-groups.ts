@@ -15,6 +15,12 @@ const EXACT_SONG_LIMIT = 22;
 const SEARCH_STARTS = 8;
 const SWAPS_PER_START = 2_500;
 const OPTION_LIMIT = 5;
+const ALWAYS_PRESENT_FIRST_NAMES = new Set(['donald', 'randal']);
+
+export function isAlwaysPresentPracticeAttendee(name: string): boolean {
+  const firstName = name.trim().split(/\s+/)[0]?.toLocaleLowerCase('en');
+  return ALWAYS_PRESENT_FIRST_NAMES.has(firstName ?? '');
+}
 
 function mergeSongs(songs: SetListSong[]): SetListSong[] {
   const merged = new Map<string, SetListSong>();
@@ -71,10 +77,15 @@ export function buildPracticeGroups(songs: SetListSong[]): {
   const roster = [...performers.values()].sort((a, b) =>
     a.initials < b.initials ? -1 : a.initials > b.initials ? 1 : 0,
   );
+  const alwaysPresent = new Set(
+    roster.filter(({ name }) => isAlwaysPresentPracticeAttendee(name))
+      .map(({ initials }) => initials),
+  );
   const indices = new Map(roster.map(({ initials }, index) => [initials, index]));
   const members = entries.map((song) => [...new Set(
     song.roles.flatMap(({ performers }) =>
-      performers.map(({ initials }) => indices.get(initials)!),
+      performers.filter(({ initials }) => !alwaysPresent.has(initials))
+        .map(({ initials }) => indices.get(initials)!),
     ),
   )]);
   const counts = [new Uint32Array(roster.length), new Uint32Array(roster.length)];
@@ -113,7 +124,8 @@ export function buildPracticeGroups(songs: SetListSong[]): {
         entries.filter((_, index) => !first[index]),
       ],
       sharedPerformers: roster.filter((_, index) =>
-        counts[0][index] > 0 && counts[1][index] > 0,
+        counts[0][index] > 0 && counts[1][index] > 0 &&
+        !alwaysPresent.has(roster[index].initials),
       ).map((performer) => ({ ...performer })),
     });
   }

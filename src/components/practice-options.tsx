@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { Alert, Box, Paper, Stack, Typography } from '@mui/material';
-import type { buildPracticeSchedule } from '../lib/practice-groups';
+import {
+  isAlwaysPresentPracticeAttendee,
+  type buildPracticeSchedule,
+} from '../lib/practice-groups';
 import { getSongAnchor, type SetListSong } from '../lib/october-set-list';
 
 function attendees(songs: SetListSong[]) {
@@ -23,11 +26,12 @@ export default function PracticeOptions({
     <Stack spacing={3}>
       <Alert severity="info">
         {result.optimal
-          ? 'These options minimize the number of assigned performers attending both sessions.'
-          : 'These are the best options found in a bounded search; a lower-overlap split may exist.'}
+          ? 'These options minimize the number of other assigned performers attending both sessions.'
+          : 'These are the best options found in a bounded search to minimize other assigned performers attending both sessions; a lower-overlap split may exist.'}
         {' '}Counts use confirmed set-list assignments, not signup interests or availability.
+        {' '}Donald and Randal are assumed to be present throughout and are excluded from overlap counts.
         Each session is then split into balanced early and late blocks to minimize
-        performers needed for both halves, without changing the two practice groups.
+        other performers needed for both halves, without changing the two practice groups.
         Unfilled roles are not counted. These are suggestions, not scheduled sessions.
       </Alert>
       {result.options.map(({ groups, sharedPerformers, sessions }, index) => (
@@ -39,18 +43,22 @@ export default function PracticeOptions({
           sx={{ p: { xs: 2, sm: 3 } }}
         >
           <Box component="summary" sx={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}>
-            Option {index + 1}: {sharedPerformers.length} {sharedPerformers.length === 1 ? 'performer' : 'performers'} in both sessions
+            Option {index + 1}: {sharedPerformers.length} other {sharedPerformers.length === 1 ? 'performer' : 'performers'} in both sessions
           </Box>
           <Typography sx={{ my: 2 }}>
-            Both sessions: {sharedPerformers.map(({ name }) => name).join(', ') || 'None'}
+            Other assigned performers in both sessions: {sharedPerformers.map(({ name }) => name).join(', ') || 'None'}
           </Typography>
           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' } }}>
             {groups.map((songs, session) => {
               const people = attendees(songs);
               const { blocks, sharedPerformers: bothHalves, optimal } = sessions[session];
               const sharedInitials = new Set(bothHalves.map(({ initials }) => initials));
-              const earlyOnly = attendees(blocks[0]).filter(({ initials }) => !sharedInitials.has(initials));
-              const lateOnly = attendees(blocks[1]).filter(({ initials }) => !sharedInitials.has(initials));
+              const earlyOnly = attendees(blocks[0]).filter(({ initials, name }) =>
+                !sharedInitials.has(initials) && !isAlwaysPresentPracticeAttendee(name),
+              );
+              const lateOnly = attendees(blocks[1]).filter(({ initials, name }) =>
+                !sharedInitials.has(initials) && !isAlwaysPresentPracticeAttendee(name),
+              );
               return (
                 <Box component="section" key={session} aria-labelledby={`practice-${index}-${session}-heading`}>
                   <Typography variant="h3" id={`practice-${index}-${session}-heading`}>
@@ -64,7 +72,7 @@ export default function PracticeOptions({
                   </Typography>
                   <Stack spacing={1} sx={{ my: 2 }}>
                     <Typography>
-                      Both halves ({bothHalves.length}): {bothHalves.map(({ name }) => name).join(', ') || 'None'}
+                      Other assigned performers in both halves ({bothHalves.length}): {bothHalves.map(({ name }) => name).join(', ') || 'None'}
                     </Typography>
                     <Typography color="textSecondary">
                       Early only (can leave after the early block): {earlyOnly.map(({ name }) => name).join(', ') || 'None'}
