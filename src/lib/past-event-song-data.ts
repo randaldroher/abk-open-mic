@@ -3,6 +3,7 @@ import { cache } from "react";
 import { cacheLife } from "next/cache";
 import { getSheetsClient, SPREADSHEET_ID } from "./google-sheets";
 import { withLastKnownGood } from "./last-known-good";
+import { columnLetter, quoteSheetTab, sheetHeaderRange } from "./sheet-layout";
 import {
   pastEventSongColumns,
   projectPastEventSongs,
@@ -20,24 +21,13 @@ const EVENT_SHEETS = {
   december2025: { tab: "Time Table (Dec 2025)", title: "ABK Open Mic December 2025" },
 } as const;
 
-function columnLetter(index: number): string {
-  let value = index + 1;
-  let column = "";
-  while (value > 0) {
-    value -= 1;
-    column = String.fromCharCode(65 + value % 26) + column;
-    value = Math.floor(value / 26);
-  }
-  return column;
-}
-
 async function fetchPastEventSongs(eventKey: keyof typeof EVENT_SHEETS): Promise<PastEventSongs> {
   const { tab, title } = EVENT_SHEETS[eventKey];
-  const quotedTab = `'${tab.replaceAll("'", "''")}'`;
+  const quotedTab = quoteSheetTab(tab);
   const sheets = getSheetsClient();
   const headerResponse = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${quotedTab}!A1:ZZ1`,
+    range: sheetHeaderRange(tab, 1),
     majorDimension: "ROWS",
     valueRenderOption: "FORMATTED_VALUE",
   });

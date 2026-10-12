@@ -12,7 +12,8 @@ shows participant names, recognized self-reported role interests, entered
 genre text, and expandable proposed songs of interest and set-list assignments.
 The Set List page publishes song titles, artist credits, recognized role
 assignments, and the reviewed “Nice to have” / “Needed!” markers from the October
-timetable; other private signup
+timetable. Practice suggests two balanced sessions using these assignments,
+excluding songs marked `Done!`; other private signup
 fields remain unpublished.
 
 There are no website accounts, authentication, authorization, database, write
@@ -59,6 +60,7 @@ stays put, and review the adapter before changing its source layout.
 
 The July and December 2025 adapters read the first row of each confirmed
 timetable tab to locate normalized song, artist, and performer-role headers.
+Header reads span the whole row, so approved columns can move beyond Z or ZZ.
 They then request only those selected public columns, stopping at the first
 blank row in the song table. July has no artist column; December does. The
 projection excludes other columns and treats the `<Open>` performer marker as
@@ -72,10 +74,14 @@ The October 2026 signup adapter scans only column A for the normalized
 `Performers` and `Songs` section markers. The header row follows each marker;
 performer entries run from below the Performers header up to the Songs marker,
 and song entries run from below the Songs header to the end of the tab. It reads
-only the participant `Name`, `Initials`, `Roles`, and `Genres` columns, and the
+the participant `Name`, `Initials`, `Roles`, and `Genres` columns and, when
+present, one uniquely mapped `Practice Availability` or `Weeknight Availability`
+column. Only recognized Monday–Friday selections and explicit general-flexibility
+responses are projected; raw availability prose is discarded immediately.
+Blank, qualified, or unrecognized responses remain unknown. It reads the
 song table's `Song`, `Orginal Artist` (the current spelling), recognized
 role-interest, and `YouTube Link` columns. It never fetches contact fields,
-practice availability, notes, song `Suggested By`, or comments. Song
+notes, song `Suggested By`, or comments. Song
 role-interest cells are projected only when their tokens match participant
 initials, then display the corresponding consented name. Performer-page roles
 are limited to recognized role labels; initials must match a short ASCII
@@ -87,13 +93,20 @@ lineup or performance order. The Songs tab sorts by original artist, then song
 title, with missing artist credits last; the Performers tab sorts initials
 alphabetically and matches song interests by initials. Missing, duplicated,
 reversed, or malformed section markers or headers fail closed. The adapter uses
+the same duplicate-role-alias rejection as the timetable: `Drum` and `Drums`,
+for example, cannot both map to one role. Header rows have no fixed column limit;
+only the discovered approved data columns are fetched.
+The adapter uses
 the `minutes` cache profile and
 instance-local last-known-good fallback pattern.
 
 The October timetable adapter discovers normalized headers in row 1 of
 `Time Table (October 2026)` and reads only Song, Original Artist, and recognized
-performer-role columns. The song table ends at its first blank song row.
-Practice, Link, and Comments columns are not fetched. Assignments resolve
+performer-role columns, plus a uniquely header-mapped Practice column for
+completion filtering. The song table ends at its first blank song row.
+Practice values are reduced immediately to the normalized `Done!` marker or an
+empty value before caching; raw practice prose is never retained or published.
+Link and Comments columns are not fetched. Assignments resolve
 against signup initials to the same public first-name roster. Only recognized
 need markers are published; Additional Instruments also accepts parenthesized
 instrument qualifiers after `Nice to have`, preserving their capitalization.
@@ -130,6 +143,49 @@ The timetable has its own `minutes` cache and instance-local fallback. An
 unavailable timetable does not hide signup data, and the planning freshness
 timestamp is the older successful fetch when both sources are available.
 
+Practice excludes completed songs by normalized title/artist, including duplicate
+rows of the same song, and merges remaining duplicates and their assignments.
+The optimizer counts distinct assigned performer initials in both sessions,
+not roles or signup interests. The reusable optimizer accepts an event-specific
+set of always-present performer initials, defaulting to no exclusions. October's
+adapter resolves Donald and Randal by first name into that set; names are not
+special-cased in the optimizer or presentation. These performers are assumed
+present throughout and excluded from overlap and availability conflict counts.
+The presentation accepts the event's song-link destination and always-present
+roster, so future events can reuse it without inheriting October's assumptions.
+When recognized weeknight availability exists for assigned
+performers, it chooses
+two distinct weeknights by minimizing known unavailable performer/session
+assignments first, then shared-attendee count. Unknown availability is ignored.
+Both weekday orderings are evaluated for each song grouping, so spreadsheet
+row order does not restrict which group can use an earlier weekday.
+Session song counts differ by at most one. It returns up to five distinct
+best-score pairs, without counting swapped sessions as different options. Small
+tables are searched exactly; large tables use bounded deterministic search and
+explicitly warn when optimality is not proven. The page shows each session's
+songs, chosen weeknight, known unavailable attendees, assigned attendees, shared
+attendees, and links to song references. Each suggested session is independently
+split into balanced early and late blocks using the same overlap optimizer.
+This preserves the original two-group membership and minimizes other assigned
+performers needing both halves within each group; it is not joint four-way
+optimization. One best block split is shown per group, with its own bounded-search
+warning if optimality is unproven. The page identifies early-only attendees who
+can leave after that block, late-only attendees who can arrive later, and those
+needed for both halves. A single-song group uses only its early block.
+The optimizer also checks up to 100 individual Bass or Drums assignment exchanges
+between different songs (with a 20,000-pair scan bound), re-optimizes sessions for
+each candidate, and suggests up to five exchanges that reduce known availability
+conflicts first or, without increasing those conflicts, reduce the shared-attendee
+count. These are proposals only; published assignments are
+unchanged. A notice indicates when the candidate search was bounded.
+These are suggestions, not confirmed session dates; reported availability is
+self-reported and unknown values are ignored. Missing or ambiguous Practice
+headers make Practice unavailable without hiding Set List. All-completed tables show an
+empty state; one remaining song has an empty second session.
+Practice uses a short introduction, expandable planning assumptions and swap
+suggestions, and responsive session columns with nested early/late headings.
+The first session-pair option is expanded by default.
+
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
 schedule entries, and grouped gear. It skips recognized schedule headings and
 the song signup-closed marker, validates required text, clock-time shapes,
@@ -154,8 +210,12 @@ projection of self-reported role interests and entered genre text, proposed
 song titles and original-artist credits, resolved interested-performer names
 on songs, and recognized YouTube song references. Contacts, private planning
 notes, and new photos are not authorized. The Set List request additionally
-authorizes the narrow October timetable projection described above, not
-practice details, links, or comments.
+authorizes the narrow October timetable projection described above. The Practice
+request additionally authorizes using the completion marker to exclude songs
+and publishing suggested song groups with their already-approved assignments.
+The subsequent weeknight-availability request authorizes only the normalized
+weekday projection for October performer display and practice planning; raw
+availability prose, notes, links, and comments remain private.
 
 **The May 2026 adapter has no `published` flag.** Its
 publication boundary is the selected historical ranges and projected columns.
@@ -167,12 +227,13 @@ Do not describe inspection or parsing as automatic anonymization.
 The 2025 adapters publish only song titles, available original-artist credits,
 and assigned performers in recognized role columns. Contact and note columns
 are not fetched for those archives. The October signup link opens the signup
-tab. The website reads only names, initials, role preferences, and genres for
+tab. The website reads names, initials, role preferences, genres, and normalized
+weekday availability for
 the performers page, song titles, original-artist credits, recognized
 role-interest columns, and YouTube links for the songs page, plus the selected
-October timetable song/artist/role columns. Contact data,
-availability, suggested-by values, and all notes/comments remain private and
-are not fetched.
+October timetable song/artist/role columns and the narrow Practice completion
+projection. Contact data, raw availability prose, suggested-by values, and all
+notes/comments remain private and are not fetched.
 Public performer names use first names, adding the last initial only when the
 event roster contains multiple performers with the same first name.
 
@@ -232,12 +293,13 @@ can render the unavailable state. Verify rendered content as well.
 
 | Route | Current behavior |
 | --- | --- |
-| `/` | October 2026 invitation with signup and Slack links, Event Planning cards for Set List, Songs, and Performers, and past-event cards |
+| `/` | October 2026 invitation with signup and Slack links, Event Planning cards for Set List, Practice, Songs, and Performers, and past-event cards |
 | `/past-events` | Static archive index, independent of Sheets availability |
 | `/event-planning` | Redirects to the first/default Set List tab |
 | `/event-planning/set-list` | Sortable October timetable song/artist/role table with resolved names and bold colored role-need text |
+| `/event-planning/practice` | Up to five balanced two-session suggestions minimizing known weeknight conflicts then shared assigned performers, excluding Done! songs |
 | `/event-planning/songs` | October 2026 signup and timetable songs, original-artist credits, assigned performers, role needs, and validated YouTube references; signup interests are not displayed as assignments |
-| `/event-planning/performers` | October signup names, recognized self-reported role interests, entered genres, expandable set-list assignments and proposed song interests; no contact fields |
+| `/event-planning/performers` | October signup names, recognized role interests, entered genres, normalized weeknight availability, expandable set-list assignments and proposed song interests; no contact fields or raw availability prose |
 | `/songs`, `/performers` | Legacy redirects to their corresponding Event Planning tabs |
 | `/robots.txt` | Disallows crawling of all paths for compliant crawlers |
 | `/past-events/<event>` | Redirects to that event's Videos tab |
@@ -252,8 +314,8 @@ schedule and gear ranges; removing these pages does not change that data contrac
 The ABK Open Mic brand links home; the footer says “ABK Open Mic” and places an
 event's successful-fetch metadata directly below the site name. Global
 navigation includes Past events.
-The Event Planning layout keeps its shared heading, subtitle, Set List/Songs/Performers
-tabs, and last-successful-fetch metadata above all three child pages. Its tab bar
+The Event Planning layout keeps its shared heading, subtitle, Set List/Practice/Songs/Performers
+tabs, and last-successful-fetch metadata above all four child pages. Its tab bar
 uses the same MUI Tabs/Tab interaction and selected-segment behavior as the
 past-event Videos/Songs tabs.
 Each event's App Router layout keeps breadcrumbs, an event title without a dash,
@@ -297,7 +359,8 @@ same hard-coded historical sheet; separate preview data is not implemented.
 1. The October pages use a narrow, header-mapped projection of consented names,
    initials, entered genres, recognized role interests, proposed songs, and
    validated YouTube references. The timetable's selected song, artist, role
-   assignment, and need-marker columns are also approved by the Set List request.
+   assignment, and need-marker columns are also approved by the Set List request;
+   the Practice request adds completion filtering and suggested session groups.
    Signup interest remains distinct from timetable assignments; no venue is claimed.
 2. Keep contacts and all other private signup fields out of the public
    projection. Any expansion beyond the approved name, initials, roles, genres,

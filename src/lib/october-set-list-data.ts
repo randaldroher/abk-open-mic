@@ -2,21 +2,12 @@ import 'server-only';
 import { cacheLife } from 'next/cache';
 import { getSheetsClient, SPREADSHEET_ID } from './google-sheets';
 import { withLastKnownGood } from './last-known-good';
+import { columnLetter, quoteSheetTab, sheetHeaderRange } from './sheet-layout';
 import { octoberSetListColumns, projectOctoberSetList } from './october-set-list';
 import type { OctoberSignupPerformer } from './october-signup';
+import { isPracticeDone, octoberPracticeColumn, projectOctoberPracticeSongs } from './october-practice';
 
-const TAB = "'Time Table (October 2026)'";
-
-function columnLetter(index: number): string {
-  let value = index + 1;
-  let result = '';
-  while (value > 0) {
-    value -= 1;
-    result = String.fromCharCode(65 + value % 26) + result;
-    value = Math.floor(value / 26);
-  }
-  return result;
-}
+const TAB = 'Time Table (October 2026)';
 
 async function readTimetable() {
   'use cache';
@@ -25,19 +16,21 @@ async function readTimetable() {
     const sheets = getSheetsClient();
     const headerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${TAB}!A1:Z1`,
+      range: sheetHeaderRange(TAB, 1),
       valueRenderOption: 'FORMATTED_VALUE',
     });
     const headers = headerResponse.data.values?.[0]?.map(String) ?? [];
     const mapping = octoberSetListColumns(headers);
+    const practiceColumn = octoberPracticeColumn(headers);
     const columns = [
       mapping.song,
       mapping.artist,
       ...mapping.roles.map(({ column }) => column),
+      ...(practiceColumn === null ? [] : [practiceColumn]),
     ];
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: SPREADSHEET_ID,
-      ranges: columns.map((column) => `${TAB}!${columnLetter(column)}2:${columnLetter(column)}`),
+      ranges: columns.map((column) => `${quoteSheetTab(TAB)}!${columnLetter(column)}2:${columnLetter(column)}`),
       valueRenderOption: 'FORMATTED_VALUE',
       majorDimension: 'ROWS',
     });
@@ -48,7 +41,9 @@ async function readTimetable() {
     const rows = Array.from({ length }, (_, rowIndex) => {
       const row = Array<string>(headers.length).fill('');
       columns.forEach((column, index) => {
-        row[column] = String(values[index]?.values?.[rowIndex]?.[0] ?? '');
+        const value = String(values[index]?.values?.[rowIndex]?.[0] ?? '');
+        // Retain only the completion marker, never raw practice notes.
+        row[column] = column === practiceColumn ? (isPracticeDone(value) ? 'Done!' : '') : value;
       });
       return row;
     });
@@ -67,6 +62,7 @@ export async function getOctoberSetList(performers: OctoberSignupPerformer[]) {
   if (!data) return null;
   return {
     ...projectOctoberSetList(data.headers, data.rows, performers),
+    practiceSongs: projectOctoberPracticeSongs(data.headers, data.rows, performers),
     fetchedAt: data.fetchedAt,
   };
 }

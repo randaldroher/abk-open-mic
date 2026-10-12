@@ -13,7 +13,9 @@ import SiteFrame from "../components/site-frame";
 import ThemeProvider from '../app/theme-provider';
 import RoleNeedChip from '../components/role-need-chip';
 import SetListTable from '../components/set-list-table';
+import PracticeOptions from '../components/practice-options';
 import { getSongRoleNeeds, projectOctoberSetList } from './october-set-list';
+import { buildPracticeSchedule } from './practice-groups';
 import {
   PAST_EVENTS,
   PAST_EVENT_VIDEOS,
@@ -296,6 +298,8 @@ test('homepage event planning cards link to each October planning tab', () => {
   const html = renderToStaticMarkup(createElement(EventPlanningCards));
 
   assert.ok(html.includes('href="/event-planning/songs"'));
+  assert.ok(html.includes('href="/event-planning/practice"'));
+  assert.ok(html.includes('aria-label="October 2026 Practice"'));
   assert.ok(html.includes('href="/event-planning/performers"'));
   assert.ok(html.includes('aria-label="October 2026 Songs"'));
   assert.ok(html.includes('aria-label="October 2026 Performers"'));
@@ -372,6 +376,178 @@ test('event planning navigation uses tabs for songs and performers', () => {
   assert.ok(html.includes('href="/event-planning/performers"'));
   assert.ok(html.includes('role="tab"'));
   assert.ok(html.includes('aria-label="Event planning sections"'));
+  const tabs = [...html.matchAll(/href="\/event-planning\/([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(tabs, ['set-list', 'practice', 'songs', 'performers']);
+});
+
+test('practice options show both groups, shared attendees, song links and search caveats', () => {
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal'],
+    [['First song', 'Artist', 'AB'], ['Second song', 'Artist', 'AB']],
+    [{ initials: 'AB', name: 'Alex', roles: ['Vocal'], genres: '' }],
+  );
+  for (const optimal of [true, false]) {
+    const html = renderToStaticMarkup(createElement(PracticeOptions, {
+      result: {
+        optimal,
+        suggestedSwaps: [],
+        swapSearchComplete: true,
+        options: [{
+          groups: [[songs[0]], [songs[1]]],
+          sharedPerformers: [{ initials: 'AB', name: 'Alex' }],
+          sessions: [
+            { blocks: [[songs[0]], []], sharedPerformers: [], optimal: true },
+            { blocks: [[songs[1]], []], sharedPerformers: [], optimal: true },
+          ],
+        }],
+      },
+    }));
+    assert.ok(html.includes('Option 1 · 1 shared performer'));
+    assert.ok(html.includes('Needed at both sessions: Alex'));
+    assert.ok(html.includes('How these suggestions work'));
+    assert.ok(!html.includes('Donald and Randal'));
+    assert.ok(html.includes('Session 1'));
+    assert.ok(html.includes('Session 2'));
+    assert.ok(html.includes('First song'));
+    assert.ok(html.includes('Second song'));
+    assert.ok(html.includes('href="/event-planning/songs#song-'));
+    assert.equal(html.includes('a lower-overlap split may exist'), !optimal);
+  }
+});
+
+test('practice options handle all-done and one-song states', () => {
+  const empty = renderToStaticMarkup(createElement(PracticeOptions, {
+    result: { options: [], optimal: true, suggestedSwaps: [], swapSearchComplete: true },
+  }));
+  assert.ok(empty.includes('No songs remain to practice'));
+  const { songs } = projectOctoberSetList(['Song', 'Artist', 'Vocal'], [['Only song', '', '']], []);
+  const single = renderToStaticMarkup(createElement(PracticeOptions, {
+    result: {
+      options: [{
+        groups: [songs, []], sharedPerformers: [],
+        sessions: [
+          { blocks: [songs, []], sharedPerformers: [], optimal: true },
+          { blocks: [[], []], sharedPerformers: [], optimal: true },
+        ],
+      }],
+      optimal: true,
+      suggestedSwaps: [],
+      swapSearchComplete: true,
+    },
+  }));
+  assert.ok(single.includes('Needed at both sessions: None'));
+  assert.ok(single.includes('No songs in this session'));
+  assert.ok(single.includes('No assigned performers'));
+  assert.ok(single.includes('No songs in this late block'));
+  assert.ok(single.includes('No songs in this early block'));
+});
+
+test('practice presentation supports another event without October names or links', () => {
+  const performers = [
+    { initials: 'HOST', name: 'Casey', roles: ['Vocal'], genres: '' },
+    { initials: 'GUEST', name: 'Donald', roles: ['Vocal'], genres: '' },
+  ];
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal'],
+    [['First', 'Artist', 'HOST,GUEST'], ['Second', 'Artist', 'HOST,GUEST']],
+    performers,
+  );
+  const html = renderToStaticMarkup(createElement(PracticeOptions, {
+    result: buildPracticeSchedule(songs, undefined, new Set(['HOST'])),
+    alwaysPresentPerformers: [performers[0]],
+    songsHref: '/future-event/songs',
+  }));
+  assert.ok(html.includes('Casey is assumed present'));
+  assert.ok(html.includes('Needed at both sessions: Donald'));
+  assert.ok(html.includes('href="/future-event/songs#song-'));
+  assert.ok(!html.includes('/event-planning/songs'));
+  assert.ok(!html.includes('Randal'));
+});
+
+test('practice options show individual song-assignment swap suggestions', () => {
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal', 'Bass'],
+    [
+      ['Bass song one', 'Artist', 'E,F', 'B'],
+      ['Bass song two', 'Artist', 'F', 'B'],
+      ['Bass song three', 'Artist', 'F', 'C'],
+      ['Bass song four', 'Artist', 'E,F,G', 'C'],
+    ],
+    [
+      { initials: 'B', name: 'Blair', roles: ['Bass'], genres: '' },
+      { initials: 'C', name: 'Casey', roles: ['Bass'], genres: '' },
+      { initials: 'E', name: 'Eli', roles: ['Vocal'], genres: '' },
+      { initials: 'F', name: 'Finn', roles: ['Vocal'], genres: '' },
+      { initials: 'G', name: 'Gale', roles: ['Vocal'], genres: '' },
+    ],
+  );
+  const result = buildPracticeSchedule(songs);
+  assert.ok(result.suggestedSwaps.length > 0);
+  const html = renderToStaticMarkup(createElement(PracticeOptions, {
+    result,
+  }));
+
+  assert.ok(html.includes('Assignment swap suggestions'));
+  assert.ok(html.includes('Each suggestion exchanges one Bass or Drums song assignment'));
+  assert.ok(html.includes(`${result.suggestedSwaps[0].exchanges[0].performer.name} swaps “`));
+  assert.ok(html.includes(`reduces shared attendance by ${result.suggestedSwaps[0].overlapReduction}`));
+  assert.ok(html.includes('The suggested sessions are re-optimized'));
+  assert.equal(html.includes('additional improving assignment exchanges may exist'), !result.swapSearchComplete);
+});
+
+test('practice blocks distinguish early-only, late-only and whole-practice attendees by initials', () => {
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal', 'Bass'],
+    [
+      ['Early song', 'Artist', 'AB,DON', 'EF'],
+      ['Late song', 'Artist', 'CD,RAN', 'EF'],
+    ],
+    [
+      { initials: 'AB', name: 'Alex', roles: ['Vocal'], genres: '' },
+      { initials: 'CD', name: 'Casey', roles: ['Vocal'], genres: '' },
+      { initials: 'EF', name: 'Sam', roles: ['Bass'], genres: '' },
+      { initials: 'DON', name: 'Donald Smith', roles: ['Vocal'], genres: '' },
+      { initials: 'RAN', name: 'Randal Jones', roles: ['Vocal'], genres: '' },
+    ],
+  );
+  for (const optimal of [true, false]) {
+    const html = renderToStaticMarkup(createElement(PracticeOptions, {
+      alwaysPresentPerformers: [
+        { initials: 'DON', name: 'Donald Smith' },
+        { initials: 'RAN', name: 'Randal Jones' },
+      ],
+      result: {
+        optimal: true,
+        suggestedSwaps: [],
+        swapSearchComplete: true,
+        options: [{
+          groups: [songs, []],
+          sharedPerformers: [],
+          sessions: [
+            {
+              blocks: [[songs[0]], [songs[1]]],
+              sharedPerformers: [{ initials: 'EF', name: 'Sam' }],
+              optimal,
+            },
+            { blocks: [[], []], sharedPerformers: [], optimal: true },
+          ],
+        }],
+      },
+    }));
+    assert.ok(html.includes('Needed for both blocks (1): Sam'));
+    assert.ok(html.includes('Early only (can leave after this block): Alex'));
+    assert.ok(html.includes('Late only (can arrive later): Casey'));
+    assert.ok(!html.includes('Early only (can leave after this block): Donald'));
+    assert.ok(!html.includes('Late only (can arrive later): Randal'));
+    assert.ok(html.includes('>Early block</h3>'));
+    assert.ok(html.includes('>Late block</h3>'));
+    assert.equal((html.match(/href="\/event-planning\/songs#song-/g) ?? []).length, 2);
+    assert.ok(html.indexOf('>Early block</h3>') < html.indexOf('Early song'));
+    assert.ok(html.indexOf('Early song') < html.indexOf('>Late block</h3>'));
+    assert.ok(html.indexOf('>Late block</h3>') < html.indexOf('Late song'));
+    assert.equal(html.includes('fewer performers may need both halves'), !optimal);
+    assert.ok(!html.includes('a lower-overlap split may exist'));
+  }
 });
 
 test('performer interests render in one card with expandable song rows', () => {
@@ -382,6 +558,7 @@ test('performer interests render in one card with expandable song rows', () => {
           name: 'Alex Brown',
           roles: ['Lead Guitar', 'Keyboard'],
           genres: 'Alt-Rock, K-pop',
+          practiceAvailability: ['Monday', 'Friday'],
           songs: [
             {
               title: 'Proposed song',
@@ -402,7 +579,7 @@ test('performer interests render in one card with expandable song rows', () => {
 
   assert.ok(
     html.includes(
-      'aria-label="Performer names, role interests, genres, proposed songs, and set-list assignments in expandable rows"',
+      'aria-label="Performer names, role interests, genres, weeknight availability, proposed songs, and set-list assignments in expandable rows"',
     ),
   );
   assert.ok(html.includes('Alex Brown'));
@@ -410,6 +587,9 @@ test('performer interests render in one card with expandable song rows', () => {
   assert.ok(html.includes('Lead Guitar'));
   assert.ok(html.includes('Keyboard'));
   assert.ok(html.includes('Genres'));
+  assert.ok(html.includes('Weeknight availability'));
+  assert.ok(html.includes('Mon, Fri'));
+  assert.ok(html.includes('Not specified'));
   assert.ok(html.indexOf('Role interests') < html.indexOf('Genres'));
   assert.ok(html.includes('Alt-Rock, K-pop'));
   assert.equal((html.match(/<section\b/g) ?? []).length, 1);

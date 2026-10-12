@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { getSheetsClient, SPREADSHEET_ID } from './google-sheets';
 import { withLastKnownGood } from './last-known-good';
+import { columnLetter, quoteSheetTab, sheetHeaderRange } from './sheet-layout';
 import { getOctoberSetList } from './october-set-list-data';
 import type { OctoberSetList } from './october-set-list';
 import {
@@ -26,17 +27,6 @@ export type October2026Signup = {
 
 const TAB = 'Sign Up (October 2026)';
 
-function columnLetter(index: number): string {
-  let value = index + 1;
-  let column = '';
-  while (value > 0) {
-    value -= 1;
-    column = String.fromCharCode(65 + (value % 26)) + column;
-    value = Math.floor(value / 26);
-  }
-  return column;
-}
-
 function valuesByColumn(
   columns: number[],
   values: Array<Array<Array<string | number | boolean>> | undefined>,
@@ -54,7 +44,7 @@ function valuesByColumn(
 
 async function fetchOctober2026Signup(): Promise<October2026Signup> {
   const sheets = getSheetsClient();
-  const quotedTab = `'${TAB.replaceAll("'", "''")}'`;
+  const quotedTab = quoteSheetTab(TAB);
   const sectionResponse = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range: `${quotedTab}!A1:A`,
@@ -75,8 +65,8 @@ async function fetchOctober2026Signup(): Promise<October2026Signup> {
   const headerResponse = await sheets.spreadsheets.values.batchGet({
     spreadsheetId: SPREADSHEET_ID,
     ranges: [
-      `${quotedTab}!A${performerHeaderRow}:Z${performerHeaderRow}`,
-      `${quotedTab}!A${songHeaderRow}:Z${songHeaderRow}`,
+      sheetHeaderRange(TAB, performerHeaderRow),
+      sheetHeaderRange(TAB, songHeaderRow),
     ],
     majorDimension: 'ROWS',
     valueRenderOption: 'FORMATTED_VALUE',
@@ -93,6 +83,9 @@ async function fetchOctober2026Signup(): Promise<October2026Signup> {
       performerColumns.initials,
       performerColumns.roles,
       performerColumns.genres,
+      ...(performerColumns.practiceAvailability === null
+        ? []
+        : [performerColumns.practiceAvailability]),
     ]),
   ];
   const songPublicColumns = [

@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: 'Performers',
   description:
-    'Performer names, genres, role interests, and proposed songs for the October 2026 ABK Open Mic.',
+    'Performer names, weeknight availability, genres, role interests, and proposed songs for the October 2026 ABK Open Mic.',
 };
 
 export default function PerformersPage() {
@@ -26,7 +26,8 @@ export default function PerformersPage() {
     >
       <Typography color="textSecondary">
         Performer names, entered genres, self-reported role interests, and
-        proposed songs of interest. This is not a confirmed lineup.
+        normalized weeknight availability and proposed songs of interest. This is
+        not a confirmed lineup.
       </Typography>
       <Suspense fallback={<PerformerSkeleton />}>
         <PerformerList />
@@ -58,10 +59,11 @@ async function PerformerList() {
   return (
     <PerformersTable
       performers={sortPerformersByInitials(data.performers).map(
-        ({ name, genres, roles, initials }) => ({
+        ({ name, genres, roles, initials, practiceAvailability }) => ({
           name,
           genres,
           roles,
+          practiceAvailability,
           songs: songsInterestedByPerformer(data.songs, initials),
           assignments: data.setList
             ? setListSongsByPerformer(data.setList.songs, initials)

@@ -35,11 +35,25 @@ redaction exist. Live historical publication is range-based, not flag-based.
   a song.
 - `/event-planning/set-list` is the first/default planning tab and shows the
   October timetable's song, original artist, and recognized role columns in a
-  responsive sortable table. Practice, Link, and Comments are excluded from
-  reads. Initials resolve to public first names. Blue “Nice to have” and magenta
+  responsive sortable table. Link and Comments are excluded from
+  reads; Practice is reduced to a completion marker only. Initials resolve to public first names. Blue “Nice to have” and magenta
   “Needed!” chips share performer/count tooltips with the Songs page. A Critical
   openings section above the table highlights roles marked “Needed!” and links
   to their song entries.
+- `/event-planning/practice` is the second planning tab. It excludes songs marked
+  `Done!` in the header-discovered Practice column and suggests up to five distinct
+  balanced pairs of sessions minimizing assigned performers attending both.
+  Each group is then independently split into balanced early/late blocks,
+  minimizing performers needed for both halves without changing group membership.
+  Each option shows block songs and attendees, early-only and late-only performers,
+  and those needed for the full practice. Small tables use
+  exact optimization; bounded search for larger tables is labeled when a global
+  minimum is not proven. Recognized weeknight availability reduces known conflicts
+  before shared attendance; raw availability prose and practice notes stay private.
+  Attendance exclusions and song links are event-configurable for reuse. The
+  introduction is concise, with expandable assumptions and assignment-swap suggestions.
+  Missing/ambiguous Practice headers show an unavailable state without hiding
+  Set List; completed and one-song tables have explicit empty states.
 - `/event-planning/songs` lists signup and timetable song titles, artist credits,
   assigned performers by role, and validated YouTube references. Signup
   interests are not displayed as assignments. Header names are normalized on
@@ -49,7 +63,8 @@ redaction exist. Live historical publication is range-based, not flag-based.
   self-reported role interests, and entered Genres text as written. Expandable
   rows show set-list assignments (with unique assigned-song counts on the
   expand links) separately from proposed interests, matched by participant initials. Contacts,
-  availability, notes, comments, and suggested-by fields are not fetched.
+  notes, comments, and suggested-by fields are not fetched. Only recognized
+  weeknight availability is projected; raw availability text stays private.
   Signup interest is not a confirmed lineup.
 - `/robots.txt` disallows crawling by compliant search bots; already-known URLs
   may remain indexed until the search engine removes them.
@@ -67,6 +82,9 @@ redaction exist. Live historical publication is range-based, not flag-based.
   read. Private notes and contact columns are not fetched.
 - Event reads have isolated caches, last-known-good fallbacks, and freshness
   timestamps.
+- Header-discovered signup and timetable reads cover the full header row rather
+  than a fixed column span, while data reads remain limited to approved columns.
+  Duplicate normalized role aliases fail closed.
 - July and December Videos tabs embed each individual video from the public
   playlists. The legacy site swapped their playlist links, so the videos are
   assigned by the playlists' own titles and contents. May remains a placeholder

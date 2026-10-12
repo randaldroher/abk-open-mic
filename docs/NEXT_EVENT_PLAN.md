@@ -30,9 +30,10 @@ self-reported roles; contacts and other private fields remain private.
   interested-performer names by role, and validated YouTube references, sorted
   by original artist and then title. These are proposals, not a finalized
   program or performance order.
-- `/event-planning/performers` lists consented names, entered genres, and
-  recognized self-reported role interests; contacts, notes, and other signup
-  details are not fetched. Rows remain sorted by initials.
+- `/event-planning/performers` lists consented names, entered genres, recognized
+  self-reported role interests, and the October-only normalized weekday
+  availability projection; contacts, notes, raw availability prose, and other
+  signup details are not fetched. Rows remain sorted by initials.
 - `/event-planning` redirects to Songs. Legacy `/songs` and `/performers` URLs
   redirect to their corresponding Event Planning tabs.
 - The homepage's Event Planning section has separate Songs and Performers
@@ -51,9 +52,11 @@ archives.
 - Add approved event-video URLs and publication permission in a future change.
 - Confirm the next event's title, time zone, venue, and other public details
   before adding them to homepage copy.
-- Keep notes, comments, suggested-by fields, practice availability, and contact
-  data private. The public names/roles/genres projection is not a confirmed
-  performance lineup. Decide preview isolation before connecting other data.
+- Keep notes, comments, suggested-by fields, raw availability prose, and contact
+  data private. The October weekday projection is limited to recognized days;
+  obtain separate approval before projecting availability for a future event.
+  The public names/roles/genres projection is not a confirmed performance
+  lineup. Decide preview isolation before connecting other data.
 - Keep refresh/outage behavior and hosting/participant access operational
   assumptions explicit; website links do not grant spreadsheet or Slack access.
 
