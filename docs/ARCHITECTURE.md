@@ -153,9 +153,12 @@ special-cased in the optimizer or presentation. These performers are assumed
 present throughout and excluded from overlap and availability conflict counts.
 The presentation accepts the event's song-link destination and always-present
 roster, so future events can reuse it without inheriting October's assumptions.
-When recognized weeknight availability exists for assigned
-performers, it chooses
-two distinct weeknights by minimizing known unavailable performer/session
+October sessions take place Monday and Thursday, 7:30–10:00 p.m., at Stage One
+Studios, 23092 Terra Dr, Laguna Hills, CA 92653. The page restricts the optimizer
+to those two nights even when availability is unknown and disables assignment
+swap searches. When recognized weeknight availability exists for assigned
+performers, it assigns song groups to the configured nights by minimizing known
+unavailable performer/session
 assignments first, then shared-attendee count. Unknown availability is ignored.
 Both weekday orderings are evaluated for each song grouping, so spreadsheet
 row order does not restrict which group can use an earlier weekday.
@@ -172,18 +175,20 @@ optimization. One best block split is shown per group, with its own bounded-sear
 warning if optimality is unproven. The page identifies early-only attendees who
 can leave after that block, late-only attendees who can arrive later, and those
 needed for both halves. A single-song group uses only its early block.
-The optimizer also checks up to 100 individual Bass or Drums assignment exchanges
+The reusable optimizer can also check up to 100 individual Bass or Drums
+assignment exchanges
 between different songs (with a 20,000-pair scan bound), re-optimizes sessions for
 each candidate, and suggests up to five exchanges that reduce known availability
 conflicts first or, without increasing those conflicts, reduce the shared-attendee
 count. These are proposals only; published assignments are
-unchanged. A notice indicates when the candidate search was bounded.
-These are suggestions, not confirmed session dates; reported availability is
+unchanged. October's Practice page neither runs nor displays these swap suggestions
+or swap-search notices.
+Song groupings remain suggestions; reported availability is
 self-reported and unknown values are ignored. Missing or ambiguous Practice
 headers make Practice unavailable without hiding Set List. All-completed tables show an
 empty state; one remaining song has an empty second session.
-Practice uses a short introduction, expandable planning assumptions and swap
-suggestions, and responsive session columns with nested early/late headings.
+Practice shows the confirmed venue, address, nights and session time, expandable
+planning assumptions, and responsive session columns with nested early/late headings.
 The first session-pair option is expanded by default.
 
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
