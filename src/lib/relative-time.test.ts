@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { relativeFetchTime } from "./relative-time.ts";
 
-const fetchedAt = "2026-05-01T18:00:00.000Z";
+const fetchedAt = '2026-05-01T19:00:00.000Z';
 const fetched = Date.parse(fetchedAt);
 
 test("formats elapsed fetch time at minute, hour, and day boundaries", () => {

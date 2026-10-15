@@ -591,8 +591,8 @@ test('practice shows four scheduled cards and keeps optimizer options collapsed'
   );
   assert.match(html, /MuiTypography-body1[^>]*>Casey<\/p>/);
   assert.ok(html.includes('color:rgba(0, 0, 0, 0.87);'));
-  assert.equal((html.match(/7:30–8:00 p\.m\./g) ?? []).length, 2);
-  assert.equal((html.match(/8:00–10:30 p\.m\./g) ?? []).length, 2);
+  assert.equal((html.match(/7:30–9:00 p\.m\./g) ?? []).length, 2);
+  assert.equal((html.match(/9:00–10:30 p\.m\./g) ?? []).length, 2);
   assert.equal((html.match(/>Add to calendar<\/a>/g) ?? []).length, 4);
   assert.ok(
     html.includes('/event-planning/practice/calendar/monday-early.ics'),

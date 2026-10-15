@@ -32,12 +32,12 @@ export function octoberPracticeColumn(headers: string[]): number | null {
 
 export const OCTOBER_PRACTICE_SLOT_SCHEDULE = {
   Early: {
-    label: '7:30–8:00 p.m.',
+    label: '7:30–9:00 p.m.',
     startTime: '193000',
     endTime: '200000',
   },
   Late: {
-    label: '8:00–10:30 p.m.',
+    label: '9:00–10:30 p.m.',
     startTime: '200000',
     endTime: '223000',
   },
