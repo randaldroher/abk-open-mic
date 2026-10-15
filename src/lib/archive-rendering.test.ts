@@ -409,7 +409,12 @@ test('practice options show both groups, shared attendees, song links and search
       assert.match(html, new RegExp(`<h3[^>]*class="[^"]*MuiTypography-h6[^"]*"[^>]*id="practice-0-${session}-heading"[^>]*>Session ${session + 1}</h3>`));
       for (const block of [0, 1]) {
         assert.match(html, new RegExp(`<section[^>]*aria-labelledby="practice-0-${session}-${block}-heading"`));
-        assert.match(html, new RegExp(`<h4[^>]*class="[^"]*MuiTypography-subtitle1[^"]*"[^>]*id="practice-0-${session}-${block}-heading"[^>]*>${block === 0 ? 'Early' : 'Late'} block</h4>`));
+        assert.match(
+          html,
+          new RegExp(
+            `<h4[^>]*class="[^"]*MuiTypography-subtitle1[^"]*"[^>]*id="practice-0-${session}-${block}-heading"[^>]*>Block ${block === 0 ? 'A' : 'B'}</h4>`,
+          ),
+        );
       }
     }
     assert.ok(html.includes('Needed at both sessions: Alex'));
@@ -447,8 +452,8 @@ test('practice options handle all-done and one-song states', () => {
   assert.ok(single.includes('Needed at both sessions: None'));
   assert.ok(single.includes('No songs in this session'));
   assert.ok(single.includes('No assigned performers'));
-  assert.ok(single.includes('No songs in this late block'));
-  assert.ok(single.includes('No songs in this early block'));
+  assert.ok(single.includes('No songs in Block B'));
+  assert.ok(single.includes('No songs in Block A'));
 });
 
 test('practice presentation supports another event without October names or links', () => {
@@ -478,6 +483,7 @@ test('practice options hide assignment swaps and show configured session times',
     ['Song', 'Artist', 'Vocal', 'Bass'],
     [
       ['Bass song one', 'Artist', 'E,F', 'B'],
+
       ['Bass song two', 'Artist', 'F', 'B'],
       ['Bass song three', 'Artist', 'F', 'C'],
       ['Bass song four', 'Artist', 'E,F,G', 'C'],
@@ -498,13 +504,15 @@ test('practice options hide assignment swaps and show configured session times',
   assert.deepEqual(withoutSwaps.options, result.options);
   assert.deepEqual(withoutSwaps.suggestedSwaps, []);
   assert.equal(withoutSwaps.swapSearchComplete, true);
-  const html = renderToStaticMarkup(createElement(PracticeOptions, {
-    result,
-    sessionTime: '7:30–10:00 p.m.',
-  }));
+  const html = renderToStaticMarkup(
+    createElement(PracticeOptions, {
+      result,
+      sessionTime: '7:30–10:30 p.m.',
+    }),
+  );
 
   assert.ok(!/swap/i.test(html));
-  assert.ok(html.includes('7:30–10:00 p.m.'));
+  assert.ok(html.includes('7:30–10:30 p.m.'));
   const bounded = renderToStaticMarkup(createElement(PracticeOptions, {
     result: { ...result, suggestedSwaps: [], swapSearchComplete: false },
   }));
@@ -513,17 +521,58 @@ test('practice options hide assignment swaps and show configured session times',
     result: { ...result, suggestedSwaps: [], swapSearchComplete: true },
   }));
   assert.ok(!/swap/i.test(noSwaps));
-  for (const label of ['Early', 'Late']) {
-    assert.ok(html.includes(`>${label} block</h4>`));
+  for (const label of ['Block A', 'Block B']) {
+    assert.ok(html.includes(`>${label}</h4>`));
   }
 });
 
-test('practice blocks distinguish early-only, late-only and whole-practice attendees by initials', () => {
+test('practice options display Monday before Thursday when groups arrive in reverse order', () => {
+  const performers = [
+    { initials: 'MON', name: 'Morgan', roles: ['Vocal'], genres: '' },
+    { initials: 'THU', name: 'Taylor', roles: ['Vocal'], genres: '' },
+  ];
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal'],
+    [
+      ['Monday song', 'Artist', 'MON'],
+      ['Thursday song', 'Artist', 'THU'],
+    ],
+    performers,
+  );
+  const result = buildPracticeSchedule(songs, undefined, new Set(), {
+    sessionWeeknights: ['Monday', 'Thursday'],
+    suggestSwaps: false,
+  });
+  const option = result.options[0];
+  const reversedResult = {
+    ...result,
+    options: [
+      {
+        ...option,
+        groups: [option.groups[1], option.groups[0]] as typeof option.groups,
+        sessions: [
+          { ...option.sessions[1], weeknight: 'Thursday' },
+          { ...option.sessions[0], weeknight: 'Monday' },
+        ] as typeof option.sessions,
+      },
+    ],
+  };
+  const html = renderToStaticMarkup(
+    createElement(PracticeOptions, { result: reversedResult }),
+  );
+
+  assert.ok(
+    html.indexOf('Session 1 · Monday night') <
+      html.indexOf('Session 2 · Thursday night'),
+  );
+});
+
+test('practice blocks distinguish A-only, B-only and whole-practice attendees by initials', () => {
   const { songs } = projectOctoberSetList(
     ['Song', 'Artist', 'Vocal', 'Bass'],
     [
-      ['Early song', 'Artist', 'AB,DON', 'EF'],
-      ['Late song', 'Artist', 'CD,RAN', 'EF'],
+      ['Block A song', 'Artist', 'AB,DON', 'EF'],
+      ['Block B song', 'Artist', 'CD,RAN', 'EF'],
     ],
     [
       { initials: 'AB', name: 'Alex', roles: ['Vocal'], genres: '' },
@@ -534,41 +583,51 @@ test('practice blocks distinguish early-only, late-only and whole-practice atten
     ],
   );
   for (const optimal of [true, false]) {
-    const html = renderToStaticMarkup(createElement(PracticeOptions, {
-      alwaysPresentPerformers: [
-        { initials: 'DON', name: 'Donald Smith' },
-        { initials: 'RAN', name: 'Randal Jones' },
-      ],
-      result: {
-        optimal: true,
-        suggestedSwaps: [],
-        swapSearchComplete: true,
-        options: [{
-          groups: [songs, []],
-          sharedPerformers: [],
-          sessions: [
+    const html = renderToStaticMarkup(
+      createElement(PracticeOptions, {
+        alwaysPresentPerformers: [
+          { initials: 'DON', name: 'Donald Smith' },
+          { initials: 'RAN', name: 'Randal Jones' },
+        ],
+        result: {
+          optimal: true,
+          suggestedSwaps: [],
+          swapSearchComplete: true,
+          options: [
             {
-              blocks: [[songs[0]], [songs[1]]],
-              sharedPerformers: [{ initials: 'EF', name: 'Sam' }],
-              optimal,
+              groups: [songs, []],
+              sharedPerformers: [],
+              sessions: [
+                {
+                  blocks: [[songs[0]], [songs[1]]],
+                  sharedPerformers: [{ initials: 'EF', name: 'Sam' }],
+                  optimal,
+                },
+                { blocks: [[], []], sharedPerformers: [], optimal: true },
+              ],
             },
-            { blocks: [[], []], sharedPerformers: [], optimal: true },
           ],
-        }],
-      },
-    }));
+        },
+      }),
+    );
     assert.ok(html.includes('Needed for both blocks (1): Sam'));
-    assert.ok(html.includes('Early only (can leave after this block): Alex'));
-    assert.ok(html.includes('Late only (can arrive later): Casey'));
-    assert.ok(!html.includes('Early only (can leave after this block): Donald'));
-    assert.ok(!html.includes('Late only (can arrive later): Randal'));
-    assert.ok(html.includes('>Early block</h4>'));
-    assert.ok(html.includes('>Late block</h4>'));
-    assert.equal((html.match(/href="\/event-planning\/songs#song-/g) ?? []).length, 2);
-    assert.ok(html.indexOf('>Early block</h4>') < html.indexOf('Early song'));
-    assert.ok(html.indexOf('Early song') < html.indexOf('>Late block</h4>'));
-    assert.ok(html.indexOf('>Late block</h4>') < html.indexOf('Late song'));
-    assert.equal(html.includes('fewer performers may need both halves'), !optimal);
+    assert.ok(html.includes('Block A only: Alex'));
+    assert.ok(html.includes('Block B only: Casey'));
+    assert.ok(!html.includes('Block A only: Donald'));
+    assert.ok(!html.includes('Block B only: Randal'));
+    assert.ok(html.includes('>Block A</h4>'));
+    assert.ok(html.includes('>Block B</h4>'));
+    assert.equal(
+      (html.match(/href="\/event-planning\/songs#song-/g) ?? []).length,
+      2,
+    );
+    assert.ok(html.indexOf('>Block A</h4>') < html.indexOf('Block A song'));
+    assert.ok(html.indexOf('Block A song') < html.indexOf('>Block B</h4>'));
+    assert.ok(html.indexOf('>Block B</h4>') < html.indexOf('Block B song'));
+    assert.equal(
+      html.includes('fewer performers may need both blocks'),
+      !optimal,
+    );
     assert.ok(!html.includes('a lower-overlap split may exist'));
   }
 });

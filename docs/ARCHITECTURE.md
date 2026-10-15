@@ -153,7 +153,7 @@ special-cased in the optimizer or presentation. These performers are assumed
 present throughout and excluded from overlap and availability conflict counts.
 The presentation accepts the event's song-link destination and always-present
 roster, so future events can reuse it without inheriting October's assumptions.
-October sessions take place Monday and Thursday, 7:30–10:00 p.m., at Stage One
+October sessions take place Monday and Thursday, 7:30–10:30 p.m., at Stage One
 Studios, 23092 Terra Dr, Laguna Hills, CA 92653. The page restricts the optimizer
 to those two nights even when availability is unknown and disables assignment
 swap searches. When recognized weeknight availability exists for assigned
@@ -168,13 +168,14 @@ tables are searched exactly; large tables use bounded deterministic search and
 explicitly warn when optimality is not proven. The page shows each session's
 songs, chosen weeknight, known unavailable attendees, assigned attendees, shared
 attendees, and links to song references. Each suggested session is independently
-split into balanced early and late blocks using the same overlap optimizer.
+split into balanced Block A and Block B groups using the same overlap optimizer;
+the labels do not imply timing, which will be decided later.
 This preserves the original two-group membership and minimizes other assigned
-performers needing both halves within each group; it is not joint four-way
+performers needing both blocks within each group; it is not joint four-way
 optimization. One best block split is shown per group, with its own bounded-search
-warning if optimality is unproven. The page identifies early-only attendees who
-can leave after that block, late-only attendees who can arrive later, and those
-needed for both halves. A single-song group uses only its early block.
+warning if optimality is unproven. The page identifies attendees assigned only
+to Block A, only to Block B, and those needed for both blocks. A single-song
+group uses only Block A.
 The reusable optimizer can also check up to 100 individual Bass or Drums
 assignment exchanges
 between different songs (with a 20,000-pair scan bound), re-optimizes sessions for
@@ -188,7 +189,8 @@ self-reported and unknown values are ignored. Missing or ambiguous Practice
 headers make Practice unavailable without hiding Set List. All-completed tables show an
 empty state; one remaining song has an empty second session.
 Practice shows the confirmed venue, address, nights and session time, expandable
-planning assumptions, and responsive session columns with nested early/late headings.
+planning assumptions, and responsive session columns with nested Block A/Block B
+headings.
 The first session-pair option is expanded by default.
 
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
