@@ -242,6 +242,43 @@ test('uses known weekday availability to choose lower-conflict practice groups a
   assert.ok(unknown.options[0].sessions.every(({ weeknight }) => weeknight === undefined));
 });
 
+test('configured practice nights stay Monday and Thursday regardless of reported availability', () => {
+  const songs = [
+    song('One', ['MON']), song('Two', ['MON']),
+    song('Three', ['THU']), song('Four', ['THU']),
+  ];
+  const availability = new Map<string, PracticeWeekday[]>([
+    ['MON', ['Monday', 'Tuesday']], ['THU', ['Thursday', 'Tuesday']],
+  ]);
+  const settings = {
+    sessionWeeknights: ['Monday', 'Thursday'] as const,
+    suggestSwaps: false,
+  };
+  for (const entries of [songs, [...songs].reverse(), [songs[0]]]) {
+    for (const reported of [availability, undefined, new Map<string, PracticeWeekday[]>()]) {
+      const result = buildPracticeSchedule(entries, reported, new Set(), settings);
+      assert.ok(result.options.length > 0);
+      assert.deepEqual(result.suggestedSwaps, []);
+      for (const { sessions } of result.options) {
+        assert.deepEqual(sessions.map(({ weeknight }) => weeknight).sort(), ['Monday', 'Thursday']);
+        if (reported === availability) {
+          assert.ok(sessions.every(({ unavailablePerformers }) => unavailablePerformers?.length === 0));
+        }
+      }
+    }
+  }
+  const conflicts = buildPracticeSchedule(songs, new Map([
+    ['MON', ['Tuesday'] as PracticeWeekday[]], ['THU', ['Tuesday'] as PracticeWeekday[]],
+  ]), new Set(), settings);
+  assert.ok(conflicts.options.every(({ sessions }) =>
+    sessions.every(({ unavailablePerformers }) => unavailablePerformers!.length > 0),
+  ));
+  assert.deepEqual(buildPracticeSchedule([], availability, new Set(), settings).options, []);
+  assert.throws(() => buildPracticeSchedule(songs, availability, new Set(), {
+    sessionWeeknights: ['Monday', 'Monday'],
+  }), /distinct weeknights/);
+});
+
 test('weeknight planning can put the first group on a later weekday without depending on row order', () => {
   const songs = [
     song('Friday one', ['FRI']), song('Friday two', ['FRI']),

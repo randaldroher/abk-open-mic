@@ -473,7 +473,7 @@ test('practice presentation supports another event without October names or link
   assert.ok(!html.includes('Randal'));
 });
 
-test('practice options show individual song-assignment swap suggestions', () => {
+test('practice options hide assignment swaps and show configured session times', () => {
   const { songs } = projectOctoberSetList(
     ['Song', 'Artist', 'Vocal', 'Bass'],
     [
@@ -492,22 +492,30 @@ test('practice options show individual song-assignment swap suggestions', () => 
   );
   const result = buildPracticeSchedule(songs);
   assert.ok(result.suggestedSwaps.length > 0);
+  const withoutSwaps = buildPracticeSchedule(songs, undefined, new Set(), {
+    suggestSwaps: false,
+  });
+  assert.deepEqual(withoutSwaps.options, result.options);
+  assert.deepEqual(withoutSwaps.suggestedSwaps, []);
+  assert.equal(withoutSwaps.swapSearchComplete, true);
   const html = renderToStaticMarkup(createElement(PracticeOptions, {
     result,
+    sessionTime: '7:30–10:00 p.m.',
   }));
 
-  assert.ok(html.includes('Assignment swap suggestions'));
-  assert.ok(html.includes('Each suggestion exchanges one Bass or Drums song assignment'));
-  assert.ok(html.includes(`${result.suggestedSwaps[0].exchanges[0].performer.name} swaps “`));
-  assert.ok(html.includes(`reduces shared attendance by ${result.suggestedSwaps[0].overlapReduction}`));
-  assert.ok(html.includes('The suggested sessions are re-optimized'));
-  const suggestions = html.slice(html.indexOf('Assignment swap suggestions'), html.indexOf('>Option 1</h2>'));
-  assert.match(suggestions, /<h2[^>]*class="[^"]*MuiTypography-h5[^"]*"[^>]*>Suggestion 1:/);
-  assert.match(suggestions, /<h3[^>]*class="[^"]*MuiTypography-h6[^"]*"[^>]*>Session 1/);
+  assert.ok(!/swap/i.test(html));
+  assert.ok(html.includes('7:30–10:00 p.m.'));
+  const bounded = renderToStaticMarkup(createElement(PracticeOptions, {
+    result: { ...result, suggestedSwaps: [], swapSearchComplete: false },
+  }));
+  assert.ok(!/swap/i.test(bounded));
+  const noSwaps = renderToStaticMarkup(createElement(PracticeOptions, {
+    result: { ...result, suggestedSwaps: [], swapSearchComplete: true },
+  }));
+  assert.ok(!/swap/i.test(noSwaps));
   for (const label of ['Early', 'Late']) {
-    assert.match(suggestions, new RegExp(`<h4[^>]*class="[^"]*MuiTypography-subtitle1[^"]*"[^>]*>${label} block</h4>`));
+    assert.ok(html.includes(`>${label} block</h4>`));
   }
-  assert.equal(html.includes('additional improving assignment exchanges may exist'), !result.swapSearchComplete);
 });
 
 test('practice blocks distinguish early-only, late-only and whole-practice attendees by initials', () => {

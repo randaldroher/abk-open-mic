@@ -235,6 +235,7 @@ function buildWeeknightPlans(
   songs: SetListSong[],
   availabilityByInitials: ReadonlyMap<string, PracticeWeekday[] | null>,
   alwaysPresentInitials: ReadonlySet<string>,
+  weeknights: readonly PracticeWeekday[] = PRACTICE_WEEKDAYS,
 ): WeeknightSearch {
   const entries = mergeSongs(songs);
   if (!entries.length) return { options: [], optimal: true };
@@ -271,20 +272,20 @@ function buildWeeknightPlans(
     let groupOverlap = Infinity;
     let bestWeeknightMask = 0;
     let weeknightIndex = 0;
-    for (let firstDay = 0; firstDay < PRACTICE_WEEKDAYS.length; firstDay++) {
-      for (let secondDay = 0; secondDay < PRACTICE_WEEKDAYS.length; secondDay++) {
+    for (let firstDay = 0; firstDay < weeknights.length; firstDay++) {
+      for (let secondDay = 0; secondDay < weeknights.length; secondDay++) {
         if (firstDay === secondDay) continue;
         const currentWeeknightIndex = weeknightIndex++;
-        const weeknights = [
-          PRACTICE_WEEKDAYS[firstDay],
-          PRACTICE_WEEKDAYS[secondDay],
+        const days = [
+          weeknights[firstDay],
+          weeknights[secondDay],
         ] as [PracticeWeekday, PracticeWeekday];
         const conflicts = attendees.reduce((total, people, session) =>
           total + people.reduce((unavailableCount, { initials }) => {
             const available = availabilityByInitials.get(initials);
             return unavailableCount + Number(
               available !== null && available !== undefined &&
-              !available.includes(weeknights[session]),
+              !available.includes(days[session]),
             );
           }, 0),
         0);
@@ -317,20 +318,20 @@ function buildWeeknightPlans(
         getSongAnchor(title, originalArtist),
       ).sort().join(','));
       weeknightIndex = 0;
-      for (let firstDay = 0; firstDay < PRACTICE_WEEKDAYS.length; firstDay++) {
-        for (let secondDay = 0; secondDay < PRACTICE_WEEKDAYS.length; secondDay++) {
+      for (let firstDay = 0; firstDay < weeknights.length; firstDay++) {
+        for (let secondDay = 0; secondDay < weeknights.length; secondDay++) {
           if (firstDay === secondDay) continue;
           if (!(bestWeeknightMask & (1 << weeknightIndex++))) continue;
           if (optionMap.size === OPTION_LIMIT) continue;
-          const weeknights = [
-            PRACTICE_WEEKDAYS[firstDay],
-            PRACTICE_WEEKDAYS[secondDay],
+          const days = [
+            weeknights[firstDay],
+            weeknights[secondDay],
           ] as [PracticeWeekday, PracticeWeekday];
           const unavailablePerformers = attendees.map((people, session) =>
             people.filter(({ initials }) => {
               const available = availabilityByInitials.get(initials);
               return available !== null && available !== undefined &&
-                !available.includes(weeknights[session]);
+                !available.includes(days[session]);
             }),
           ) as [Performer[], Performer[]];
           const key = [...groupAnchors].sort().join('|');
@@ -338,7 +339,7 @@ function buildWeeknightPlans(
           optionMap.set(key, {
             groups,
             sharedPerformers,
-            weeknights,
+            weeknights: days,
             unavailablePerformers,
             availabilityConflicts: groupConflicts,
           });
@@ -424,6 +425,10 @@ export function buildPracticeSchedule(
   songs: SetListSong[],
   availabilityByInitials?: ReadonlyMap<string, PracticeWeekday[] | null>,
   alwaysPresentInitials: ReadonlySet<string> = new Set(),
+  settings: {
+    sessionWeeknights?: readonly [PracticeWeekday, PracticeWeekday];
+    suggestSwaps?: boolean;
+  } = {},
 ): {
   options: (PracticeOption & { sessions: [PracticeSession, PracticeSession] })[];
   optimal: boolean;
@@ -442,8 +447,12 @@ export function buildPracticeSchedule(
       const days = availabilityByInitials.get(initials);
       return days !== null && days !== undefined && days.length > 0;
     });
-  const weeknightSearch = availabilityAware
-    ? buildWeeknightPlans(songs, availabilityByInitials!, alwaysPresentInitials)
+  if (settings.sessionWeeknights &&
+    settings.sessionWeeknights[0] === settings.sessionWeeknights[1]) {
+    throw new Error('Practice sessions must use two distinct weeknights.');
+  }
+  const weeknightSearch = availabilityAware || settings.sessionWeeknights !== undefined
+    ? buildWeeknightPlans(songs, availabilityByInitials ?? new Map(), alwaysPresentInitials, settings.sessionWeeknights)
     : null;
   const baseOptions = weeknightSearch?.options ?? result.options;
   const baseAvailabilityConflicts = weeknightSearch?.options[0]?.availabilityConflicts ?? 0;
@@ -459,6 +468,8 @@ export function buildPracticeSchedule(
         blocks: [[], []],
         sharedPerformers: [],
         optimal: true,
+        ...(weeknight === undefined ? {} : { weeknight }),
+        ...(unavailablePerformers === undefined ? {} : { unavailablePerformers }),
       };
     }
     const split = buildPracticeGroups(group, alwaysPresentInitials);
@@ -473,7 +484,7 @@ export function buildPracticeSchedule(
   }
 
   const entries = mergeSongs(songs);
-  const assignments = baseAvailabilityConflicts > 0 || baseOverlap > 0
+  const assignments = settings.suggestSwaps !== false && (baseAvailabilityConflicts > 0 || baseOverlap > 0)
     ? entries.flatMap((entry) => entry.roles.flatMap((role) =>
         (role.role === 'Bass' || role.role === 'Drums')
           ? role.performers.filter(({ initials }) => !alwaysPresentInitials.has(initials))
@@ -532,8 +543,8 @@ export function buildPracticeSchedule(
       changedFirstRole.performers[firstIndex] = { ...b.performer };
       changedSecondRole.performers[secondIndex] = { ...a.performer };
 
-      const optimized = availabilityAware
-        ? buildWeeknightPlans(changed, availabilityByInitials!, alwaysPresentInitials)
+      const optimized = weeknightSearch !== null
+        ? buildWeeknightPlans(changed, availabilityByInitials ?? new Map(), alwaysPresentInitials, settings.sessionWeeknights)
         : null;
       const best = optimized?.options[0] ??
         buildPracticeGroups(changed, alwaysPresentInitials).options[0];
@@ -590,7 +601,7 @@ export function buildPracticeSchedule(
           ),
           session(
             option.groups[1],
-            option.groups[1].length ? plan?.weeknights[1] : undefined,
+            plan?.weeknights[1],
             plan?.unavailablePerformers[1],
           ),
         ],

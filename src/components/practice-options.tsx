@@ -35,10 +35,12 @@ export default function PracticeOptions({
   result,
   alwaysPresentPerformers = [],
   songsHref = '/event-planning/songs',
+  sessionTime,
 }: {
   result: ReturnType<typeof buildPracticeSchedule>;
   alwaysPresentPerformers?: PracticePerformer[];
   songsHref?: string;
+  sessionTime?: string;
 }) {
   const alwaysPresentInitials = new Set(alwaysPresentPerformers.map(({ initials }) => initials));
   if (!result.options.length) {
@@ -61,7 +63,7 @@ export default function PracticeOptions({
         </Box>
         <Box component="ul" sx={{ pl: 3, '& li': { my: 1 } }}>
           <li>Only assigned set-list performers count, not signup interests or unfilled roles.</li>
-          <li>Unknown availability is not counted as a conflict. Suggested nights are not confirmed dates.</li>
+          <li>Unknown availability is not counted as a conflict. Song groupings are suggestions.</li>
           {alwaysPresentPerformers.length > 0 && (
             <li>
              {alwaysPresentPerformers.map(({ name }) => name).join(' and ')}
@@ -73,74 +75,6 @@ export default function PracticeOptions({
           <li>Up to five options are shown. Large song lists use a limited search and may not be optimal.</li>
         </Box>
       </Box>
-      {result.suggestedSwaps.length > 0 && (
-        <Box component="details">
-          <Box component="summary" sx={{ cursor: 'pointer', fontWeight: 'bold' }}>
-            Assignment swap suggestions ({result.suggestedSwaps.length})
-          </Box>
-          <Stack spacing={2} sx={{ mt: 2 }}>
-            <Typography color="textSecondary" variant="body2">
-              Each suggestion exchanges one Bass or Drums song assignment between two performers.
-              The suggested sessions are re-optimized; your set-list assignments are unchanged.
-            </Typography>
-            {result.suggestedSwaps.map(({ role, exchanges, overlapReduction, availabilityConflictReduction, sharedPerformers, sessions }, index) => (
-              <Paper key={`${role}-${index}`} variant="outlined" sx={{ p: { xs: 2, sm: 3 }, overflowWrap: 'anywhere' }}>
-                <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>Suggestion {index + 1}: {role} song swap</Typography>
-                <Typography sx={{ mt: 1 }}>
-                  {exchanges[0].performer.name} swaps “{exchanges[0].song.title}” with
-                  {' '}{exchanges[1].performer.name}’s “{exchanges[1].song.title}”.
-                </Typography>
-                <Typography sx={{ mt: 1 }}>
-                  {availabilityConflictReduction > 0
-                    ? `This reduces known availability conflicts by ${availabilityConflictReduction}. `
-                    : 'This keeps known availability conflicts unchanged. '}
-                  {overlapReduction > 0
-                    ? `It also reduces shared attendance by ${overlapReduction}. `
-                    : ''}
-                  After the swap, {sharedPerformers.length} assigned
-                  {' '}{sharedPerformers.length === 1 ? 'performer attends' : 'performers attend'} both sessions:
-                  {' '}{sharedPerformers.map(({ name }) => name).join(', ') || 'None'}.
-                </Typography>
-                <Box sx={{ display: 'grid', gap: 2, mt: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' } }}>
-                  {sessions.map(({ blocks, weeknight, unavailablePerformers }, session) => (
-                    <Box component="section" key={session} sx={{ minWidth: 0, border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
-                      <Typography variant="h6" component="h3">
-                        Session {session + 1}{weeknight ? ` · ${weeknight} night` : ''}
-                      </Typography>
-                      {unavailablePerformers && unavailablePerformers.length > 0 && (
-                        <Typography color="warning.main" variant="body2">
-                         Known unavailable attendees: {unavailablePerformers.map(({ name }) => name).join(', ')}
-                        </Typography>
-                      )}
-                      {blocks.map((songs, block) => (
-                        <Box key={block} sx={{ mt: 2, p: 2, bgcolor: 'background.default', borderLeft: 3, borderColor: 'divider', borderRadius: 1 }}>
-                         <Typography variant="subtitle1" component="h4" sx={{ fontWeight: 700 }}>{block === 0 ? 'Early' : 'Late'} block</Typography>
-                         {songs.length
-                           ? <SongReferences songs={songs} songsHref={songsHref} />
-                           : <Typography variant="body2">No songs in this block.</Typography>}
-                         <Typography variant="body2" color="textSecondary">
-                           Attendees: {attendees(songs).map(({ name }) => name).join(', ') || 'No assigned performers'}
-                         </Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  ))}
-                </Box>
-              </Paper>
-            ))}
-          </Stack>
-        </Box>
-      )}
-      {!result.swapSearchComplete && (
-        <Alert severity="info">
-          Swap search was bounded; additional improving assignment exchanges may exist.
-        </Alert>
-      )}
-      {result.swapSearchComplete && result.suggestedSwaps.length === 0 && (
-        <Alert severity="info">
-          No improving Bass or Drums assignment swap was found.
-        </Alert>
-      )}
       {result.options.map(({ groups, sharedPerformers, sessions }, index) => (
         <Paper
           key={index}
@@ -182,6 +116,7 @@ export default function PracticeOptions({
                   <Typography variant="h6" component="h3" id={`practice-${index}-${session}-heading`}>
                     Session {session + 1}{weeknight ? ` · ${weeknight} night` : ''}
                   </Typography>
+                  {sessionTime && <Typography variant="body2">{sessionTime}</Typography>}
                   <Typography variant="body2" sx={{ mt: 1 }}>
                     {songs.length} {songs.length === 1 ? 'song' : 'songs'} · {people.length} {people.length === 1 ? 'performer' : 'performers'}
                   </Typography>

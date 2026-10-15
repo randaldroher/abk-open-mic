@@ -8,7 +8,7 @@ import { octoberAlwaysPresentPerformers } from '@/lib/october-practice';
 
 export const metadata: Metadata = {
   title: 'Practice',
-  description: 'Suggested balanced practice sessions for the October 2026 ABK Open Mic.',
+  description: 'Monday and Thursday practice, 7:30–10:00 p.m. at Stage One Studios in Laguna Hills.',
 };
 
 export default function PracticePage() {
@@ -19,11 +19,18 @@ export default function PracticePage() {
       role="tabpanel"
       aria-labelledby="event-planning-practice-tab"
     >
-      <Typography color="textSecondary">
-        Compare balanced practice sessions for songs not marked Done! Each session
-        has early and late blocks to reduce time spent waiting. These are planning
-        suggestions, not confirmed dates or changes to the set list.
-      </Typography>
+      <Paper component="section" variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
+        <Typography variant="h2">Stage One Studios</Typography>
+        <Typography sx={{ mt: 1 }}>Monday and Thursday · 7:30–10:00 p.m.</Typography>
+        <Typography color="textSecondary">
+          23092 Terra Dr, Laguna Hills, CA 92653
+        </Typography>
+        <Typography color="textSecondary" sx={{ mt: 2 }}>
+          Compare suggested song groupings for these sessions, excluding songs marked
+          Done! Each session has early and late blocks to reduce time spent waiting.
+          Song groupings are suggestions, not changes to the set list.
+        </Typography>
+      </Paper>
       <Suspense fallback={
         <Stack spacing={2} role="status" aria-label="Loading practice options">
           <Skeleton variant="rounded" height={80} />
@@ -57,9 +64,13 @@ async function Practice() {
   const alwaysPresentInitials = new Set(alwaysPresentPerformers.map(({ initials }) => initials));
   return (
     <PracticeOptions
-      result={buildPracticeSchedule(songs, availabilityByInitials, alwaysPresentInitials)}
+      result={buildPracticeSchedule(songs, availabilityByInitials, alwaysPresentInitials, {
+        sessionWeeknights: ['Monday', 'Thursday'],
+        suggestSwaps: false,
+      })}
       alwaysPresentPerformers={alwaysPresentPerformers}
       songsHref="/event-planning/songs"
+      sessionTime="7:30–10:00 p.m."
     />
   );
 }
