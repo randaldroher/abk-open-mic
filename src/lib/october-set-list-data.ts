@@ -5,7 +5,12 @@ import { withLastKnownGood } from './last-known-good';
 import { columnLetter, quoteSheetTab, sheetHeaderRange } from './sheet-layout';
 import { octoberSetListColumns, projectOctoberSetList } from './october-set-list';
 import type { OctoberSignupPerformer } from './october-signup';
-import { isPracticeDone, octoberPracticeColumn, projectOctoberPracticeSongs } from './october-practice';
+import {
+  octoberPracticeColumn,
+  projectOctoberPracticeSessions,
+  projectOctoberPracticeSongs,
+  sanitizeOctoberPracticeValue,
+} from './october-practice';
 
 const TAB = 'Time Table (October 2026)';
 
@@ -42,8 +47,10 @@ async function readTimetable() {
       const row = Array<string>(headers.length).fill('');
       columns.forEach((column, index) => {
         const value = String(values[index]?.values?.[rowIndex]?.[0] ?? '');
-        // Retain only the completion marker, never raw practice notes.
-        row[column] = column === practiceColumn ? (isPracticeDone(value) ? 'Done!' : '') : value;
+        row[column] =
+          column === practiceColumn
+            ? sanitizeOctoberPracticeValue(value)
+            : value;
       });
       return row;
     });
@@ -62,7 +69,16 @@ export async function getOctoberSetList(performers: OctoberSignupPerformer[]) {
   if (!data) return null;
   return {
     ...projectOctoberSetList(data.headers, data.rows, performers),
-    practiceSongs: projectOctoberPracticeSongs(data.headers, data.rows, performers),
+    practiceSongs: projectOctoberPracticeSongs(
+      data.headers,
+      data.rows,
+      performers,
+    ),
+    practiceSessions: projectOctoberPracticeSessions(
+      data.headers,
+      data.rows,
+      performers,
+    ),
     fetchedAt: data.fetchedAt,
   };
 }

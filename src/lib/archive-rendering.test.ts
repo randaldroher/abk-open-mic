@@ -14,7 +14,11 @@ import ThemeProvider from '../app/theme-provider';
 import RoleNeedChip from '../components/role-need-chip';
 import SetListTable from '../components/set-list-table';
 import PracticeOptions from '../components/practice-options';
-import { getSongRoleNeeds, projectOctoberSetList } from './october-set-list';
+import {
+  getSongRoleNeeds,
+  projectOctoberSetList,
+  type OctoberPracticeSession,
+} from './october-set-list';
 import { buildPracticeSchedule } from './practice-groups';
 import {
   PAST_EVENTS,
@@ -425,7 +429,6 @@ test('practice options show both groups, shared attendees, song links and search
     assert.ok(html.includes('First song'));
     assert.ok(html.includes('Second song'));
     assert.ok(html.includes('href="/event-planning/songs#song-'));
-    assert.equal(html.includes('a lower-overlap split may exist'), !optimal);
   }
 });
 
@@ -524,6 +527,91 @@ test('practice options hide assignment swaps and show configured session times',
   for (const label of ['Block A', 'Block B']) {
     assert.ok(html.includes(`>${label}</h4>`));
   }
+});
+
+test('practice shows four scheduled cards and keeps optimizer options collapsed', () => {
+  const performers = [
+    { initials: 'AB', name: 'Alex', roles: ['Vocal'], genres: '' },
+    { initials: 'CD', name: 'Casey', roles: ['Guitar'], genres: '' },
+  ];
+  const { songs } = projectOctoberSetList(
+    ['Song', 'Artist', 'Vocal', 'Guitar'],
+    [
+      ['Monday early song', 'Artist', 'AB', 'CD'],
+      ['Thursday late song', 'Artist', 'CD', ''],
+    ],
+    performers,
+  );
+  const scheduledSessions: OctoberPracticeSession[] = [
+    {
+      day: 'Monday',
+      slot: 'Early',
+      songs: [
+        { ...songs[0], difficulty: 'High' },
+        {
+          ...songs[0],
+          title: 'Monday early second song',
+          difficulty: 'Low',
+        },
+      ],
+    },
+    { day: 'Monday', slot: 'Late', songs: [] },
+    { day: 'Thursday', slot: 'Early', songs: [] },
+    {
+      day: 'Thursday',
+      slot: 'Late',
+      songs: [{ ...songs[1], difficulty: 'Low' }],
+    },
+  ];
+  const result = buildPracticeSchedule(songs);
+  const html = renderToStaticMarkup(
+    createElement(PracticeOptions, {
+      result,
+      scheduledSessions,
+    }),
+  );
+  const headings = [
+    'Monday · Early session',
+    'Monday · Late session',
+    'Thursday · Early session',
+    'Thursday · Late session',
+  ];
+
+  const headingPositions = headings.map((heading) => html.indexOf(heading));
+  assert.ok(headingPositions.every((position) => position >= 0));
+  assert.deepEqual(
+    headingPositions,
+    [...headingPositions].sort((left, right) => left - right),
+  );
+  assert.ok(html.includes('Monday early song'));
+  assert.ok(html.includes('Thursday late song'));
+  assert.equal(
+    (html.match(/MuiTypography-body1[^>]*>Alex, Casey<\/p>/g) ?? []).length,
+    1,
+  );
+  assert.match(html, /MuiTypography-body1[^>]*>Casey<\/p>/);
+  assert.ok(html.includes('color:rgba(0, 0, 0, 0.87);'));
+  assert.equal((html.match(/7:30–8:00 p\.m\./g) ?? []).length, 2);
+  assert.equal((html.match(/8:00–10:30 p\.m\./g) ?? []).length, 2);
+  assert.equal((html.match(/>Add to calendar<\/a>/g) ?? []).length, 4);
+  assert.ok(
+    html.includes('/event-planning/practice/calendar/monday-early.ics'),
+  );
+  assert.ok(!html.includes('calendar.google.com'));
+  assert.ok(!html.includes('Difficulty:'));
+  assert.ok(!html.includes('2 songs ·'));
+  assert.ok(html.includes('No songs assigned.'));
+  assert.ok(html.includes('>Other Options</h2>'));
+  assert.equal((html.match(/<details\b[^>]*\bopen/g) ?? []).length, 0);
+
+  const unavailable = renderToStaticMarkup(
+    createElement(PracticeOptions, {
+      result,
+      scheduledSessions: null,
+    }),
+  );
+  assert.ok(unavailable.includes('Practice assignments are unavailable.'));
+  for (const heading of headings) assert.ok(unavailable.includes(heading));
 });
 
 test('practice options display Monday before Thursday when groups arrive in reverse order', () => {

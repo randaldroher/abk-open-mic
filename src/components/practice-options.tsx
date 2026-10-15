@@ -1,10 +1,20 @@
+import { Alert, Box, Button, Paper, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
-import { Alert, Box, Paper, Stack, Typography } from '@mui/material';
+import {
+  OCTOBER_PRACTICE_SLOT_SCHEDULE,
+  octoberPracticeCalendarUrl,
+} from '../lib/october-practice';
+import {
+  getSongAnchor,
+  OCTOBER_PRACTICE_DAYS,
+  OCTOBER_PRACTICE_SLOTS,
+  type OctoberPracticeSession,
+  type SetListSong,
+} from '../lib/october-set-list';
 import {
   type buildPracticeSchedule,
   type PracticePerformer,
 } from '../lib/practice-groups';
-import { getSongAnchor, type SetListSong } from '../lib/october-set-list';
 
 const WEEKDAY_ORDER = [
   'Monday',
@@ -17,23 +27,54 @@ const WEEKDAY_ORDER = [
 ];
 
 function attendees(songs: SetListSong[]) {
-  return [...new Map(songs.flatMap(({ roles }) =>
-    roles.flatMap(({ performers }) => performers.map((performer) =>
-      [performer.initials, performer] as const,
-    )),
-  )).values()].sort((a, b) => a.name.localeCompare(b.name) || a.initials.localeCompare(b.initials));
+  return [
+    ...new Map(
+      songs.flatMap(({ roles }) =>
+        roles.flatMap(({ performers }) =>
+          performers.map(
+            (performer) => [performer.initials, performer] as const,
+          ),
+        ),
+      ),
+    ).values(),
+  ].sort(
+    (a, b) =>
+      a.name.localeCompare(b.name) || a.initials.localeCompare(b.initials),
+  );
 }
 
-function SongReferences({ songs, songsHref }: { songs: SetListSong[]; songsHref: string }) {
+function SongReferences({
+  songs,
+  songsHref,
+}: {
+  songs: SetListSong[];
+  songsHref: string;
+}) {
   return (
-    <Box component="ul" sx={{ pl: 3, my: 1, '& li': { my: 1 }, overflowWrap: 'anywhere' }}>
+    <Box
+      component="ul"
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+        gap: { xs: 0, md: 2 },
+        pl: 3,
+        my: 1,
+        '& li': { my: 1, minWidth: 0 },
+        overflowWrap: 'anywhere',
+      }}
+    >
       {songs.map((song) => (
         <li key={getSongAnchor(song.title, song.originalArtist)}>
-          <Link href={`${songsHref}#${encodeURIComponent(getSongAnchor(song.title, song.originalArtist))}`}>
-            {song.title}{song.originalArtist ? ` — ${song.originalArtist}` : ''}
+          <Link
+            href={`${songsHref}#${encodeURIComponent(getSongAnchor(song.title, song.originalArtist))}`}
+          >
+            {song.title}
+            {song.originalArtist ? ` — ${song.originalArtist}` : ''}
           </Link>
           <Typography variant="body2" color="textSecondary">
-            {attendees([song]).map(({ name }) => name).join(', ') || 'No assigned performers'}
+            {attendees([song])
+              .map(({ name }) => name)
+              .join(', ') || 'No assigned performers'}
           </Typography>
         </li>
       ))}
@@ -41,32 +82,133 @@ function SongReferences({ songs, songsHref }: { songs: SetListSong[]; songsHref:
   );
 }
 
+function ScheduledSessionCards({
+  sessions,
+  songsHref,
+}: {
+  sessions: OctoberPracticeSession[] | null;
+  songsHref: string;
+}) {
+  const cards =
+    sessions ??
+    OCTOBER_PRACTICE_DAYS.flatMap((day) =>
+      OCTOBER_PRACTICE_SLOTS.map((slot) => ({ day, slot, songs: [] })),
+    );
+
+  return (
+    <Stack
+      component="section"
+      spacing={2}
+      aria-labelledby="scheduled-practice-heading"
+    >
+      <Typography variant="h4" component="h2" id="scheduled-practice-heading">
+        Scheduled sessions
+      </Typography>
+      {sessions === null && (
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          Practice assignments are unavailable. The Practice column needs a day,
+          Early or Late slot, and Low, Medium, or High difficulty.
+        </Alert>
+      )}
+      <Stack spacing={2}>
+        {cards.map(({ day, slot, songs }) => {
+          return (
+            <Paper
+              key={`${day}-${slot}`}
+              component="section"
+              variant="outlined"
+              sx={{ minWidth: 0, p: { xs: 2, sm: 3 } }}
+            >
+              <Typography variant="h6" component="h3">
+                {day} · {slot} session
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ flexWrap: 'wrap', alignItems: 'baseline' }}
+              >
+                <Typography variant="body1" color="textSecondary">
+                  {OCTOBER_PRACTICE_SLOT_SCHEDULE[slot].label}
+                  <Button
+                    variant="text"
+                    color="secondary"
+                    size="small"
+                    href={octoberPracticeCalendarUrl(day, slot)}
+                    download
+                  >
+                    Add to calendar
+                  </Button>
+                </Typography>
+              </Stack>
+              {sessions !== null && (
+                <Typography variant="body1" color="textPrimary">
+                  {attendees(songs)
+                    .map(({ name }) => name)
+                    .join(', ') || 'No assigned performers'}
+                </Typography>
+              )}
+              {sessions === null ? (
+                <Typography color="textSecondary" sx={{ mt: 1 }}>
+                  Schedule assignments unavailable.
+                </Typography>
+              ) : (
+                <>
+                  {songs.length ? (
+                    <SongReferences songs={songs} songsHref={songsHref} />
+                  ) : (
+                    <Typography color="textSecondary" sx={{ mt: 1 }}>
+                      No songs assigned.
+                    </Typography>
+                  )}
+                </>
+              )}
+            </Paper>
+          );
+        })}
+      </Stack>
+    </Stack>
+  );
+}
+
 export default function PracticeOptions({
   result,
   alwaysPresentPerformers = [],
+  scheduledSessions,
   songsHref = '/event-planning/songs',
   sessionTime,
 }: {
   result: ReturnType<typeof buildPracticeSchedule>;
   alwaysPresentPerformers?: PracticePerformer[];
+  scheduledSessions?: OctoberPracticeSession[] | null;
   songsHref?: string;
   sessionTime?: string;
 }) {
-  const alwaysPresentInitials = new Set(alwaysPresentPerformers.map(({ initials }) => initials));
+  const alwaysPresentInitials = new Set(
+    alwaysPresentPerformers.map(({ initials }) => initials),
+  );
+  const scheduledCards =
+    scheduledSessions === undefined ? null : (
+      <ScheduledSessionCards
+        sessions={scheduledSessions}
+        songsHref={songsHref}
+      />
+    );
   if (!result.options.length) {
-    return <Alert severity="success">No songs remain to practice. All set-list songs are marked Done!</Alert>;
+    return (
+      <Stack spacing={3}>
+        {scheduledCards}
+        <Alert severity="success">
+          No songs remain to practice. All set-list songs are marked Done!
+        </Alert>
+      </Stack>
+    );
   }
   return (
     <Stack spacing={3}>
-      <Alert severity="info">
-        {result.availabilitySearchComplete === undefined
-          ? result.optimal
-            ? 'These options minimize shared attendance between two balanced sessions.'
-            : 'These are the best balanced options found; a lower-overlap split may exist.'
-          : result.optimal
-            ? 'These options prioritize known availability conflicts, then shared attendance.'
-            : 'These are the best availability-aware options found; a better grouping may exist.'}
-      </Alert>
+      {scheduledCards}
+      <Typography variant="h4" component="h2">
+        Other Options
+      </Typography>
       <Box component="details">
         <Box component="summary" sx={{ cursor: 'pointer', fontWeight: 'bold' }}>
           How these suggestions work
@@ -117,7 +259,6 @@ export default function PracticeOptions({
           <Paper
             key={index}
             component="details"
-            open={index === 0}
             variant="outlined"
             sx={{ p: { xs: 2, sm: 3 } }}
           >

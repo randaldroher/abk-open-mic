@@ -17,11 +17,24 @@ export type SetListSong = {
   }>;
 };
 
+export const OCTOBER_PRACTICE_DAYS = ['Monday', 'Thursday'] as const;
+export const OCTOBER_PRACTICE_SLOTS = ['Early', 'Late'] as const;
+export type OctoberPracticeDifficulty = 'Low' | 'Medium' | 'High';
+
+export type OctoberPracticeDay = (typeof OCTOBER_PRACTICE_DAYS)[number];
+export type OctoberPracticeSlot = (typeof OCTOBER_PRACTICE_SLOTS)[number];
+export type OctoberPracticeSession = {
+  day: OctoberPracticeDay;
+  slot: OctoberPracticeSlot;
+  songs: Array<SetListSong & { difficulty: OctoberPracticeDifficulty }>;
+};
+
 export type OctoberSetList = {
   songs: SetListSong[];
   roles: string[];
   fetchedAt: string;
   practiceSongs?: SetListSong[] | null;
+  practiceSessions?: OctoberPracticeSession[] | null;
 };
 
 export function octoberSetListColumns(headers: string[]) {

@@ -103,10 +103,14 @@ instance-local last-known-good fallback pattern.
 The October timetable adapter discovers normalized headers in row 1 of
 `Time Table (October 2026)` and reads only Song, Original Artist, and recognized
 performer-role columns, plus a uniquely header-mapped Practice column for
-completion filtering. The song table ends at its first blank song row.
-Practice values are reduced immediately to the normalized `Done!` marker or an
-empty value before caching; raw practice prose is never retained or published.
-Link and Comments columns are not fetched. Assignments resolve
+completion filtering and practice schedule cards. The song table ends at its
+first blank song row. Practice values are reduced immediately to the normalized
+`Done!` marker or recognized day, slot, and difficulty labels before caching;
+raw practice prose is never retained or published. Values such as
+`Thu Early - HIgh` project as Thursday, Early, High. Only Monday/Thursday,
+Early/Late, and Low/Medium/High are accepted; missing, ambiguous, or
+unrecognized assignments make the four cards unavailable without hiding the
+set list. Link and Comments columns are not fetched. Assignments resolve
 against signup initials to the same public first-name roster. Only recognized
 need markers are published; Additional Instruments also accepts parenthesized
 instrument qualifiers after `Nice to have`, preserving their capitalization.
@@ -189,8 +193,9 @@ self-reported and unknown values are ignored. Missing or ambiguous Practice
 headers make Practice unavailable without hiding Set List. All-completed tables show an
 empty state; one remaining song has an empty second session.
 Practice shows the confirmed venue, address, nights and session time, expandable
-planning assumptions, and responsive session columns with nested Block A/Block B
-headings.
+planning assumptions, four timetable-driven cards for Monday/Thursday Early/Late
+sessions with difficulty labels, and responsive Block A/Block B options that
+are collapsed by default.
 The first session-pair option is expanded by default.
 
 `buildHistoricalProgram` in `src/lib/historical-program.ts` returns songs,
@@ -367,7 +372,8 @@ same hard-coded historical sheet; separate preview data is not implemented.
    initials, entered genres, recognized role interests, proposed songs, and
    validated YouTube references. The timetable's selected song, artist, role
    assignment, and need-marker columns are also approved by the Set List request;
-   the Practice request adds completion filtering and suggested session groups.
+   the Practice request adds completion filtering, suggested session groups,
+   and normalized day/slot/difficulty labels from the Practice column.
    Signup interest remains distinct from timetable assignments; no venue is claimed.
 2. Keep contacts and all other private signup fields out of the public
    projection. Any expansion beyond the approved name, initials, roles, genres,

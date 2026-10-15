@@ -36,17 +36,22 @@ redaction exist. Live historical publication is range-based, not flag-based.
 - `/event-planning/set-list` is the first/default planning tab and shows the
   October timetable's song, original artist, and recognized role columns in a
   responsive sortable table. Link and Comments are excluded from
-  reads; Practice is reduced to a completion marker only. Initials resolve to public first names. Blue “Nice to have” and magenta
+  reads; Practice is reduced to a completion marker or recognized schedule and
+  difficulty labels, with raw text discarded. Initials resolve to public first names. Blue “Nice to have” and magenta
   “Needed!” chips share performer/count tooltips with the Songs page. A Critical
   openings section above the table highlights roles marked “Needed!” and links
   to their song entries.
 - `/event-planning/practice` is the second planning tab. It excludes songs marked
   `Done!` in the header-discovered Practice column and suggests up to five distinct
   balanced pairs of sessions minimizing assigned performers attending both.
-  Each group is then independently split into balanced early/late blocks,
-  minimizing performers needed for both halves without changing group membership.
-  Each option shows block songs and attendees, early-only and late-only performers,
-  and those needed for the full practice. Small tables use
+  Four cards show the remaining timetable songs in Monday/Thursday Early/Late
+  sessions parsed from recognized day/slot/difficulty values in the Practice
+  column; each song displays its difficulty. Each optimizer group
+  is independently split into balanced Block A/Block B groups, minimizing
+  performers needed for both blocks without changing group membership. Options
+  remain available in collapsed disclosures. Each option shows block songs and
+  attendees, A-only and B-only performers, and those needed for the full practice.
+  Small tables use
   exact optimization; bounded search for larger tables is labeled when a global
   minimum is not proven. Recognized weeknight availability reduces known conflicts
   before shared attendance; raw availability prose and practice notes stay private.

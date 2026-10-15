@@ -27,16 +27,10 @@ export default function PracticePage() {
       >
         <Typography variant="h2">Stage One Studios</Typography>
         <Typography sx={{ mt: 1 }}>
-          Monday and Thursday · 7:30–10:30 p.m.
+          Monday 10/19 and Thursday 10/22 · 7:30–10:30 p.m.
         </Typography>
         <Typography color="textSecondary">
           23092 Terra Dr, Laguna Hills, CA 92653
-        </Typography>
-        <Typography color="textSecondary" sx={{ mt: 2 }}>
-          Compare suggested song groupings for these sessions, excluding songs
-          marked Done! Each session has early and late blocks to reduce time
-          spent waiting. Song groupings are suggestions, not changes to the set
-          list.
         </Typography>
       </Paper>
       <Suspense
@@ -59,14 +53,20 @@ export default function PracticePage() {
 
 async function Practice() {
   const data = await getOctober2026Signup();
-  const songs = data?.setList?.practiceSongs;
-  if (!songs) {
+  const setList = data?.setList;
+  const songs = setList?.practiceSongs;
+  if (!setList || !songs) {
     return (
-      <Paper component="section" variant="outlined" sx={{ p: { xs: 3, sm: 5 } }}>
+      <Paper
+        component="section"
+        variant="outlined"
+        sx={{ p: { xs: 3, sm: 5 } }}
+      >
         <Typography variant="h2">Practice unavailable</Typography>
         <Typography color="textSecondary" sx={{ mt: 1 }}>
-          We could not load practice data. The timetable needs one Practice column
-          to identify completed songs. Please try again in a little while.
+          We could not load practice data. The timetable needs one Practice
+          marked Done! Scheduled sessions show the timetable&apos;s Practice
+          assignments separately from optimizer options.
         </Typography>
       </Paper>
     );
@@ -88,6 +88,7 @@ async function Practice() {
         },
       )}
       alwaysPresentPerformers={alwaysPresentPerformers}
+      scheduledSessions={setList.practiceSessions}
       songsHref="/event-planning/songs"
       sessionTime="7:30–10:30 p.m."
     />
