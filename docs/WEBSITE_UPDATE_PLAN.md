@@ -30,9 +30,10 @@ redaction exist. Live historical publication is range-based, not flag-based.
 ## Next-event invitation and past events — implemented
 
 - The homepage links to the signup tab in the organizer spreadsheet and the
-  confirmed ABK Open Mic Slack channel. It lists the show as the evening of
-  Sunday, October 25, and invites interested people to sign up before choosing
-  a song.
+  confirmed ABK Open Mic Slack channel. Its Spooky Edition hero lists the show on
+  Sunday, October 25, 6:00–7:30 PM at the Blizzard Theater (1 Blizzard Way,
+  Irvine, CA 92618), offers an “Add to calendar” `.ics` download, and invites
+  interested people to sign up before choosing a song.
 - `/event-planning/set-list` is the first/default planning tab and shows the
   October timetable's song, original artist, and recognized role columns in a
   responsive sortable table. Link and Comments are excluded from
