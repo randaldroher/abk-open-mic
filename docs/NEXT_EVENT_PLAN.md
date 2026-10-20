@@ -10,8 +10,9 @@ self-reported roles; contacts and other private fields remain private.
 
 - `/` invites colleagues to join the next ABK Open Mic, with the primary CTA
   linking to the confirmed October 2026 signup tab in the organizer workbook and a secondary
-  CTA to the confirmed Slack channel. The homepage lists the show as the evening
-  of Sunday, October 25; no venue is claimed.
+  CTA to the confirmed Slack channel. The Spooky Edition hero lists the show on
+  Sunday, October 25, 6:00–7:30 PM at the Blizzard Theater, 1 Blizzard Way,
+  Irvine, CA 92618, with an “Add to calendar” `.ics` download.
 - Responsive event cards and `/past-events` link to the July 2025,
   December 2025, and May 2026 archives without fetching sheet data.
 - `/past-events/<event>` provides each event overview and song lineup.
@@ -37,7 +38,7 @@ self-reported roles; contacts and other private fields remain private.
 - `/event-planning` redirects to Songs. Legacy `/songs` and `/performers` URLs
   redirect to their corresponding Event Planning tabs.
 - The homepage's Event Planning section has separate Songs and Performers
-  cards below the hero; the hero focuses on signup and Slack actions.
+  cards below the hero; the hero focuses on calendar, signup, and Slack actions.
 - `/robots.txt` disallows all paths for compliant crawlers; already-known URLs
   may remain in search results until removed by the search engine.
 

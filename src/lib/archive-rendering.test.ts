@@ -10,6 +10,7 @@ import EventPlanningNavigation from '../components/event-planning-navigation';
 import PerformersTable from '../components/performers-table';
 import SongCardsSkeleton from "../components/song-cards-skeleton";
 import SiteFrame from "../components/site-frame";
+import OctoberHero from '../components/october-hero';
 import ThemeProvider from '../app/theme-provider';
 import RoleNeedChip from '../components/role-need-chip';
 import SetListTable from '../components/set-list-table';
@@ -776,4 +777,32 @@ test('robots excludes all paths from compliant crawlers', () => {
   assert.deepEqual(robots(), {
     rules: { userAgent: '*', disallow: '/' },
   });
+});
+
+test('October hero exposes event text, venue, sign-up links, and a calendar download', () => {
+  const html = renderToStaticMarkup(createElement(OctoberHero));
+
+  assert.match(html, /<h1[^>]*id="october-hero-heading"/);
+  for (const text of [
+    'ABK',
+    'Open',
+    'Mic',
+    '<span>Spooky</span> <span>Edition</span>',
+    'Open mic is October 25 – Join us!',
+    'Save the date for the evening of Sunday, October 25!',
+    'Blizzard Theater',
+    'Blizzard Irvine Campus',
+    '1 Blizzard Way, Irvine, CA 92618',
+  ]) {
+    assert.ok(html.includes(text), text);
+  }
+  assert.match(html, /<time datetime="2026-10-25T18:00:00-07:00">6:00<\/time>/i);
+  assert.match(html, /<time datetime="2026-10-25T19:30:00-07:00">7:30 PM<\/time>/i);
+  assert.match(
+    html,
+    /href="\/abk-open-mic-october-2026\.ics"[^>]*download="abk-open-mic-october-2026\.ics"/,
+  );
+  assert.ok(html.includes('Add to calendar'));
+  assert.ok(html.includes(`href="${SIGNUP_URL}"`));
+  assert.ok(!/<h1[^>]*>(?:(?!<\/h1>)[\s\S])*<(?:div|p)[\s>]/.test(html));
 });
