@@ -804,5 +804,7 @@ test('October hero exposes event text, venue, sign-up links, and a calendar down
   );
   assert.ok(html.includes('Add to calendar'));
   assert.ok(html.includes(`href="${SIGNUP_URL}"`));
+  assert.ok(html.includes('halloween-horde-stage.webp'));
+  assert.match(html, /alt="A Murloc in a witch hat singing into a microphone[^"]*"[^>]*murloc-singer\.webp|murloc-singer\.webp[^>]*alt="A Murloc in a witch hat/);
   assert.ok(!/<h1[^>]*>(?:(?!<\/h1>)[\s\S])*<(?:div|p)[\s>]/.test(html));
 });

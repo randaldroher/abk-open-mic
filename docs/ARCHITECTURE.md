@@ -346,8 +346,10 @@ legacy page swapped the two playlist links, so videos are associated using the
 playlist titles and contents. May event videos remain a placeholder until a
 playlist is supplied; song-reference videos remain separately labeled on Songs.
 Home and archive-index cards share a compact month/year title and event-theme
-subtitle with one link per event. The homepage hero is a responsive, “Spooky Edition” poster-style layout with
-selectable text for the show on Sunday, October 25, 6:00–7:30 PM at the
+subtitle with one link per event. The homepage hero is a compact, responsive “Spooky Edition” poster-style
+layout over Halloween Horde raster art (`public/october-2026/`: a stage
+backdrop and a Murloc singer). It keeps the Event planning section above the
+fold on common desktop viewports and uses selectable text for the show on Sunday, October 25, 6:00–7:30 PM at the
 Blizzard Theater (Blizzard Irvine campus, 1 Blizzard Way, Irvine, CA 92618).
 Its “Add to calendar” button downloads a deterministic, prerendered
 `/abk-open-mic-october-2026.ics` invite. MUI handles responsive layout and

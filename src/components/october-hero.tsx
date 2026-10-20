@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
+import Image from 'next/image';
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { OCTOBER_EVENT } from '@/lib/october-event';
 import { SIGNUP_URL, SLACK_URL } from '@/lib/site-links';
+
+const STAGE_IMAGE = '/october-2026/halloween-horde-stage.webp';
+const MURLOC_IMAGE = { src: '/october-2026/murloc-singer.webp', width: 900, height: 1100 };
 
 const EMBER = '#ff7a3d';
 const FLAME = '#ff5a36';
@@ -12,88 +16,11 @@ const MARKER_FONT = 'var(--font-hero-marker), "Comic Sans MS", cursive';
 const SCRIPT_FONT = 'var(--font-hero-script), "Brush Script MT", cursive';
 const SERIF_FONT = 'var(--font-hero-serif), Georgia, serif';
 
-const BAT_PATH =
-  'M0 7C3 3 6 3 8 6C9 4 9.5 3 10 3S11 4 12 6C14 3 17 3 20 7C17.5 6 15.5 7 14.5 9C13 7.5 11.5 8 10 10C8.5 8 7 7.5 5.5 9C4.5 7 2.5 6 0 7Z';
-
-function Bat({ sx }: { sx: object }) {
-  return (
-    <Box component="svg" viewBox="0 0 20 12" sx={{ position: 'absolute', ...sx }}>
-      <path d={BAT_PATH} fill="currentColor" />
-    </Box>
-  );
-}
-
-function Banner({ side }: { side: 'left' | 'right' }) {
-  return (
-    <Box
-      sx={{
-        display: { xs: 'none', md: 'block' },
-        position: 'absolute',
-        top: 0,
-        [side]: { md: '4%', lg: '7%' },
-        width: 'clamp(90px, 10vw, 150px)',
-        aspectRatio: '1 / 3',
-        background:
-          'linear-gradient(180deg, #5c0d0a, #3a0807 70%, #250504), repeating-linear-gradient(90deg, transparent 0 6px, rgba(0 0 0 / 0.15) 6px 7px)',
-        backgroundBlendMode: 'multiply',
-        clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 90%, 0 100%)',
-        opacity: 0.55,
-        boxShadow: 'inset 0 0 40px rgba(0 0 0 / 0.6)',
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          left: '22%',
-          right: '22%',
-          top: '22%',
-          aspectRatio: '1',
-          borderRadius: '50%',
-          border: '3px solid rgba(255 90 54 / 0.35)',
-        },
-      }}
-    />
-  );
-}
-
-function Candle({ height, sx }: { height: number; sx: object }) {
-  return (
-    <Box
-      sx={{
-        position: 'absolute',
-        bottom: 0,
-        width: 'clamp(14px, 2vw, 24px)',
-        height: `clamp(${Math.round(height * 0.6)}px, ${height / 10}vw, ${height}px)`,
-        borderRadius: '4px 4px 0 0',
-        background: 'linear-gradient(90deg, #c9a77c, #f3dfbd 45%, #b48d62)',
-        boxShadow: '0 0 30px rgba(255 140 60 / 0.35)',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          left: '50%',
-          bottom: '100%',
-          width: '60%',
-          aspectRatio: '1 / 2',
-          transform: 'translateX(-50%)',
-          borderRadius: '50% 50% 45% 45% / 70% 70% 30% 30%',
-          background: 'radial-gradient(ellipse at 50% 75%, #fff4c2, #ffb347 45%, rgba(255 90 30 / 0) 75%)',
-          animation: 'abk-flicker 2.4s ease-in-out infinite alternate',
-          '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-        },
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          left: '50%',
-          bottom: '70%',
-          width: 'clamp(90px, 12vw, 160px)',
-          aspectRatio: '1',
-          transform: 'translateX(-50%)',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255 150 60 / 0.28), transparent 65%)',
-        },
-        ...sx,
-      }}
-    />
-  );
-}
+// Scale the title by viewport height as well as width so the hero stays short on wide, low screens.
+const TITLE_SIZE = {
+  xs: 'clamp(2.6rem, 13vw, 4.25rem)',
+  md: 'clamp(3.25rem, min(6vw, 10vh), 5.75rem)',
+};
 
 function Flourish({ flip }: { flip?: boolean }) {
   return (
@@ -102,7 +29,7 @@ function Flourish({ flip }: { flip?: boolean }) {
       aria-hidden="true"
       viewBox="0 0 40 40"
       sx={{
-        width: 'clamp(28px, 5vw, 44px)',
+        width: '0.45em',
         flexShrink: 0,
         color: FLAME,
         transform: flip ? 'scaleX(-1)' : undefined,
@@ -124,10 +51,12 @@ function StarDivider() {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 2,
+        gap: 1.5,
         width: '100%',
-        maxWidth: 420,
+        maxWidth: 360,
+        mx: 'auto',
         color: AMBER,
+        fontSize: '0.85rem',
         '&::before, &::after': {
           content: '""',
           flex: 1,
@@ -144,7 +73,7 @@ function StarDivider() {
 
 function IconLine({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
-    <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', justifyContent: 'center' }}>
+    <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', justifyContent: 'center' }}>
       <Box
         component="svg"
         aria-hidden="true"
@@ -158,6 +87,13 @@ function IconLine({ icon, children }: { icon: ReactNode; children: ReactNode }) 
   );
 }
 
+const outlinedButtonSx = {
+  color: PARCHMENT,
+  borderColor: 'rgba(246 230 204 / 0.5)',
+  backgroundColor: 'rgba(13 5 3 / 0.55)',
+  '&:hover': { borderColor: PARCHMENT, backgroundColor: 'rgba(246 230 204 / 0.1)' },
+};
+
 export default function OctoberHero({ className }: { className?: string }) {
   return (
     <Box
@@ -169,150 +105,180 @@ export default function OctoberHero({ className }: { className?: string }) {
         overflow: 'hidden',
         isolation: 'isolate',
         color: PARCHMENT,
+        backgroundColor: '#140604',
         borderBottom: '1px solid rgba(255 122 61 / 0.25)',
-        background: [
-          'radial-gradient(ellipse 55% 45% at 50% 42%, rgba(255 110 40 / 0.2), transparent 70%)',
-          'radial-gradient(ellipse 40% 30% at 50% 100%, rgba(255 120 40 / 0.18), transparent 70%)',
-          'radial-gradient(ellipse 30% 50% at 0% 60%, rgba(140 20 10 / 0.35), transparent 70%)',
-          'radial-gradient(ellipse 30% 50% at 100% 60%, rgba(140 20 10 / 0.35), transparent 70%)',
-          'linear-gradient(180deg, #120604, #1d0905 55%, #0d0503)',
-        ].join(', '),
-        pt: { xs: 6, md: 8 },
-        pb: { xs: 16, sm: 18, md: 22 },
-        '@keyframes abk-flicker': {
-          from: { opacity: 0.85, transform: 'translateX(-50%) scale(1, 1)' },
-          to: { opacity: 1, transform: 'translateX(-50%) scale(0.92, 1.08)' },
-        },
       }}
     >
-      <Box
-        aria-hidden="true"
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: -1,
-          pointerEvents: 'none',
-          userSelect: 'none',
-        }}
-      >
-        <Banner side="left" />
-        <Banner side="right" />
+      <Box aria-hidden="true" sx={{ position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}>
+        <Image
+          src={STAGE_IMAGE}
+          alt=""
+          fill
+          preload
+          sizes="100vw"
+          style={{ objectFit: 'cover', objectPosition: '50% 45%' }}
+        />
         <Box
           sx={{
             position: 'absolute',
-            top: { xs: 20, md: 48 },
-            right: { xs: '6%', md: '12%', lg: '17%' },
-            width: 'clamp(56px, 9vw, 120px)',
-            aspectRatio: '1',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle at 40% 40%, #fff3d6, #f1cf9a 55%, #d9a66a)',
-            boxShadow: '0 0 40px rgba(255 214 150 / 0.45), 0 0 120px rgba(255 170 80 / 0.25)',
-            opacity: 0.85,
+            inset: 0,
+            background: {
+              xs: 'linear-gradient(180deg, rgba(13 5 3 / 0.35), rgba(13 5 3 / 0.7) 45%, rgba(13 5 3 / 0.8))',
+              md: 'linear-gradient(90deg, rgba(13 5 3 / 0.1), rgba(13 5 3 / 0.55) 32%, rgba(13 5 3 / 0.72) 62%, rgba(13 5 3 / 0.6))',
+            },
           }}
         />
-        <Box sx={{ color: '#0b0302' }}>
-          <Bat sx={{ top: { xs: 70, md: 130 }, right: { xs: '18%', md: '20%' }, width: { xs: 28, md: 44 } }} />
-          <Bat sx={{ top: { xs: 34, md: 60 }, right: { xs: '28%', md: '27%' }, width: { xs: 20, md: 30 }, transform: 'rotate(-12deg)' }} />
-        </Box>
-        <Box sx={{ color: FLAME, opacity: 0.8 }}>
-          <Bat sx={{ top: '38%', left: { xs: '4%', md: '20%', lg: '24%' }, width: { xs: 30, md: 46 }, transform: 'rotate(-18deg)' }} />
-          <Bat sx={{ top: { xs: '44%', md: '40%' }, right: { xs: '4%', md: '19%', lg: '23%' }, width: { xs: 26, md: 40 }, transform: 'rotate(10deg)' }} />
-        </Box>
-        <Candle height={110} sx={{ left: '6%' }} />
-        <Candle height={70} sx={{ left: '13%', display: { xs: 'none', sm: 'block' } }} />
-        <Candle height={90} sx={{ left: '24%', display: { xs: 'none', md: 'block' } }} />
-        <Candle height={60} sx={{ left: '38%', display: { xs: 'none', lg: 'block' } }} />
-        <Candle height={75} sx={{ right: '36%', display: { xs: 'none', lg: 'block' } }} />
-        <Candle height={95} sx={{ right: '22%', display: { xs: 'none', md: 'block' } }} />
-        <Candle height={65} sx={{ right: '14%', display: { xs: 'none', sm: 'block' } }} />
-        <Candle height={120} sx={{ right: '6%' }} />
       </Box>
 
-      <Container maxWidth="md">
-        <Stack spacing={{ xs: 3, md: 3.5 }} sx={{ alignItems: 'center', textAlign: 'center' }}>
+      <Container
+        maxWidth="xl"
+        sx={{
+          display: 'grid',
+          alignItems: 'center',
+          columnGap: { xs: 2, md: 4, lg: 6 },
+          rowGap: { xs: 2.5, md: 1.75 },
+          gridTemplateColumns: {
+            xs: 'minmax(0, 0.8fr) minmax(0, 1fr)',
+            md: 'auto minmax(0, 0.85fr) minmax(0, 1.15fr)',
+          },
+          gridTemplateAreas: {
+            xs: '"murloc title" "details details" "actions actions"',
+            md: '"murloc title details" "murloc title actions"',
+          },
+          pt: { xs: 3, md: 3.5 },
+          pb: { xs: 4, md: 0 },
+        }}
+      >
+        <Box
+          sx={{
+            gridArea: 'murloc',
+            alignSelf: 'end',
+            position: 'relative',
+            aspectRatio: `${MURLOC_IMAGE.width} / ${MURLOC_IMAGE.height}`,
+            width: { xs: '100%', md: 'clamp(220px, min(24vw, 36vh), 340px)' },
+            maxWidth: { xs: 220, md: 'none' },
+            justifySelf: { xs: 'end', md: 'start' },
+            mb: { md: 1.5 },
+            filter: 'drop-shadow(0 0 30px rgba(255 120 40 / 0.25))',
+          }}
+        >
+          <Image
+            src={MURLOC_IMAGE.src}
+            alt="A Murloc in a witch hat singing into a microphone on a candlelit stage"
+            fill
+            preload
+            sizes="(max-width: 900px) 40vw, 340px"
+            style={{ objectFit: 'contain', objectPosition: 'bottom' }}
+          />
+        </Box>
+
+        <Box
+          component="h1"
+          id="october-hero-heading"
+          sx={{
+            gridArea: 'title',
+            m: 0,
+            fontSize: TITLE_SIZE,
+            fontWeight: 400,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            justifySelf: 'center',
+            lineHeight: 0.92,
+          }}
+        >
           <Box
-            component="h1"
-            id="october-hero-heading"
-            sx={{ position: 'relative', m: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            component="svg"
+            aria-hidden="true"
+            viewBox="0 0 28 18"
+            sx={{ width: '0.42em', color: EMBER, mb: '0.04em' }}
           >
-            <Box
-              component="svg"
-              aria-hidden="true"
-              viewBox="0 0 28 18"
-              sx={{ width: 'clamp(30px, 5vw, 48px)', color: EMBER, mb: 0.5 }}
-            >
-              <path d="M2 16L4 4L10 10L14 2L18 10L24 4L26 16Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-            </Box>
-            <Stack component="span" direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-              <Flourish />
-              <Box
-                component="span"
-                sx={{
-                  fontFamily: MARKER_FONT,
-                  fontSize: 'clamp(3rem, 10vw, 6rem)',
-                  lineHeight: 1,
-                  color: EMBER,
-                  transform: 'rotate(-4deg)',
-                  textShadow: '0 0 30px rgba(255 122 61 / 0.45)',
-                }}
-              >
-                ABK
-              </Box>
-              <Flourish flip />
-            </Stack>{' '}
+            <path d="M2 16L4 4L10 10L14 2L18 10L24 4L26 16Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+          </Box>
+          <Stack component="span" direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+            <Flourish />
             <Box
               component="span"
               sx={{
                 fontFamily: MARKER_FONT,
-                fontSize: 'clamp(4rem, 16vw, 9rem)',
-                lineHeight: 0.92,
-                color: PARCHMENT,
-                transform: 'rotate(-3deg)',
-                textShadow: '0 4px 0 rgba(0 0 0 / 0.35), 0 0 40px rgba(255 170 90 / 0.35)',
-                '& > span': { display: 'block' },
-                '& > span + span': { ml: '0.6em' },
+                fontSize: '0.62em',
+                lineHeight: 1,
+                color: EMBER,
+                transform: 'rotate(-4deg)',
+                textShadow: '0 0 30px rgba(255 122 61 / 0.45)',
               }}
             >
-              <span>Open</span> <span>Mic</span>
-            </Box>{' '}
+              ABK
+            </Box>
+            <Flourish flip />
+          </Stack>{' '}
+          <Box
+            component="span"
+            sx={{
+              position: 'relative',
+              fontFamily: MARKER_FONT,
+              color: PARCHMENT,
+              transform: 'rotate(-3deg)',
+              textShadow: '0 4px 0 rgba(0 0 0 / 0.4), 0 0 40px rgba(255 170 90 / 0.35)',
+              '& > span': { display: 'block' },
+              '& > span:nth-of-type(2)': { pr: { md: '1.25em' } },
+            }}
+          >
+            <span>Open</span> <span>Mic</span>{' '}
             <Box
               component="span"
               sx={{
-                position: { sm: 'absolute' },
-                left: { sm: '94%' },
-                bottom: { sm: '6%' },
-                mt: { xs: 1, sm: 0 },
+                position: { xs: 'static', md: 'absolute' },
+                display: { xs: 'block', md: 'inline' },
+                mt: { xs: '0.15em', md: 0 },
+                right: '-0.4em',
+                bottom: '-0.14em',
                 fontFamily: SCRIPT_FONT,
                 fontWeight: 700,
-                fontSize: 'clamp(2.25rem, 6vw, 3.75rem)',
-                lineHeight: 0.9,
+                fontSize: { xs: '0.5em', md: '0.4em' },
+                lineHeight: 0.95,
                 color: FLAME,
+                textAlign: { xs: 'center', md: 'left' },
                 whiteSpace: 'nowrap',
-                transform: 'rotate(-9deg)',
-                textShadow: '0 0 24px rgba(255 90 54 / 0.4)',
-                '& > span': { display: { sm: 'block' } },
-                '& > span + span': { ml: { sm: '0.5em' } },
+                transform: 'rotate(-8deg)',
+                textShadow: '0 0 18px rgba(0 0 0 / 0.8), 0 0 24px rgba(255 90 54 / 0.4)',
+                '& > span': { display: { md: 'block' } },
+                '& > span + span': { ml: { md: '0.45em' } },
               }}
             >
               <span>Spooky</span> <span>Edition</span>
             </Box>
           </Box>
+        </Box>
 
+        <Stack
+          spacing={1}
+          sx={{
+            gridArea: 'details',
+            alignSelf: 'end',
+            alignItems: 'center',
+            textAlign: 'center',
+            minWidth: 0,
+            textShadow: '0 1px 2px rgba(0 0 0 / 0.9), 0 0 14px rgba(0 0 0 / 0.85)',
+          }}
+        >
           <Typography
             sx={{
               fontFamily: SCRIPT_FONT,
               fontWeight: 700,
-              fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
-              lineHeight: 1.1,
+              fontSize: { xs: '1.6rem', md: 'clamp(1.6rem, 2.4vw, 2.1rem)' },
+              lineHeight: 1.05,
               color: '#2a140b',
-              maxWidth: 460,
-              px: { xs: 3, sm: 5 },
-              py: 1.5,
-              transform: 'rotate(-3deg)',
+              px: { xs: 3, md: 4 },
+              py: 1,
+              mb: 0.5,
+              alignSelf: 'center',
+              textShadow: 'none',
+              transform: 'rotate(-2.5deg)',
               background: 'linear-gradient(170deg, #f6e4c3, #e8cea3)',
               clipPath:
                 'polygon(2% 8%, 30% 0, 62% 6%, 98% 0, 100% 40%, 97% 92%, 70% 100%, 35% 94%, 0 100%, 3% 55%)',
-              filter: 'drop-shadow(0 6px 18px rgba(0 0 0 / 0.5))',
             }}
           >
             Open mic is October 25 – Join us!
@@ -320,27 +286,25 @@ export default function OctoberHero({ className }: { className?: string }) {
 
           <StarDivider />
 
-          <Stack spacing={1} sx={{ fontFamily: SERIF_FONT }}>
-            <IconLine
-              icon={
-                <>
-                  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
-                  <path d="M12 7v5l3 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </>
-              }
+          <IconLine
+            icon={
+              <>
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
+                <path d="M12 7v5l3 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </>
+            }
+          >
+            <Typography
+              component="p"
+              sx={{ fontFamily: SERIF_FONT, fontWeight: 600, fontSize: { xs: '1.35rem', md: '1.55rem' }, lineHeight: 1.3, color: AMBER, letterSpacing: '0.04em' }}
             >
-              <Typography
-                component="p"
-                sx={{ fontFamily: 'inherit', fontWeight: 600, fontSize: 'clamp(1.4rem, 3.5vw, 1.9rem)', color: AMBER, letterSpacing: '0.04em' }}
-              >
-                <time dateTime={OCTOBER_EVENT.start}>6:00</time> –{' '}
-                <time dateTime={OCTOBER_EVENT.end}>7:30 PM</time>
-              </Typography>
-            </IconLine>
-            <Typography sx={{ fontFamily: 'Georgia, serif', fontSize: { xs: '1.05rem', md: '1.2rem' }, maxWidth: 440 }}>
-              Save the date for the evening of {OCTOBER_EVENT.dateLabel}!
+              <time dateTime={OCTOBER_EVENT.start}>6:00</time> –{' '}
+              <time dateTime={OCTOBER_EVENT.end}>7:30 PM</time>
             </Typography>
-          </Stack>
+          </IconLine>
+          <Typography sx={{ fontFamily: 'Georgia, serif', fontSize: '1rem', lineHeight: 1.4 }}>
+            Save the date for the evening of {OCTOBER_EVENT.dateLabel}!
+          </Typography>
 
           <StarDivider />
 
@@ -355,69 +319,78 @@ export default function OctoberHero({ className }: { className?: string }) {
             >
               <Typography
                 component="span"
-                sx={{ fontFamily: SERIF_FONT, fontWeight: 600, fontSize: 'clamp(1.35rem, 3.5vw, 1.8rem)', color: AMBER, letterSpacing: '0.08em', textTransform: 'uppercase' }}
+                sx={{ fontFamily: SERIF_FONT, fontWeight: 600, fontSize: { xs: '1.3rem', md: '1.45rem' }, lineHeight: 1.3, color: AMBER, letterSpacing: '0.08em', textTransform: 'uppercase' }}
               >
                 {OCTOBER_EVENT.venue}
               </Typography>
             </IconLine>
-            <Typography sx={{ fontFamily: SERIF_FONT, letterSpacing: '0.18em', textTransform: 'uppercase', fontSize: '0.85rem' }}>
+            <Typography sx={{ fontFamily: SERIF_FONT, letterSpacing: '0.16em', textTransform: 'uppercase', fontSize: '0.875rem', lineHeight: 1.6 }}>
               {OCTOBER_EVENT.campus}
             </Typography>
-            <Typography sx={{ fontFamily: 'Georgia, serif', color: 'rgba(246 230 204 / 0.8)', mt: 0.5 }}>
+            <Typography sx={{ fontFamily: 'Georgia, serif', fontSize: '0.95rem', lineHeight: 1.5, color: PARCHMENT }}>
               {OCTOBER_EVENT.streetAddress}, {OCTOBER_EVENT.locality}
             </Typography>
           </Box>
-
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            sx={{ pt: 1, width: { xs: '100%', sm: 'auto' }, maxWidth: 420, '@media (min-width: 600px)': { maxWidth: 'none' } }}
-          >
-            <Button
-              component="a"
-              href={OCTOBER_EVENT.calendarHref}
-              download={OCTOBER_EVENT.calendarFileName}
-              variant="contained"
-              size="large"
-              startIcon={
-                <Box component="svg" aria-hidden="true" viewBox="0 0 24 24" sx={{ width: 20, height: 20 }}>
-                  <rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
-                  <path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </Box>
-              }
-              sx={{
-                backgroundColor: EMBER,
-                color: '#1a0804',
-                boxShadow: '0 0 28px rgba(255 122 61 / 0.45)',
-                '&:hover': { backgroundColor: '#ff935f', boxShadow: '0 0 36px rgba(255 122 61 / 0.6)' },
-              }}
-            >
-              Add to calendar
-            </Button>
-            <Button
-              component="a"
-              href={SIGNUP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="outlined"
-              size="large"
-              sx={{ color: PARCHMENT, borderColor: 'rgba(246 230 204 / 0.5)', '&:hover': { borderColor: PARCHMENT, backgroundColor: 'rgba(246 230 204 / 0.08)' } }}
-            >
-              Sign up in the spreadsheet
-            </Button>
-            <Button
-              component="a"
-              href={SLACK_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="outlined"
-              size="large"
-              sx={{ color: PARCHMENT, borderColor: 'rgba(246 230 204 / 0.5)', '&:hover': { borderColor: PARCHMENT, backgroundColor: 'rgba(246 230 204 / 0.08)' } }}
-            >
-              Join ABK Open Mic on Slack
-            </Button>
-          </Stack>
         </Stack>
+
+        <Box
+          sx={{
+            gridArea: 'actions',
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignSelf: 'start',
+            gap: { xs: 1.5, md: 1.25 },
+            pb: { md: 3 },
+            '& .MuiButton-root': { fontSize: { md: '1.15rem' }, py: { md: 0.75 } },
+            '& > .MuiButton-root:first-of-type': { flexBasis: { md: '100%' }, maxWidth: { md: 420 } },
+          }}
+        >
+          <Button
+            component="a"
+            href={OCTOBER_EVENT.calendarHref}
+            download={OCTOBER_EVENT.calendarFileName}
+            variant="contained"
+            size="large"
+            startIcon={
+              <Box component="svg" aria-hidden="true" viewBox="0 0 24 24" sx={{ width: 20, height: 20 }}>
+                <rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
+                <path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </Box>
+            }
+            sx={{
+              backgroundColor: EMBER,
+              color: '#1a0804',
+              boxShadow: '0 0 28px rgba(255 122 61 / 0.45)',
+              '&:hover': { backgroundColor: '#ff935f', boxShadow: '0 0 36px rgba(255 122 61 / 0.6)' },
+            }}
+          >
+            Add to calendar
+          </Button>
+          <Button
+            component="a"
+            href={SIGNUP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outlined"
+            size="large"
+            sx={outlinedButtonSx}
+          >
+            Sign up in the spreadsheet
+          </Button>
+          <Button
+            component="a"
+            href={SLACK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outlined"
+            size="large"
+            sx={outlinedButtonSx}
+          >
+            Join ABK Open Mic on Slack
+          </Button>
+        </Box>
       </Container>
     </Box>
   );
