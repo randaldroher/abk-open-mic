@@ -806,5 +806,7 @@ test('October hero exposes event text, venue, sign-up links, and a calendar down
   assert.ok(html.includes(`href="${SIGNUP_URL}"`));
   assert.ok(html.includes('halloween-horde-stage.webp'));
   assert.match(html, /alt="A Murloc in a witch hat singing into a microphone[^"]*"[^>]*murloc-singer\.webp|murloc-singer\.webp[^>]*alt="A Murloc in a witch hat/);
+  assert.match(html, /aspect-ratio:400\s*\/\s*585/);
+  assert.ok(html.includes('sizes="(max-width: 900px) 40vw, 300px"'));
   assert.ok(!/<h1[^>]*>(?:(?!<\/h1>)[\s\S])*<(?:div|p)[\s>]/.test(html));
 });

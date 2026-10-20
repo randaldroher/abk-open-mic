@@ -5,7 +5,7 @@ import { OCTOBER_EVENT } from '@/lib/october-event';
 import { SIGNUP_URL, SLACK_URL } from '@/lib/site-links';
 
 const STAGE_IMAGE = '/october-2026/halloween-horde-stage.webp';
-const MURLOC_IMAGE = { src: '/october-2026/murloc-singer.webp', width: 900, height: 1100 };
+const MURLOC_IMAGE = { src: '/october-2026/murloc-singer.webp', width: 400, height: 585 };
 
 const EMBER = '#ff7a3d';
 const FLAME = '#ff5a36';
@@ -116,15 +116,15 @@ export default function OctoberHero({ className }: { className?: string }) {
           fill
           preload
           sizes="100vw"
-          style={{ objectFit: 'cover', objectPosition: '50% 45%' }}
+          style={{ objectFit: 'cover', objectPosition: '50% 50%' }}
         />
         <Box
           sx={{
             position: 'absolute',
             inset: 0,
             background: {
-              xs: 'linear-gradient(180deg, rgba(13 5 3 / 0.35), rgba(13 5 3 / 0.7) 45%, rgba(13 5 3 / 0.8))',
-              md: 'linear-gradient(90deg, rgba(13 5 3 / 0.1), rgba(13 5 3 / 0.55) 32%, rgba(13 5 3 / 0.72) 62%, rgba(13 5 3 / 0.6))',
+              xs: 'linear-gradient(180deg, rgba(13 5 3 / 0.5), rgba(13 5 3 / 0.85) 45%, rgba(13 5 3 / 0.9))',
+              md: 'linear-gradient(90deg, rgba(13 5 3 / 0.3), rgba(13 5 3 / 0.88) 32%, rgba(13 5 3 / 0.92) 62%, rgba(13 5 3 / 0.65))',
             },
           }}
         />
@@ -155,11 +155,11 @@ export default function OctoberHero({ className }: { className?: string }) {
             alignSelf: 'end',
             position: 'relative',
             aspectRatio: `${MURLOC_IMAGE.width} / ${MURLOC_IMAGE.height}`,
-            width: { xs: '100%', md: 'clamp(220px, min(24vw, 36vh), 340px)' },
+            width: { xs: '100%', md: 'clamp(220px, min(24vw, 32vh), 300px)' },
             maxWidth: { xs: 220, md: 'none' },
             justifySelf: { xs: 'end', md: 'start' },
             mb: { md: 1.5 },
-            filter: 'drop-shadow(0 0 30px rgba(255 120 40 / 0.25))',
+            maskImage: 'linear-gradient(180deg, transparent, #000 5%, #000 88%, transparent)',
           }}
         >
           <Image
@@ -167,8 +167,12 @@ export default function OctoberHero({ className }: { className?: string }) {
             alt="A Murloc in a witch hat singing into a microphone on a candlelit stage"
             fill
             preload
-            sizes="(max-width: 900px) 40vw, 340px"
-            style={{ objectFit: 'contain', objectPosition: 'bottom' }}
+            sizes="(max-width: 900px) 40vw, 300px"
+            style={{
+              objectFit: 'contain',
+              objectPosition: 'bottom',
+              maskImage: 'linear-gradient(90deg, transparent, #000 5%, #000 94%, transparent)',
+            }}
           />
         </Box>
 
