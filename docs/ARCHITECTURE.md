@@ -143,6 +143,16 @@ set list`; `All roles filled` is shown only when at least one role has an
 assigned performer and every matching role has no need marker. Other matched
 songs have no status chip. Status chips are suppressed when timetable data is
 unavailable; signup songs remain visible.
+The homepage guest set list preserves October timetable row order as performance
+order, including repeated songs. It shows titles, artists, and assigned public
+performer names deduplicated by initials within each song, without role details
+or planning markers. YouTube references come only from the approved signup
+projection, matched by normalized title and artist; the timetable Link column
+remains unfetched. Each numbered song expands on tap or keyboard activation.
+Only the expanded song mounts a responsive, privacy-enhanced YouTube iframe,
+and collapsing or opening another song removes the previous player. Missing
+references leave the song visible with an explanatory message.
+
 The timetable has its own `minutes` cache and instance-local fallback. An
 unavailable timetable does not hide signup data, and the planning freshness
 timestamp is the older successful fetch when both sources are available.
@@ -287,8 +297,10 @@ every page request to retry Google Sheets before the configured revalidation
 interval. The October adapter batches its two header reads and all selected public
 value ranges to minimize API requests without fetching private columns.
 React request memoization shares the same event result between a page and its
-event layout. The homepage and archive index make no Sheets read and have no
-historical freshness indicator. Event pages and the October proposed-songs page
+event layout. The homepage reuses the cached October signup/timetable projection
+inside Suspense; unavailable data affects only the set list, not the invitation.
+The archive index makes no Sheets read. Neither has a historical freshness
+indicator. Event pages and the October proposed-songs page
 show their own successful-fetch timestamp; “Last updated” means last successful
 data fetch, not a sheet edit.
 The initial HTML contains an ISO time; after hydration, the client shows
@@ -305,7 +317,7 @@ can render the unavailable state. Verify rendered content as well.
 
 | Route | Current behavior |
 | --- | --- |
-| `/` | October 2026 invitation with signup and Slack links, Event Planning cards for Set List, Practice, Songs, and Performers, and past-event cards |
+| `/` | October 2026 invitation with signup and Slack links, mobile-friendly set list in performance order with expandable YouTube references, Event Planning cards, and past-event cards |
 | `/past-events` | Static archive index, independent of Sheets availability |
 | `/event-planning` | Redirects to the first/default Set List tab |
 | `/event-planning/set-list` | Sortable October timetable song/artist/role table with resolved names and bold colored role-need text |

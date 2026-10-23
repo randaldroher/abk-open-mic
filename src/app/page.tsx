@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { Suspense } from 'react';
 import { Caveat, Cinzel, Permanent_Marker } from 'next/font/google';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import PastEventCards from "@/components/past-event-cards";
 import EventPlanningCards from '@/components/event-planning-cards';
 import OctoberHero from '@/components/october-hero';
 import SiteFrame from "@/components/site-frame";
+import HomeSetList from '@/components/home-set-list';
+import { OCTOBER_EVENT } from '@/lib/october-event';
 
 const heroMarkerFont = Permanent_Marker({
   subsets: ['latin'],
@@ -39,6 +42,91 @@ export default function Home() {
       }
     >
       <Stack spacing={10}>
+        <Box
+          component="section"
+          aria-labelledby="home-set-list-heading"
+          className={heroSerifFont.variable}
+          sx={{
+            width: '100%',
+            maxWidth: 880,
+            mx: 'auto',
+            p: { xs: 1.5, sm: 4 },
+            color: '#f6e6cc',
+            background: 'radial-gradient(ellipse at top, rgba(255 122 61 / 0.14), transparent 60%), #140604',
+            border: '1px solid rgba(240 178 122 / 0.5)',
+            boxShadow: 'inset 0 0 0 5px #140604, inset 0 0 0 6px rgba(240 178 122 / 0.2), 0 20px 60px rgba(0 0 0 / 0.25)',
+          }}
+        >
+          <Stack spacing={3}>
+            <Box sx={{ textAlign: 'center', pt: { xs: 2, sm: 1 }, px: 1 }}>
+              <Typography id="home-set-list-heading" variant="h2" sx={{
+                fontFamily: 'var(--font-hero-serif), Georgia, serif',
+                fontSize: { xs: '2rem', sm: '3rem' },
+                fontWeight: 600,
+                lineHeight: 1.2,
+                mt: 1,
+                textTransform: 'uppercase',
+                textWrap: 'balance',
+                overflowWrap: 'anywhere',
+                textShadow: '0 3px 0 rgba(0 0 0 / 0.4), 0 0 30px rgba(255 122 61 / 0.25)',
+              }}>
+                {OCTOBER_EVENT.title}
+              </Typography>
+              <Stack spacing={1} sx={{ mt: 2.5 }}>
+                <Typography sx={{
+                  fontFamily: 'var(--font-hero-serif), Georgia, serif',
+                  fontSize: { xs: '1rem', sm: '1.25rem' },
+                  fontWeight: 600,
+                  color: '#f0b27a',
+                }}>
+                  <time dateTime={OCTOBER_EVENT.start}>{OCTOBER_EVENT.dateLabel}</time>
+                </Typography>
+                <Typography sx={{ color: '#f0b27a', fontWeight: 600 }}>
+                  {OCTOBER_EVENT.timeLabel} Pacific
+                </Typography>
+                <Box sx={{ pt: 1 }}>
+                  <Typography sx={{
+                    fontFamily: 'var(--font-hero-serif), Georgia, serif',
+                    fontSize: { xs: '1.2rem', sm: '1.5rem' },
+                    fontWeight: 600,
+                    color: '#ff7a3d',
+                  }}>
+                    {OCTOBER_EVENT.venue}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>
+                    {OCTOBER_EVENT.campus}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>
+                    {OCTOBER_EVENT.streetAddress}, {OCTOBER_EVENT.locality}
+                  </Typography>
+                </Box>
+              </Stack>
+              <Box aria-hidden="true" sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                maxWidth: 300,
+                mx: 'auto',
+                my: 2,
+                color: '#f0b27a',
+                '&::before, &::after': {
+                  content: '""',
+                  height: '1px',
+                  flex: 1,
+                  bgcolor: 'rgba(240 178 122 / 0.4)',
+                },
+              }}>
+                ✦
+              </Box>
+              <Typography variant="body2" sx={{ color: '#f6e6cc' }}>
+                In performance order. Tap a song for its YouTube reference.
+              </Typography>
+            </Box>
+            <Suspense fallback={<Typography role="status">Loading the set list…</Typography>}>
+              <HomeSetList />
+            </Suspense>
+          </Stack>
+        </Box>
         <Box component="section" aria-labelledby="event-planning-heading">
           <Stack spacing={2}>
             <Box>
