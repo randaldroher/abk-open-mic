@@ -68,3 +68,20 @@ test('guest set list handles empty lists and missing artist credits', () => {
   }));
   assert.match(html, /Artist not listed/);
 });
+
+test('concert bill uses hero typography and large decorative expand controls', () => {
+  const html = renderToStaticMarkup(createElement(GuestSetList, {
+    songs: buildGuestSetList(setList, references),
+  }));
+  assert.match(html, /var\(--font-hero-marker\)/);
+  assert.match(html, /var\(--font-hero-serif\)/);
+  assert.match(html, /width:44px;height:44px/);
+  assert.match(html, /width:28px;height:28px/);
+  assert.equal((html.match(/<svg[^>]+viewBox="0 0 24 24"[^>]+focusable="false"/g) ?? []).length, 4);
+  assert.match(html, /aria-hidden="true"/);
+  assert.match(html, />01<\/span>/);
+  assert.match(html, />04<\/span>/);
+  assert.match(html, /Mui-focusVisible/);
+  assert.match(html, /prefers-reduced-motion:\s*reduce/);
+  assert.doesNotMatch(html, /⌄/);
+});

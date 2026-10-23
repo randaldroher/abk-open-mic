@@ -41,14 +41,73 @@ export default function Home() {
       }
     >
       <Stack spacing={10}>
-        <Box component="section" aria-labelledby="home-set-list-heading" sx={{ width: '100%', maxWidth: 800, mx: 'auto' }}>
-          <Stack spacing={2}>
-            <Box>
-              <Typography id="home-set-list-heading" variant="h2">
+        <Box
+          component="section"
+          aria-labelledby="home-set-list-heading"
+          className={`${heroMarkerFont.variable} ${heroScriptFont.variable} ${heroSerifFont.variable}`}
+          sx={{
+            width: '100%',
+            maxWidth: 880,
+            mx: 'auto',
+            p: { xs: 1.5, sm: 4 },
+            color: '#f6e6cc',
+            background: 'radial-gradient(ellipse at top, rgba(255 122 61 / 0.14), transparent 60%), #140604',
+            border: '1px solid rgba(240 178 122 / 0.5)',
+            boxShadow: 'inset 0 0 0 5px #140604, inset 0 0 0 6px rgba(240 178 122 / 0.2), 0 20px 60px rgba(0 0 0 / 0.25)',
+          }}
+        >
+          <Stack spacing={3}>
+            <Box sx={{ textAlign: 'center', pt: { xs: 2, sm: 1 }, px: 1 }}>
+              <Typography sx={{
+                fontFamily: 'var(--font-hero-serif), Georgia, serif',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                fontWeight: 600,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: '#f0b27a',
+              }}>
+                ABK Open Mic presents
+              </Typography>
+              <Typography id="home-set-list-heading" variant="h2" sx={{
+                fontFamily: 'var(--font-hero-marker), "Comic Sans MS", cursive',
+                fontSize: { xs: '2.75rem', sm: '4rem' },
+                fontWeight: 400,
+                lineHeight: 1.2,
+                mt: 1,
+                textTransform: 'uppercase',
+                transform: 'rotate(-2deg)',
+                textShadow: '0 3px 0 rgba(0 0 0 / 0.4), 0 0 30px rgba(255 122 61 / 0.25)',
+              }}>
                 Set list
               </Typography>
-              <Typography color="textSecondary" sx={{ mt: 1 }}>
-                Songs in performance order. Tap a song to watch its YouTube reference.
+              <Typography sx={{
+                fontFamily: 'var(--font-hero-script), "Brush Script MT", cursive',
+                fontSize: { xs: '1.85rem', sm: '2.25rem' },
+                fontWeight: 700,
+                color: '#ff7a3d',
+                transform: 'rotate(-3deg)',
+              }}>
+                Spooky Edition
+              </Typography>
+              <Box aria-hidden="true" sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                maxWidth: 300,
+                mx: 'auto',
+                my: 2,
+                color: '#f0b27a',
+                '&::before, &::after': {
+                  content: '""',
+                  height: '1px',
+                  flex: 1,
+                  bgcolor: 'rgba(240 178 122 / 0.4)',
+                },
+              }}>
+                ✦
+              </Box>
+              <Typography variant="body2" sx={{ color: '#f6e6cc' }}>
+                In performance order. Tap a song for its YouTube reference.
               </Typography>
             </Box>
             <Suspense fallback={<Typography role="status">Loading the set list…</Typography>}>
