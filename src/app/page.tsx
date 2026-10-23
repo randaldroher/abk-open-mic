@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from 'react';
 import { Caveat, Cinzel, Permanent_Marker } from 'next/font/google';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import PastEventCards from "@/components/past-event-cards";
 import EventPlanningCards from '@/components/event-planning-cards';
 import OctoberHero from '@/components/october-hero';
 import SiteFrame from "@/components/site-frame";
+import HomeSetList from '@/components/home-set-list';
 
 const heroMarkerFont = Permanent_Marker({
   subsets: ['latin'],
@@ -39,6 +41,21 @@ export default function Home() {
       }
     >
       <Stack spacing={10}>
+        <Box component="section" aria-labelledby="home-set-list-heading" sx={{ width: '100%', maxWidth: 800, mx: 'auto' }}>
+          <Stack spacing={2}>
+            <Box>
+              <Typography id="home-set-list-heading" variant="h2">
+                Set list
+              </Typography>
+              <Typography color="textSecondary" sx={{ mt: 1 }}>
+                Songs in performance order. Tap a song to watch its YouTube reference.
+              </Typography>
+            </Box>
+            <Suspense fallback={<Typography role="status">Loading the set list…</Typography>}>
+              <HomeSetList />
+            </Suspense>
+          </Stack>
+        </Box>
         <Box component="section" aria-labelledby="event-planning-heading">
           <Stack spacing={2}>
             <Box>
