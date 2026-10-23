@@ -44,7 +44,7 @@ export default function Home() {
         <Box
           component="section"
           aria-labelledby="home-set-list-heading"
-          className={`${heroMarkerFont.variable} ${heroScriptFont.variable} ${heroSerifFont.variable}`}
+          className={heroSerifFont.variable}
           sx={{
             width: '100%',
             maxWidth: 880,
@@ -58,16 +58,6 @@ export default function Home() {
         >
           <Stack spacing={3}>
             <Box sx={{ textAlign: 'center', pt: { xs: 2, sm: 1 }, px: 1 }}>
-              <Typography sx={{
-                fontFamily: 'var(--font-hero-serif), Georgia, serif',
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                fontWeight: 600,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: '#f0b27a',
-              }}>
-                ABK Open Mic presents
-              </Typography>
               <Typography id="home-set-list-heading" variant="h2" sx={{
                 fontFamily: 'var(--font-hero-serif), Georgia, serif',
                 fontSize: { xs: '2.75rem', sm: '4rem' },
@@ -79,15 +69,6 @@ export default function Home() {
                 textShadow: '0 3px 0 rgba(0 0 0 / 0.4), 0 0 30px rgba(255 122 61 / 0.25)',
               }}>
                 Set list
-              </Typography>
-              <Typography sx={{
-                fontFamily: 'var(--font-hero-script), "Brush Script MT", cursive',
-                fontSize: { xs: '1.85rem', sm: '2.25rem' },
-                fontWeight: 700,
-                color: '#ff7a3d',
-                transform: 'rotate(-3deg)',
-              }}>
-                Spooky Edition
               </Typography>
               <Box aria-hidden="true" sx={{
                 display: 'flex',
