@@ -69,9 +69,9 @@ export default function Home() {
                 ABK Open Mic presents
               </Typography>
               <Typography id="home-set-list-heading" variant="h2" sx={{
-                fontFamily: 'var(--font-hero-marker), "Comic Sans MS", cursive',
+                fontFamily: 'var(--font-hero-serif), Georgia, serif',
                 fontSize: { xs: '2.75rem', sm: '4rem' },
-                fontWeight: 400,
+                fontWeight: 600,
                 lineHeight: 1.2,
                 mt: 1,
                 textTransform: 'uppercase',

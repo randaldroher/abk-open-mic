@@ -69,11 +69,11 @@ test('guest set list handles empty lists and missing artist credits', () => {
   assert.match(html, /Artist not listed/);
 });
 
-test('concert bill uses hero typography and large decorative expand controls', () => {
+test('concert bill uses non-handwritten serif typography and large decorative expand controls', () => {
   const html = renderToStaticMarkup(createElement(GuestSetList, {
     songs: buildGuestSetList(setList, references),
   }));
-  assert.match(html, /var\(--font-hero-marker\)/);
+  assert.doesNotMatch(html, /--font-hero-marker|--font-hero-script|cursive/);
   assert.match(html, /var\(--font-hero-serif\)/);
   assert.match(html, /width:44px;height:44px/);
   assert.match(html, /width:28px;height:28px/);

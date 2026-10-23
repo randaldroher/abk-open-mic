@@ -101,9 +101,9 @@ export default function GuestSetList({ songs }: { songs: GuestSetListSong[] }) {
                 <Box sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
                   <Typography component="span" sx={{
                     display: 'block',
-                    fontFamily: 'var(--font-hero-marker), "Comic Sans MS", cursive',
+                    fontFamily: 'var(--font-hero-serif), Georgia, serif',
                     fontSize: { xs: '1.2rem', sm: '1.65rem' },
-                    fontWeight: 400,
+                    fontWeight: 600,
                     lineHeight: 1.4,
                   }}>
                     {song.title}
