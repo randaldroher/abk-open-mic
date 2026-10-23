@@ -7,6 +7,7 @@ import EventPlanningCards from '@/components/event-planning-cards';
 import OctoberHero from '@/components/october-hero';
 import SiteFrame from "@/components/site-frame";
 import HomeSetList from '@/components/home-set-list';
+import { OCTOBER_EVENT } from '@/lib/october-event';
 
 const heroMarkerFont = Permanent_Marker({
   subsets: ['latin'],
@@ -60,16 +61,46 @@ export default function Home() {
             <Box sx={{ textAlign: 'center', pt: { xs: 2, sm: 1 }, px: 1 }}>
               <Typography id="home-set-list-heading" variant="h2" sx={{
                 fontFamily: 'var(--font-hero-serif), Georgia, serif',
-                fontSize: { xs: '2.75rem', sm: '4rem' },
+                fontSize: { xs: '2rem', sm: '3rem' },
                 fontWeight: 600,
                 lineHeight: 1.2,
                 mt: 1,
                 textTransform: 'uppercase',
-                transform: 'rotate(-2deg)',
+                textWrap: 'balance',
+                overflowWrap: 'anywhere',
                 textShadow: '0 3px 0 rgba(0 0 0 / 0.4), 0 0 30px rgba(255 122 61 / 0.25)',
               }}>
-                Set list
+                {OCTOBER_EVENT.title}
               </Typography>
+              <Stack spacing={1} sx={{ mt: 2.5 }}>
+                <Typography sx={{
+                  fontFamily: 'var(--font-hero-serif), Georgia, serif',
+                  fontSize: { xs: '1rem', sm: '1.25rem' },
+                  fontWeight: 600,
+                  color: '#f0b27a',
+                }}>
+                  <time dateTime={OCTOBER_EVENT.start}>{OCTOBER_EVENT.dateLabel}</time>
+                </Typography>
+                <Typography sx={{ color: '#f0b27a', fontWeight: 600 }}>
+                  {OCTOBER_EVENT.timeLabel} Pacific
+                </Typography>
+                <Box sx={{ pt: 1 }}>
+                  <Typography sx={{
+                    fontFamily: 'var(--font-hero-serif), Georgia, serif',
+                    fontSize: { xs: '1.2rem', sm: '1.5rem' },
+                    fontWeight: 600,
+                    color: '#ff7a3d',
+                  }}>
+                    {OCTOBER_EVENT.venue}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>
+                    {OCTOBER_EVENT.campus}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>
+                    {OCTOBER_EVENT.streetAddress}, {OCTOBER_EVENT.locality}
+                  </Typography>
+                </Box>
+              </Stack>
               <Box aria-hidden="true" sx={{
                 display: 'flex',
                 alignItems: 'center',
